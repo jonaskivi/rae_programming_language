@@ -1,0 +1,103 @@
+module rae.examples.OptTester
+
+class Inner
+{
+public:
+	func ()logMe()
+	{
+		log_ln("Hello ")
+	}
+
+	int data = 5
+}
+
+
+class Tester
+{
+public:
+	func ()logMe()
+	{
+		log_ln("Hello ")
+	}
+
+	int data = 5
+
+
+	func (val Inner)inner()
+	{
+		return(m_inner)
+	}
+	protected val Inner m_inner
+}
+
+
+class OptTester
+{
+public:
+
+	func ()new()
+	{
+	}
+	
+	func ()free()
+	{
+	}
+	
+	public func
+	()sayHello()
+	{
+		tester.logMe
+		log("World!")
+		log("tester_ref: ")
+		tester_ref.logMe()		
+	}
+	
+	func (int result) count (int param1, int param2) public
+	{
+		return(param1 + param2)//or you could just do: result = param1 + param2
+	}
+	
+	int num = 5
+	uint num25 = 4
+	protected long anotherNumber = 42
+	float afloat = 248.52
+	double initMeToo
+	int azero 
+
+	val Tester tester
+
+	ref Tester tester_ref
+
+	opt Tester tester_opt
+
+}
+
+func
+(int) main (string[] args)
+{
+	val OptTester hello; //semicolons are allowed, but not required.
+	int val = 5
+	int another_zero
+	float i_want_to_be_zero
+
+	hello.sayHello()
+	log_ln("5 + 2 = ")	
+	log(hello.count(int param1: hello.num, int param2:2))
+	
+	log("Test val: ")
+	hello.tester.logMe
+	log("\nTest opt: ")
+	hello.tester_opt.logMe
+	log("\n")
+
+	hello.tester_opt.data = 3
+	hello.tester_opt.inner.data = 6
+	//hello.tester_opt.inner.inner.inner.data = 7
+
+	//log("opt test:")
+	//opt Tester a_tester = hello.tester
+	//a_tester.logMe
+
+	return(0)
+}
+

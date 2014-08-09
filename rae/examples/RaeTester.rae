@@ -1,0 +1,301 @@
+module rae.examples.RaeTester //how about a (comme{nt here!!!! NEW VERSION9
+
+import rae.examples.Tester
+
+/+2
+
+twoplusses
+
+/+1
+oneplus
+
+/+
+
+zeroplus
+
+/*
+	Starcommenthere
+*/
+
+zeroplus2
++/
+oneplus2
+1+/
+twoplusses2
+2+/
+
+
+class SameName
+{
+	func ()otherFunc()
+	{
+		
+	}
+}
+
+
+class RaeTester
+{
+public:
+
+	func ()new()
+	{
+	}
+
+	func ()new(int set_num, uint set_num25 = 0)
+	{
+		num = set_num
+		num25 = set_num25
+	}
+	
+	func ()free()
+	{
+	}
+	
+	public func
+	()sayHello()
+	{
+		//we need some keyword that tells that we actually want a temp object to be a class member:
+		//member int someThingWeUseOften = 0 //Keeps it's state like a static value, but you can zero it out on this function like this.
+		//Would this make the memory allocations faster for these temporary objects?
+		//member val Calculator calc
+		//this could be a usefull keyword in constructors too. I think python has something like this.
+		//members would be protected by default. but you could define them public:
+		//member public maybe Calculator calculator
+		//but if it's a maybe this will only be allocated and initialized when this func is run the first time! before that it will be null!
+		//But val and ref members will be inited in constructors.
+		//another option for the keyword would be keep:
+		//keep maybe Calculator calculator
+		//or from existing keywords, changing the way "static" works with classes (it would be per object.)
+		//or "this":
+		//this maybe Calculator calculator
+		//static maybe Calculator calculator
+
+		tester.logMe
+		log("Tester 0.1!")
+	}
+	
+	func (int result) count (int param1 = 1, int param2 = 1) public
+	{
+		return(param1 + param2)//or you could just do: result = param1 + param2
+	}
+	
+	int num = 5
+	uint num25 = 4
+	protected long anotherNumber = 42
+	float afloat = 248.52
+	hidden double initMeToo
+	library int azero
+	string how_is_it
+	string i_can_init_myself = "Something"
+
+	val Tester tester //This is a value type. Allocated on the stack.
+	//related C++ discussion on vectors with value types:
+	//http://stackoverflow.com/questions/8543854/when-adding-an-element-to-a-vector-how-to-know-that-a-copy-of-the-object-is-goi
+	//We should use emplace or emplace_back with vectors.
+	//Should we rename them: create_object and create_object_back???
+
+	library ref Tester anotherTester //This is a ref that mostly acts like a value type.
+	//It cannot be null.
+	//It is allocated on the heap.
+	//You should mostly use this type only as function parameter. library is just for visibility (like public).
+	//It means this is only visible to this library, which is the name of the top module, "rae" in this case.
+	//But you could use this with e.g. arrays, but values are maybe faster in arrays, due to memory being continuous with value types.
+
+	opt testerMaybe = null //This is the way to make an empty reference.
+	//But you have to check it every time to use it.
+
+	//The standard array/vector syntax is a dynamic array syntax like this:
+
+	protected val Tester[] arrayTesters //a dynamic Rae array is a C++ std::vector
+	//protected Tester[4] staticArrayTesters //a static array is a C++ std::array or boost::array
+
+	func ()createNewArrayTester()
+	{
+		val Tester atest //make this named atest so it collides with the same name param...
+		arrayTesters.push_back(atest);
+		//TODO use emplace on C++11
+	}
+
+	func ()logArrayTesters() public
+	{
+		for(uint i = 0; i < arrayTesters.size(); i++)
+		{
+			arrayTesters[i].logMe
+			log("from arrayTesters: ", " and a another\" ", i, " That is all we know. And here's a rarity.afloat: ", afloat ) //rarity.afloat
+			nameConflict(arrayTesters[i])
+		}
+
+		/*TODO foreach(Tester atest; arrayTesters)
+		{
+			atest.logMe
+		}*/
+	}
+
+
+	//Another syntax for vectors, but don't use this one:
+	
+	protected vector!(ref Tester) testers
+
+	library int alibraryInHere
+
+	float thisShouldBePublic = 0.0
+
+	func ()createNewTester() library
+	{
+		ref Tester atest
+		testers.push_back(atest);
+
+		if(testers.size() > 2)
+		{
+			testerParams( testers[0], testers[1] )
+		}
+	}
+
+	func ()testerParams(ref Tester one, ref Tester two)
+	{
+		one.value = one.value + two.value
+		log("testerParams: one.value: ", one.value, " two.value: ", two.value )
+	}
+
+	func ()nameConflict(override ref Tester tester)
+	{
+		log("nameConflict: tester.value: ", tester.value )
+		tester.value = 129
+		{
+			override ref Tester tester
+			tester.value = 2
+			log("nameConflict: tester2.value: ", tester.value )
+		}
+		log("nameConflict: tester3.value: ", tester.value )
+	}
+
+	func ()logTesters()
+	{
+		for(uint i = 0; i < testers.size(); i++)
+		{
+			testers[i].logMe
+			log("from tester: ", " and a another\" ", i, " That is all we know. And here's a rarity.afloat: ", afloat ) //rarity.afloat
+			nameConflict(testers[i])
+		}
+	}
+
+	//
+
+	func ()testFuncArrays()
+	{
+		val Tester[] a_local_array
+		a_local_array.reserve(100)
+		for(uint i = 0; i < 25; i++)
+		{
+			val Tester atest
+			a_local_array.push_back(atest)
+		}
+
+		log("a_local_array size: ", a_local_array.size)
+	}
+
+	//a C-style raw array needs special syntax.
+	/*
+	extern c++
+	{
+	protected: Tester testers3[];
+
+	func ()createNewTester3()
+	{
+		testers3 = new Tester[8];
+		Tester atest
+		testers3[0] = atest;
+	}
+
+	func ()logTesters3() public
+	{
+		for(uint i = 0; i < 8; i++)
+		{
+			testers3[raw i].logMe
+		}
+	}
+	}
+
+	*/
+
+}
+
+func
+(int) main (int args)
+{
+	val RaeTester rarity; //This is a ref. It is auto initialized.
+	int val = 5 //this is a value because it is a built-in type.
+	int another_zero
+	float i_want_to_be_zero //auto init to zero. unlike in c++ (it is not guaranteed and causes bugs on some compilers).
+/*
+	RaeTester? canBeNull = null //this is a nullref. You must check for null to use it.
+	//RaeTester? canBeNull //This would still auto init to = new RaeTester!!!
+	//so you'll have to explicitly set it to null.
+	//RaeTester cannotBeNull = null //This would be an err,
+	//because normal refs can not be null.
+
+	if(canBeNull)
+	{
+		//this will NOT happen, because canBeNull is not yet created.
+		log("This will not happen: ", canBeNull.count(2,2))
+	}
+
+	canBeNull = RaeTester.new(64, 64)
+
+	//this will happen.
+	if(canBeNull)
+	{
+		log("This will not happen: ", canBeNull.count(2,2))
+	}
+
+	canBeNull.free
+*/
+	if(rarity)//an err!!!!!! no need for this with refs.
+	{
+		rarity.sayHello()
+		log_ln("5 + 2 = ")	
+		log(rarity.count(int param1: rarity.num, int param2:2))
+
+		log_ln("default count: ")
+		log(rarity.count())
+
+		log("Arrays as vectors: ")
+
+		for(uint i = 0; i < rarity.count(1,rarity.count(1,1)); i++)
+		{
+			rarity.createNewArrayTester()
+		}
+
+		rarity.logArrayTesters
+
+		log("Now for just plain vectors.")
+
+		for(uint i = 0; i < rarity.count(1,rarity.count(1,1)); i++)
+		{
+			rarity.createNewTester()
+		}
+
+		rarity.logTesters
+
+		string does_this = "Does this "
+
+		log( does_this + "really work?")
+
+		string how_about = "How about "
+		string this_really = "this really working?"
+		string does_it = how_about + this_really
+
+		log(does_it)
+
+		rarity.testFuncArrays
+	}
+
+	//rarity.free //ERR: can not call free on normal refs. They're like values.
+
+	return(0)
+}
+
+
+
+

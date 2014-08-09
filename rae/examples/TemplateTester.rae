@@ -1,0 +1,133 @@
+module rae.examples.TemplateTester
+
+import rae.examples.Tester
+
+class SameName
+{
+	func ()otherFunc()
+	{
+		
+	}
+}
+
+class TestTemplate(T)
+{
+	func ()new()
+	{
+	}
+
+	func ()new(T set)
+	{
+		type = set
+	}
+
+	func ()logMe()
+	{
+		log("TestTemplate type value is: ", type)
+	}
+
+	T type
+}
+
+class RaeTester
+{
+public:
+
+	func ()new()
+	{
+	}
+
+	func ()new(int set_num, uint set_num25 = 0)
+	{
+		num = set_num
+		num25 = set_num25
+	}
+	
+	func ()free()
+	{
+	}
+	
+	public func
+	()sayHello()
+	{
+		tester.logMe
+		log("Tester 0.1!")
+
+		intTemplate.type = 5
+		testerTemplate.type.logMe
+
+		intTemplate.logMe
+		testerTemplate.logMe
+	}
+	
+	func (int result) count (int param1 = 1, int param2 = 1) public
+	{
+		return(param1 + param2)//or you could just do: result = param1 + param2
+	}
+	
+	TestTemplate!(int) intTemplate
+	TestTemplate!(Tester) testerTemplate
+
+	int num = 5
+	uint num25 = 4
+	protected long anotherNumber = 42
+	float afloat = 248.52
+	hidden double initMeToo
+	library int azero
+
+	Tester tester /*this is a "reference". Dynamically allocated automatically.
+	unless, you specify it as "scope". Then it will be like a value, but you still
+	use it as a ref... Huh?*/
+	
+	library Tester anotherTester //and a comment here?
+
+	
+	protected vector!(Tester) testers
+
+	library int alibraryInHere
+
+	float thisShouldBePublic = 0.0
+
+	func ()createNewTester() library
+	{
+		Tester atest
+		testers.push_back(atest);
+
+		if(testers.size() > 2)
+		{
+			testerParams( testers[0], testers[1] )
+		}
+	}	
+}
+
+func
+(int) main (string[] args)
+{
+	RaeTester rarity; //This is a ref. It is auto initialized.
+	int val = 5 //this is a value because it is a built-in type.
+	int another_zero
+	float i_want_to_be_zero //auto init to zero. unlike in c++ (it is not guaranteed and causes bugs on some compilers).
+
+	if(rarity)//an err!!!!!! no need for this with refs.
+	{
+		rarity.sayHello()
+		log_ln("5 + 2 = ")	
+		log(rarity.count(int param1: rarity.num, int param2:2))
+
+		log_ln("default count: ")
+		log(rarity.count())
+
+		for(uint i = 0; i < rarity.count(10,rarity.count(2,2)); i++)
+		{
+			rarity.createNewTester()
+		}
+	}
+
+	rarity.free //can not call free on normal refs. They're like values.
+
+	return(0)
+}
+
+
+
+

@@ -1,0 +1,18 @@
+
+
+class SameName
+{
+	func ()someFunc()
+	{
+
+	}
+}
+
+class SameName
+{
+	func ()otherFunc()
+	{
+		
+	}
+}
+

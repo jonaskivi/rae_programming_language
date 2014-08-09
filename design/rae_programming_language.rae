@@ -1,0 +1,791 @@
+/*
+Rae programming language
+
+Rae file extensions are:
+button.rae
+button.imp.rae
+*/
+
+//no null: use option (or maybe ?) instead:
+//http://www.infoq.com/presentations/Null-References-The-Billion-Dollar-Mistake-Tony-Hoare
+//http://programmers.stackexchange.com/questions/12777/are-null-references-really-a-bad-thing
+
+//common mistakes in pl design:
+//http://beza1e1.tuxen.de/articles/proglang_mistakes.html
+
+//templates in D:
+//http://dlang.org/templates-revisited.html
+
+//templates in C++
+//http://www.cprogramming.com/tutorial/templates.html
+
+//a one line comment
+
+/*
+multi line comment
+*/
+
+///one line documentation
+
+/**
+multi line documentation
+*/
+
+/+2
+/+1
+/+
+/*
+nested multi line comment
+*/
++/
+1+/
+2+/ //3, 4, 5... etc.
+
+import rae.canvas.Rectangle //we don't need ; but it is allowed.
+import c++.glm.glm.h
+import c.math.h
+
+//no need to: import vector //Rae native version of vector
+import c++.vector //it's basically the same as c++ vector
+	using namespace std //otherwise you would use it as: std.vector!(Rectangle) rects
+
+//no need to: import string //Rae native string //just a c++ string basically...
+import c++.string
+
+class Button : public Rectangle
+{
+public:
+
+	func new()
+	{
+
+	}
+
+	//OR
+
+	//constructor:
+	func ()new()
+	{
+
+	}
+
+	//the following is the same as (void)method(void), but there's no need to type that.
+	func
+	()doSomethingVeryImportant() //this is just a prototype, to be defined later in the implement part.
+
+	func ()doSomethingImportant() //this one is implemented right here.
+	{
+		
+	}
+
+	func ()doProtected() protected {}
+
+	//library func is a bit like protected or c++ friend, but the classes
+	//in the same library (or namespace) will be able to call it, but others will not.
+
+	func ()doLibraryOnlyFunc() library {}
+
+	//and we also need another new visibility word, that maybe could be:
+	hidden int not_shown_even_to_this_class = 5
+
+	property typeName(T = string) public
+	{
+		(T)get() { return(data) }
+		()set(set: T) { data = set }
+		protected T data = ""
+	}
+
+	property typeName public
+	{
+		(ref string)get() { return(data.ref) }
+		()set(set: string.ref) { data = set }
+		protected string data = ""
+	}
+
+	//a more effective data hiding thing, that hides the data from all other
+	//functions in this class. So you must use it through the property.
+	property typeName(T = string) public
+	{
+		(T)get() { return(data) }
+		()set(set: T) { data = set }
+		hidden T data = ""
+	}
+
+	//using the property:
+	typeName = "set it"
+	string get_it = typeName
+
+	//you could maybe override it with something like:
+	func ()doSomething() public
+	//considered putting it here: using typeName.data, but it doesn't look good.
+	{
+		using typeName.data //now you can access it in this scope.
+
+	}
+
+	//which direction does the data flow: (in->)func(->out) or (out<-)func(<-in)
+	
+	//a func is a box with in and out points.
+	
+	func
+	(int ret1, float ret2)doSomethingImportant(float param1, float param2, string param3) 
+	{
+		
+	}
+
+	//OR maybe this is better way: (Hmm. Looks uglier... and doesn't give you that in-out -feel.)
+	func doSomethingImportant(int ret1, float ret2 : float param1, float param2, string param3) 
+	{
+		
+	}
+
+	//maybe this is better for copy pasting:
+	
+	func
+	(int ret1, int ret2)doSomethingImportant(float param1, float param2, string set_name) //return values on the left, params on the right
+	{
+		
+		//Hmm, let's not reverse the in out flow.
+		//value: int = 15
+		//15 := value: int
+		//(15)value	
+		int value = 15
+
+		ret1 = 5
+		ret2 = 25
+		return
+		
+
+		return(int ret1: 5, int ret2: 25) //return is called like a func.
+	}
+	
+	unittest doSomethingImportant
+	{
+		//create objects, do stuff, test
+		assert(somethingisok)
+		{
+			log("Ok.")
+		}
+	}
+
+/*
+	//property in C++:
+	public: string labelText() { return m_labelText; }
+	public: void labelText(string set);// { m_labelText = set; }
+	protected: string m_labelText;
+*/
+
+	//property in Rae programming language.
+	//The idea is that it is easily copy/pastable, and you only need to change the name if you want the same functionality.
+	property labelText public
+	{
+		(float)get()
+		{
+			return(data)
+		}
+		()set(set: float)
+		{
+			data = set
+		}
+		float data = 0.0f
+	}
+
+	property labelText public
+	{
+		(float)get()
+		{
+			return(data)
+		}
+		()set(float) //first parameter is automatically named param1, if no name is given. The others will follow as "param2" "param3" etc.
+		{
+			data = param1
+		}
+		float data = 0.0f
+	}
+
+	//Hmm, property in C++ is 3 lines of code. We should try to beat it atleast with less letters.
+	//public: string typeName() { return m_typeName; }
+	//public: void typeName(string set) { m_typeName = set; }
+	//protected: string m_typeName;
+	
+	property typeName public
+	{
+		(string)get() { return(data) }
+		()set(set: string) { data = set }
+		string data = ""
+	}
+	
+	//I have a better idea: even more copy pastable:
+	
+	property string typeName public
+	{
+		(T)get() { return(data) }
+		()set(set: T) { data = set }
+		protected T data = ""
+	}
+	
+	//to get typeName:
+	string lets_get_it = someObject.typeName
+	//to set it:
+	someObject.typeName = lets_set_it
+	//to access data (only from inside class SomeObject:, because it is protected.)
+	typeName.data = lets_set_it
+
+
+	//a way to easily test for null:
+	if(currentElement).callFunction()
+
+	//IMPORTANT: Somehow refs should not be allowed to be null at all.
+	//So they'd be more like value types, but passed to funcs as pointers...
+	//
+	//Another thought on ptrs which can be null:
+	//automatically check for their nullness in the func definition:
+	func (int) someFunc(if SomeObject.ptr some, if OtherObject* other)
+	{
+		//if some or other is null, this func won't run!
+
+	} 
+	
+	//will expand to C++:
+	//if( currentElement ) currentElement->callFunction();
+
+//Vectors, Arrays and raw-arrays (or C-arrays).
+
+//!! There should be a unified syntax for arrays.
+//But. It won't work, because you can't convert them between each array-type.
+//So we can't have a unified syntax.
+//But some syntax should be preferred over the others.
+//But maybe we could have a templated array syntax!!!!!!!!!!!
+//So you could define a class or function with array members or
+//array parameters, but then you could just use it as a template and
+//define which type you actually want to use when doing it.
+
+//A templated array type:
+func ()someFunc( Tester![] param1, float something_else )
+{
+	//This will never work in a reasonable way... abandoning this idea. Just use the three different containers.
+}
+
+
+//a vector
+vector!(Tester) testers
+testers.push_back(a_tester);
+foreach(testers)//.size would also work.
+{
+	log(each)
+}
+
+//an array
+Tester[] testers
+testers.push_back(a_tester);
+for(uint i = 0; i < testers.size; i++)//foreach would also work.
+{
+	log(testers[i])
+}
+callCFunction(testers.ptr, testers.size)
+
+//a raw-array
+Tester* testers = Tester[25];
+testers[0] = a_tester;
+for(uint i = 0; i < 25; i++)//foreach will not work because size is unknown to compiler.
+{
+	log(testers[i])
+}
+
+signal
+
+mixin
+
+foreach(SomeClass ob, items)
+{
+	ob.callSomething
+}
+
+foreach(items).callSomething() //NO, NO, NO, this is not smart, because then people will use it several times in a row, and it will be inefficient.
+
+//This is a really nice syntax for foreach:
+foreach(items)
+{
+	each.callSomething //a new keyword "each" which means each object in the array.
+	someOtherThing.putItSomeWhere( each )
+}
+
+//What about double foreach
+foreach(items)
+{
+	foreach(each.items)
+	{
+		each2.someThing //not allowed. Better to use named foreach then.
+	}
+
+	//better then to:
+	foreach(SomeClass ob, each.items)
+	{
+		ob.someThing
+	}
+}
+
+//!!!!!!! You can also use it with single objects, to help with copy pasting!
+foreach(anObject)
+{
+	each.callSomething
+	each.callSomething2
+	each.callSomething3
+	each.callSomething4(52.0f)
+	each.callSomething5
+	//etc. a long list of repetitive stuff. where you'd maybe change a few parameters here and there.
+}
+foreach(anotherObject)
+{
+	each.callSomething
+	each.callSomething2
+	each.callSomething3
+	each.callSomething4(75.0f)
+	each.callSomething5
+	//etc. a long list of repetitive stuff. where you'd maybe change a few parameters here and there.
+}
+
+loop {}
+for(uint i = 0, i < items.size, i++ ){}
+for(uint i = 0; i < items.size; i++ ){}
+while(1){}
+switch(someEnum)
+{
+	default:
+	//This would be the new switch syntax, if we had a reason for changing it. But we don't.
+	//Old syntax seems good enough, even it is strange.
+	case(SomeEnum.SOMETHING || SomeEnum.SOME_ELSE)
+	{
+		//let's not change switch, yet... No good ideas for it.
+	}
+	case SomeEnum.UNDEFINED:
+	break;
+}
+if() else if() else
+
+}
+
+//a C-style main func:
+func
+(int) main (string[] cli)
+{
+	//Two ways to create a class object. Stack and Heap allocation.
+	//stack allocation. Will be gone when block is finished.
+	Button button
+	Button button.stack //maybe not like this, too technical
+
+	Button button.alloc //C-like, more technical, memory oriented
+	Button button.new //C++-like, more object oriented
+	Button button.heap //maybe not like this, too technical
+	Button button.create //too long keyword. Just to give many options in this list.
+	Button button.static //we'll need some keyword to create a static object, that is
+	//tied to either the function and is not deleted after the function runs (it will be available
+	//next time, to reduce memory creation and deleting), or it could be tied to the func but also to the
+	//class object, so that many Rectangle.handleMouseEvent()s could remember e.g. their mousepositions...
+
+	int a_number.static
+
+	//the following pleases my eye today, and is more searchable, because the name is not in the middle
+	//of the three words. It is easier to search for all "new Button" than "Button *changing_name*.new" :
+	//Changed it even further to Button.new, which is as easy to search and really object oriented...
+	//or actually Type oriented!
+
+	//We need to have owning, borrowing and moving worked out:
+	own Button button
+	borrow Button? borrowButton //?????????????? is that too much typing and too much redundant info..
+
+	//or
+	Button.own button
+	Button.borrow borrowButton
+
+	//or just
+	Button button
+	Button? borrowButton
+
+	//and a new thought:
+	ref Button button
+	ref Button? button //can be null, but can create data.
+	Button button
+	Button.ref button
+	//is an owning ref, where you can actually create data. If you change it, you must first delete the old
+	//data and then create the new data, but hey! then the link will still point to the old data!
+	//therefore links must be Button** pointers to pointers!!!! But because of the easy syntax, you still
+	//dereference link Button by just calling buttonObject.someFunction(). and not buttonObject->->someFunction()
+	//like in C++.
+
+	//more info from: http://www.codeproject.com/Articles/4894/Pointer-to-Pointer-and-Reference-to-Pointer
+	//When we use "pass by pointer" to pass a pointer to a function, 
+	//only a copy of the pointer is passed to the function. 
+	//We can say "pass by pointer" is passing a pointer by value. 
+	//In most cases, this does not present a problem. 
+	//But problem comes when you modify the pointer inside the function. 
+	//Instead of modifying the variable, you are only modifying a copy of 
+	//the pointer and the original pointer remains unmodified, that is, 
+	//it still points to the old variable.
+
+	//So the options would be to just use a regular pointer for link, but it might get invalidated
+	//if the original ref changes.
+	//Other options are to use:
+	//pointer-to-pointer (C++): Button** a_link_to_ref
+	//reference-to-pointer (C++): Button*& a_link_to_ref
+	//which has the advantage of using (mostly) the same syntax as regular pointers!
+	//But it can not be null, so maybe we can't use it!
+
+	val button : Button
+	ref button : Button
+	ref? button : Button //The ref and Button are too far from each other. They should be close.
+
+	val!(Button) button
+	ref!(Button) button
+	ref?!(Button) button //NOOOOO
+
+	//2:
+
+	Button.val button //static memory which is bound by scope.
+	Button.ref button
+	Button.ref? button
+	Button.opt button
+	Button.link button
+	Button.ptr button
+
+	Button.val[] buttons
+	Button.ref[] buttons
+
+	vector!(Button.val) buttons
+	vector!(Button.ref) buttons
+
+	//5: How about this closer to C++ //NOOOO. looks horrible.
+	Button button //value
+	Button& button //ref, must exist.
+	Button? button //null ref
+	Button* button //pointer
+	Button@ button //link
+
+	//1:
+
+	Button button //is this some default? ref? In C++ it's value. In Java and D it's ref/maybe/link.
+	val Button button //owns static data. The same as C++ value. Usually passed as a ref to a function.
+	ref Button button //owns dynamic data.
+	//let's pause here for a moment. What is the purpose of owned refs? They can't be null.
+	//But usually val is better as a member then, as stack allocation is faster? But it is better
+	//as a function argument, as you don't have to copy. Just like in C++.
+	//But you can't pass a maybe or link into a function taking refs, until you have checked them.
+	opt Button button //maybe owns data. null if doesn't own it.
+	ref? Button button
+	link Button button //links to data, can't delete it. only borrows data, doesn't own it.
+	ptr Button button //C++ pointer.
+
+	//testing syntax for arrays:
+	vec val Button buttons_vec
+	vec val Button[] buttons_vec
+	vec link Button[] button_links_vec
+	array val Button[100] button_arr
+	array int[100] 
+
+	//dynamic arrays:
+	val Button[] buttons
+	ref Button[] buttons
+	opt Button[] buttons
+
+	//static arrays
+	val Button[100] buttons //Usually passed and auto converts as dynamic ref[] to functions.
+	ref Button[100] buttons //Usually passed and auto converts as dynamic ref[] to functions.
+	opt Button[100] buttons
+
+	vector!(val Button) buttons
+	vector!(ref Button) buttons
+	//How about shortened like in rest of the language:
+	vec!(val Button) buttons //Maybe not like this. I'd like the [] syntax to be used more anyway.
+	vec ref Button buttons //Doesn't feel good.
+
+	//example:
+	val Button button_val //like a C++ value
+	ref Button button_ref //automatic = new Button(). Can not be null. Works a bit like val, but is allocated in heap.
+	//button_ref = button_val //This is illegal with refs. They must be inited when created.
+	opt Button button_mb //automatic = new Button()
+	opt Button button_mb = null //You must specify that you want it to be null, so you'll get an "empty" opt.
+	button_mb = button_val //This is ok.
+	if(button_mb)//opt must be checked before usage.
+	{
+		button_mb.callSomething
+	}
+	link Button button_lnk //!Initially null, until you set it to somewhere.
+	button_lnk = button_val
+	if(button_lnk)//link must be checked before usage
+	{
+		button_lnk.callSomething
+	}
+
+
+
+
+	//
+
+	val Button button //Button button;
+	ref Button button //Button* button; //can not be null. auto init and destruct.
+	ref? Button button //Button* button; //can be null. Must be checked for null before dereferencing.
+	link? Button button //
+
+	ref Button? button
+	link Button? button
+	//I don't know which one of these is the thing that I want!
+	//but a link could be something that can not actually create data, but it can link to it?
+	//This might be the same thing as owning and borrowing!
+	//now it would be just ref = own, and link = borrow.
+	//And Button is inited immediately.
+
+
+
+	//but moving is quite clear? or maybe not... we'd like to have a rule, that nullrefs can't delete...???
+	borrowButton = button.move
+	borrowButton = button.copy
+	borrowButton = button //not moving, not copying. Just pointing to the same data, but can't delete it.
+
+	borrowButton.free //Compile error. No, you can't free with nullrefs... Is that good??
+
+	button.canCallStuf
+
+	if(borrowButton).mustCheckToCallStuff1
+
+	if(borrowButton)
+	{
+		borrowButton.mustCheckToCallStuff2
+		borrowButton.andCallSomeOtherStuff
+	}
+
+	if(Button copypastable = borrowButton)
+	{
+		copypastable.mustCheckButCanCopyPasteMe
+		copypastable.andCallSomeOtherStuff
+	}//the single object each thing is better than this syntax. But maybe use something like this
+	//for multiple objects. Or maybe that is just overkill.
+
+	if(Button copypastable = justChangeThisButtonAndYoureReadyToCopyPaste)
+	{
+		copypastable.mustCheckButCanCopyPasteMe
+		copypastable.andCallSomeOtherStuff
+	}	
+
+	copypastable.cantCallAnymore //Compile error. copypastable doesn't work outside of it's scope.
+
+
+	{
+		//A normal reference can not be null???
+		//-well, what about if I delete it, and then
+		//use it?
+		//I guess, you can not delete them???
+
+		Button button //this is equal to the next line by default! So we initialize a ref/ptr with new object by default.
+		Button.new button
+		Button.scope scopeButton
+		
+		//a null reference is used with ?.
+		//you must always check for availability when using it.
+		Button? nullButton
+		nullButton = Button.new
+		if(nullButton)
+		{
+			nullButton.useIt
+		}
+		if(Button but = nullButton)
+		{
+			but.useIt
+		}
+		if(nullButton).useIt
+		
+		Button.ptr ptrButton	
+		ptrButton = Button.new
+		
+		button.free
+		nullButton.free
+		ptrButton.free
+		//scopeButton gets freed here, in the end of scope... //just like C++ values!
+	}
+	
+	{	
+		//you're not allowed to put a Button.ptr into a function that takes Button (references...)
+		//you must first do something like:
+		Button button
+		doStrangeStuffWithButton(button)
+		
+		Button.ptr emptyButton
+		emptyButton = Button.new
+		doStrangeStuffWithButton(emptyButton)//compiler error! Because Button.ptr is not compatible with Button (a ref)
+
+		//instead:
+		Button.ptr emptyButton
+		emptyButton = Button.new
+		
+		if( Button temp_button = emptyButton.ref )
+		{
+			doStrangeStuffWithButton(temp_button)//ok inside if block
+			return(temp_button)//ok inside if block
+		}
+		
+		if( emptyButton )
+		{
+			doStrangeStuffWithButton(emptyButton)//ok inside if block
+			return(emptyButton)//ERROR
+		}
+
+		//better:
+
+		//you have to use with pointers:
+		if(nullButton).callSomeFunc
+
+		if(nullButton)
+		{
+			nullButton.callSomeFunc
+			nullButton.callSomeOtherFunc
+		}
+
+		//instant copy-pastable sort of a "func"
+		//a special templatish syntax for if. To check if pointer is not null.
+
+		//Rule: you can only dereference pointers inside if blocks (which check for null)
+		//you can't free memory inside these blocks!
+		if(Button nb: nullButton && Button other: button)
+		{
+			nb.callSomeFunc
+			other.callSomeOtherFunc
+
+			nb.free //ERROR
+		}
+
+		nullButton.free //OK, outside of the block.
+
+		func (SomeObject result)someFunc(Button nb, Button other)
+		if(nb && other)
+		{
+			doStuff
+			return(something)
+		}
+		else
+		{
+			error("nb or other is null.")
+		}
+
+
+		SomeObject myresult = myOb.someFunc(Button nb: button1, Button other: button2)
+
+		SomeObject myresult = myOb.someFunc(Button nb = button1, Button other = button2)
+		catch
+		{
+			doSomethingElse
+			goto 10: //(only joking. half serious.)
+		}
+
+	}
+	
+	//NOT LIKE THIS:
+	new Button button
+	scope Button button
+	null Button button //empty Button reference... or pointer...
+	
+	ptr Button button
+	ref Button button
+	val Button button
+	
+	Button.ptr button
+	Button.ref button
+	Button.val button
+	
+	Button* button
+	Button& button
+	Button button
+	
+	Button.ptr some_other = button.ptr
+	//in c++
+	//Button* some_other = &button;
+	
+	Button[] buttons
+	//in c++
+	/*
+	
+	*/
+	
+	heap Button button
+	stack Button button
+	static Button button
+	create Button button
+	
+
+	//when you're done, delete your object to free memory
+	button.free //C-like
+	button.delete //C++-like
+
+	//or
+
+	free button
+	delete button
+	
+
+	//call a func like this:
+	int we_needs_it
+	float we_wants_it
+	button.(ret1: we_needs_it, ret2: we_wants_it)doSomethingImportant(param1: 0.4, param2: 254.39384, param3: "a string")
+
+	//if you want the same value as parameter and return value you could do this:
+	button.(param1: we_wants_it, param2: we_wants_it, param3: "a string")doSomethingImportant(ret1: we_needs_it, ret2: we_wants_it)
+
+	button.label.()some()
+
+	//chaining would probably need the reversed parameter and return values, that we had before:
+	button.(param1, param2)callme(ret1)->(ret1)someotherfunc(ret2)->(ret2)chain3()
+	//Or with some kind of "chaining syntax":
+	(param1, param2)button.callme(ret1~)otherObject.someotherfunc(ret2~)anotherObject.chain3(finalresult)
+	(param1, param2)button.callme{ret1~}otherObject.someotherfunc{ret2~}anotherObject.chain3{finalresult}
+	(param1, param2)button.callme[ret1~]otherObject.someotherfunc[ret2~]anotherObject.chain3[finalresult]
+	
+	//normal result/param order, but chaining from left to right:
+	loop
+	{
+		(finalresult)anotherObject.chain3(~ret2~)otherObject.someotherfunc(~ret1~)button.callme(param1, param2)
+	}
+	
+	MyWindow myWindow
+	
+	thread IOThread
+	{
+		myWindow.ioMessage(~finalresult, finalresult2~)anotherObject.chain3(~ret3, ret4~)otherObject.someotherfunc(~ret1, ret2~)button.callme(param1, param2)
+	}
+	
+	thread GuiThread
+	{
+		myWindow.run
+	}
+
+	//in C++
+	while(1)
+	{
+		ret1 = button.callme(param1, param2, ret2);
+		ret3 = otherObject.someotherfunc(ret1, ret2, ret4);
+		finalresult = anotherObject.chain3(ret3, ret4, finalresult2);
+		myWindow.ioMessage(finalresult, finalresult2);
+	}
+	
+	button.someotherfunc( button.callme(ret1, ret2 : float param1: 0.5f, float param2: 0.263f) );
+	//ok. chaining might not work, or have any real uses, that we can't do traditionally:
+	button.(ret1)callme(param1, param2)
+	(ret2)someotherfunc(ret1)
+	()chain3(ret2)
+
+	
+	
+	return(0) //return is used just like a func call!
+}
+
+//you can place this in any file, but for Rae style:
+//you can put all your code in .rae files inside the class.
+//OR you can use prototypes in the class, and make a .imp.rae file
+//to place your implementation:
+
+implement Button
+{
+	func
+	()doSomethingVeryImportant() 
+	{
+		
+	}
+}
+
