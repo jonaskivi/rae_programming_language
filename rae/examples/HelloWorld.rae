@@ -52,14 +52,13 @@ func
 (int) main (string[] args)
 {
 	val HelloWorld hello; //semicolons are allowed, but not required.
-	int val = 5
-	int another_zero
-	float i_want_to_be_zero
 	
 	link Tester tester_lnk = hello.tester
 
 	hello.sayHello()
+	
 	log_ln("5 + 2 = ")
+	
 	//the following line will not run if tester_lnk is null.
 	log(hello.count(int param1: hello.num, ref Tester param2: tester_lnk?))
 	
