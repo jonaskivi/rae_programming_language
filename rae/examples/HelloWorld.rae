@@ -7,6 +7,8 @@ public:
 	{
 		log_ln("Hello ")
 	}
+	
+	int data = 2
 }
 
 
@@ -27,26 +29,23 @@ public:
 	{
 		tester.logMe
 		log("World!")
-		log("tester_ref: ")
-		tester_ref.logMe()		
+		
+		log("tester_opt: ")
+		tester_opt?.logMe()		
 	}
 	
-	func (int result) count (int param1, int param2) public
+	func (int result) count (int param1, ref Tester param2) public
 	{
-		return(param1 + param2)//or you could just do: result = param1 + param2
+		return(param1 + param2.data)
 	}
 	
 	int num = 5
-	uint num25 = 4
 	protected long anotherNumber = 42
 	float afloat = 248.52
-	double initMeToo
-	int azero 
 
 	val Tester tester
 
-	ref Tester tester_ref
-
+	opt Tester tester_opt
 }
 
 func
@@ -56,16 +55,15 @@ func
 	int val = 5
 	int another_zero
 	float i_want_to_be_zero
+	
+	link Tester tester_lnk = hello.tester
 
 	hello.sayHello()
-	log_ln("5 + 2 = ")	
-	log(hello.count(int param1: hello.num, int param2:2))
+	log_ln("5 + 2 = ")
+	//the following line will not run if tester_lnk is null.
+	log(hello.count(int param1: hello.num, ref Tester param2: tester_lnk?))
 	
-	hello.tester.logMe
-
-	//log("opt test:")
-	//opt Tester a_tester = hello.tester
-	//a_tester.logMe
+	hello.tester.data = 3
 
 	return(0)
 }
