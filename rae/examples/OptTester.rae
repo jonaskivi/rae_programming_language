@@ -23,7 +23,7 @@ public:
 	int data = 5
 
 
-	func (val Inner)inner()
+	func (ref Inner)inner()
 	{
 		return(m_inner)
 	}
@@ -91,7 +91,7 @@ func
 	log("\n")
 
 	hello.tester_opt.data = 3
-	hello.tester_opt.inner.data = 6
+	hello.tester_opt.inner.data = 6 //This is an error. Use opt with: tester_opt?.inner.data = 6
 	//hello.tester_opt.inner.inner.inner.data = 7
 
 	//log("opt test:")
