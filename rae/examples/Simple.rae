@@ -1,0 +1,40 @@
+module rae.examples.Simple
+
+class Simple
+{
+	func ()new()
+	{
+		
+	}
+
+	func ()forest(override int notrees)
+	{
+		notrees = 0
+		nobirches = 2
+
+		log("original: ", notrees)
+
+		{
+			override int notrees = 5
+			log("another: ", notrees)
+		}
+
+		log("original: ", notrees)
+		log(nobirches)
+	}
+
+	int notrees = 9
+	long nobirches
+}
+
+func
+(int) main (string[] args)
+{
+	Simple simple
+	simple.forest(3)
+	log("from main: ", simple.notrees)
+	free simple
+
+	return(0)
+}
+

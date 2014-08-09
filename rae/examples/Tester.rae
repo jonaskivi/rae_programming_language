@@ -1,0 +1,14 @@
+module rae.examples.Tester
+
+class Tester
+{
+public:
+	func ()logMe()
+	{
+		log_ln( helloString )
+	}
+
+	string helloString = "Rae "
+	int value = 6
+}
+

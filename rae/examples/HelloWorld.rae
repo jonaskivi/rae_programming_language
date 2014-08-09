@@ -1,0 +1,72 @@
+module rae.examples.HelloWorld
+
+class Tester
+{
+public:
+	func ()logMe()
+	{
+		log_ln("Hello ")
+	}
+}
+
+
+class HelloWorld
+{
+public:
+
+	func ()new()
+	{
+	}
+	
+	func ()free()
+	{
+	}
+	
+	public func
+	()sayHello()
+	{
+		tester.logMe
+		log("World!")
+		log("tester_ref: ")
+		tester_ref.logMe()		
+	}
+	
+	func (int result) count (int param1, int param2) public
+	{
+		return(param1 + param2)//or you could just do: result = param1 + param2
+	}
+	
+	int num = 5
+	uint num25 = 4
+	protected long anotherNumber = 42
+	float afloat = 248.52
+	double initMeToo
+	int azero 
+
+	val Tester tester
+
+	ref Tester tester_ref
+
+}
+
+func
+(int) main (string[] args)
+{
+	val HelloWorld hello; //semicolons are allowed, but not required.
+	int val = 5
+	int another_zero
+	float i_want_to_be_zero
+
+	hello.sayHello()
+	log_ln("5 + 2 = ")	
+	log(hello.count(int param1: hello.num, int param2:2))
+	
+	hello.tester.logMe
+
+	//log("opt test:")
+	//opt Tester a_tester = hello.tester
+	//a_tester.logMe
+
+	return(0)
+}
+
