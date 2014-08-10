@@ -11,10 +11,11 @@
 
 class Tester
 {
-	public: Tester();//line: 10
-	~Tester();//line: 10
+	public: Tester();//line: 12
+	~Tester();//line: 12
 public: 
 	void logMe();//line: 7
+	int32_t data;
 };
 
 
@@ -22,24 +23,18 @@ class HelloWorld
 {
 public: 
 	
-	HelloWorld();//line: 18
-	~HelloWorld();//line: 22
-	public: void sayHello();//line: 27
+	HelloWorld();//line: 20
+	~HelloWorld();//line: 24
+	public: void sayHello();//line: 29
 	public: //return type name: result
-	int32_t count(int32_t param1, int32_t param2);//line: 35
-	int32_t num;//line: 40
-	uint32_t num25;//line: 41
-	protected: int64_t anotherNumber;//line: 42
-	public: float afloat;//line: 43
-	double initMeToo;//line: 44
-	int32_t azero;//line: 45
+	int32_t count(int32_t param1, param2);//line: 38
+	int32_t num;//line: 43
+	protected: int64_t anotherNumber;//line: 44
+	public: float afloat;//line: 45
 	
-	Tester tester/*this is a "reference". Dynamically allocated automatically.
-	unless, you specify it as "scope". Then it will be like a value, but you still
-	use it as a ref... Huh?*/;//line: 49
+	Tester tester;//line: 47
 	
-	Tester* tester_ref;//line: 51
-	
+	Tester* tester_opt;
 };
 
 #endif // _rae_examples_HelloWorld_hpp_

@@ -513,7 +513,9 @@ public:
 
 				if( listOfConstructors.empty() == true )
 				{
+					#ifdef DEBUG_RAE_HUMAN
 					cout<<"Creating a constructor.\n";
+					#endif
 
 					LangElement* a_con = scope_elem->newLangElementToTopOfClass(lineNumber, LangTokenType::CONSTRUCTOR, TypeType::UNDEFINED, "new" );
 					listOfConstructors.push_back(a_con);
@@ -1816,7 +1818,7 @@ public:
 	void parse()
 	{
 		//rae::log("SourceParser::parse START.", currentFilenamePath.string(), "\n" );
-		cout<<"Parsing: "<<currentFilenamePath.string()<<"\n";
+		cout<<"\nParsing: "<<currentFilenamePath.string()<<"\n";
 
 		if(currentFilenamePath.string() == "")
 			return;
@@ -5377,10 +5379,11 @@ This never gets called. Look in expecting NAME thing...
 			{
 				#ifdef DEBUG_RAE_PARSER
 				if(current_context_use->name() == debug_string_con)
-		  	{
-		  		cout<<"definitions are always valid.\n";
-		  	}
-		  	#endif
+			  	{
+			  		cout<<"definitions are always valid.\n";
+			  	}
+			  	#endif
+
 				return true;
 			}
 

@@ -42,6 +42,10 @@ public:
 	LangCompiler()
 	{
 		force_one_thread = true;
+
+		workingPath = boost::filesystem::current_path();
+		moduleSearchPaths.push_back( workingPath );
+		cout<<"Added current directory to module search paths: "<<moduleSearchPaths.back()<<"\n";
 	}
 
 	~LangCompiler()
@@ -83,6 +87,7 @@ public:
 
 	bool force_one_thread;
 
+	boost::filesystem::path workingPath;
 	vector<boost::filesystem::path> moduleSearchPaths;
 
 	void createRaeStdLib()
@@ -225,7 +230,7 @@ public:
 		}
 	}
 
-	void parse()
+	bool parse()
 	{
 
 		#if __cplusplus >= 201103L //c++11
@@ -280,6 +285,12 @@ public:
 		else //if force_one_thread
 		{
 			//rae::log("We have sourceFiles: ", sourceFiles.size(), "\n");;
+
+			if(sourceFiles.size() == 0)
+			{
+				cout<<"No source files added.\n";
+				return false;
+			}
 		
 			for(uint i = 0; i < sourceFiles.size(); i++)
 			{
@@ -298,19 +309,33 @@ public:
 				//thread* t1 = new thread( &SourceParser::parse, a_parser);
 				//parserThreads.push_back(t1);
 				
-				a_parser->parse();				
+				a_parser->parse();
 			}
 		}
 
-		
+		return true;
 	}
 
-	void write(string folder_path_to_write_to)
+	//Write to default path. Which is workingPath + "/cpp/"
+	bool write()
 	{
+		return write(workingPath.string() + "/cpp/");
+	}
+
+	bool write(string folder_path_to_write_to)
+	{
+		if(sourceParsers.size() == 0)
+		{
+			cout<<"No parsed sources.\n";
+			return false;
+		}
+
 		foreach(SourceParser* a_parser, sourceParsers)
 		{
 			a_parser->write(folder_path_to_write_to);
 		}
+
+		return true;
 	}
 
 	//we need a modulesList here...
@@ -336,25 +361,24 @@ int main (int argc, char * const argv[])
 	cout<<"Rae Compiler version 0.0.1\n";
     //rae::log("Rae Compiler version 0.0.1\n");
 
+	if(argc <= 1)
+	{
+		cout<<"No source files added.\n";
+		return -1;
+	}
+
 	LangCompiler langCompiler;
 
 	langCompiler.createRaeStdLib();
 
-	langCompiler.addModuleSearchPath("/Users/joonaz/Dropbox/jonas/2014/ohjelmointi/rae_programming_language/");
+	for(uint i = 1; i < argc; i++)
+	{
+		cout<<"Adding source file: "<<argv[i]<<"\n";
+		langCompiler.addSourceFile(argv[i]);
+	}
 
-	//langCompiler.addSourceFile("/Users/joonaz/Dropbox/jonas/2014/ohjelmointi/rae_programming_language/rae/examples/HelloWorld.rae");
-	//langCompiler.addSourceFile("/Users/joonaz/Dropbox/jonas/2014/ohjelmointi/rae_programming_language/rae/examples/Simple.rae");
-	//langCompiler.addSourceFile("/Users/joonaz/Dropbox/jonas/2014/ohjelmointi/rae_programming_language/rae/examples/RaeTester.rae");
-	langCompiler.addSourceFile("/Users/joonaz/Dropbox/jonas/2014/ohjelmointi/rae_programming_language/rae/examples/OptTester.rae");
-	
-	//for(uint i = 0; i < 8; i++)
-	//{
-	//	langCompiler.addSourceFile("dummy");
-	//}
-	
 	langCompiler.parse();
-
-	langCompiler.write("/Users/joonaz/Dropbox/jonas/2014/ohjelmointi/rae_programming_language/cpp/");
+	langCompiler.write();
 
 	return 0;
 }
