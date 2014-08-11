@@ -2,6 +2,7 @@
 #if __cplusplus >= 201103L //c++11
 	#include <mutex>
 
+#include <stdarg.h>
 
 namespace rae
 {

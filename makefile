@@ -1,9 +1,39 @@
-
-
 CXX	:= g++
 CXXFLAGS := -g
-INCLUDES := -I. -I./rae_compiler/rae_compiler/ -I../boost_uusi/usr_local_include/
-LIBS     := -L../boost_uusi/usr_local_lib/ -lboost_chrono -lboost_filesystem -lboost_system
+INCLUDES := -I. -I./rae_compiler/rae_compiler/
+#LIBS     := -L../boost_uusi/usr_local_lib/ -lboost_chrono -lboost_filesystem -lboost_system
+
+ifeq ($(OS),Windows_NT)
+    #CCFLAGS += -D WIN32
+    ifeq ($(PROCESSOR_ARCHITECTURE),AMD64)
+        #CCFLAGS += -D AMD64
+    endif
+    ifeq ($(PROCESSOR_ARCHITECTURE),x86)
+        #CCFLAGS += -D IA32
+    endif
+else
+    UNAME_S := $(shell uname -s)
+    ifeq ($(UNAME_S),Linux)
+        #CCFLAGS += -D LINUX
+        INCLUDES += -I/home/joonaz/ohjelmat/boost_1_53_0/
+		LIBS     := -L/home/joonaz/ohjelmat/boost_1_53_0/ -L/usr/lib/ -lboost_chrono -lboost_filesystem -lboost_system
+    endif
+    ifeq ($(UNAME_S),Darwin)
+        #CCFLAGS += -D OSX
+        INCLUDES += -I../boost_uusi/usr_local_include/
+		LIBS     := -L../boost_uusi/usr_local_lib/ -lboost_chrono -lboost_filesystem -lboost_system
+    endif
+    UNAME_P := $(shell uname -p)
+    ifeq ($(UNAME_P),x86_64)
+        #CCFLAGS += -D AMD64
+    endif
+    ifneq ($(filter %86,$(UNAME_P)),)
+        #CCFLAGS += -D IA32
+    endif
+    ifneq ($(filter arm%,$(UNAME_P)),)
+        #CCFLAGS += -D ARM
+    endif
+endif
 
 SRC_DIR := ./rae_compiler/rae_compiler/
 OBJECTS  := rae_compiler.o

@@ -25,7 +25,7 @@ typedef unsigned int uint;
 
 //////////////////////
 
-#include "rae_log.hpp"
+//#include "rae_log.hpp"
 
 //#define DEBUG_RAE_HUMAN
 //#define DEBUG_RAE_PARSER
