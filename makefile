@@ -1,3 +1,4 @@
+EXECUTABLE := rae_comp
 CXX	:= g++
 CXXFLAGS := -g
 INCLUDES := -I. -I./rae_compiler/rae_compiler/
@@ -38,8 +39,8 @@ endif
 SRC_DIR := ./rae_compiler/rae_compiler/
 OBJECTS  := rae_compiler.o
 
-my_program: $(OBJECTS)
-	$(CXX) $(OBJECTS) $(LIBS) -o rae_comp
+all: $(OBJECTS)
+	$(CXX) $(OBJECTS) $(LIBS) -o $(EXECUTABLE)
 
 rae_compiler.o: $(SRC_DIR)rae_compiler.cpp $(SRC_DIR)SourceParser.hpp $(SRC_DIR)LangElement.hpp $(SRC_DIR)StringFileWriter.hpp $(SRC_DIR)rae_helpers.hpp
 	$(CXX) $(INCLUDES) $(CXXFLAGS) -c $(SRC_DIR)rae_compiler.cpp -o rae_compiler.o
@@ -51,7 +52,7 @@ rae_compiler.o: $(SRC_DIR)rae_compiler.cpp $(SRC_DIR)SourceParser.hpp $(SRC_DIR)
 #	$(CXX) $(INCLUDES) $(CXXFLAGS) -c $(SRC_DIR)$(input) -o $(output)
 
 clean:
-	rm *.o rae_comp
+	rm *.o $(EXECUTABLE)
 
 #opttester:
 #	g++ -I./cpp/ ./cpp/rae/examples/OptTester.cpp -o opt_tester
@@ -71,7 +72,8 @@ raehello:
 #	#g++ -I./cpp/ ./cpp/rae/examples/Simple.cpp -o rae_simple
 #	#g++ -I./cpp/ ./cpp/rae/examples/RaeTester.cpp ./cpp/rae/examples/Tester.cpp -o rae_tester
 #
-#run:
+run:
+	./$(EXECUTABLE) ./rae/examples/HelloWorld.rae
 #	#./rae_hello
 #	#./rae_simple
 #	./rae_tester

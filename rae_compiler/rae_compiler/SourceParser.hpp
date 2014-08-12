@@ -231,6 +231,7 @@ public:
 		//m_returnToExpectToken = LangTokenType::UNDEFINED;
 		m_expectingToken = LangTokenType::UNDEFINED;
 		m_expectingTypeType = TypeType::UNDEFINED;
+		m_expectingRole = Role::UNDEFINED;
 		expectingChar = 'T';
 		foundToken = LangTokenType::UNDEFINED;
 
@@ -299,6 +300,10 @@ public:
 	public: TypeType::e expectingTypeType(){ return m_expectingTypeType; }
 	public: void expectingTypeType(TypeType::e set){ m_expectingTypeType = set; }
 	protected: TypeType::e m_expectingTypeType;
+
+	public: Role::e expectingRole(){ return m_expectingRole; }
+	public: void expectingRole(Role::e set){ m_expectingRole = set; }
+	protected: Role::e m_expectingRole;
 
 	public:
 	int expectingChar;// = 'T';
@@ -1144,10 +1149,10 @@ public:
 	}
 
 
-	LangElement* newDefineBuiltInType(BuiltInType::e set_built_in_type, string set_type, string set_name = "")
+	LangElement* newDefineBuiltInType(BuiltInType::e set_built_in_type, Role::e set_role, string set_type, string set_name = "")
 	{
 		//LangElement* lang_elem = newLangElement(LangTokenType::DEFINE_BUILT_IN_TYPE, set_name, set_type);
-		LangElement* lang_elem = newLangElement(LangTokenType::DEFINE_REFERENCE, TypeType::BUILT_IN_TYPE, set_name, set_type);
+		LangElement* lang_elem = newLangElement(LangTokenType::DEFINE_REFERENCE, TypeType::BUILT_IN_TYPE, set_role, set_name, set_type);
 		lang_elem->builtInType(set_built_in_type);
 		//lang_elem->typeType(TypeType::BUILT_IN_TYPE);
 		
@@ -3607,23 +3612,63 @@ public:
 		{
 			//reserved words:
 
-			if( set_token == "\n" )
+
+			/*Role is kind of like context.
+				UNDEFINED,
+				GLOBAL,
+				INSIDE_CLASS,
+				FUNC_RETURN,
+				FUNC_PARAMETER,
+				INSIDE_FUNCTION
+			*/
+
+			/*if( expectingRole() == Role::UNDEFINED
+				|| expectingRole() == Role::GLOBAL
+				|| expectingRole() == Role::INSIDE_CLASS
+				)
 			{
-					newLine();
 			}
-			else if( set_token == ";" )
+			
+			if( expectingRole() == Role::FUNC_RETURN )
 			{
-				newLangElement(LangTokenType::SEMICOLON, TypeType::UNDEFINED, set_token);
-			}
-			else if( set_token == "{" )
+
+			}*/
+
+			if( expectingRole() != Role::FUNC_RETURN 
+				&& expectingRole() != Role::FUNC_PARAMETER
+				)
 			{
-				newScopeBegin();
+				//These things are not allowed with FUNC_RETURN or FUNC_PARAMETER:
+
+				if( set_token == "\n" )
+				{
+						newLine();
+				}
+				else if( set_token == ";" )
+				{
+					newLangElement(LangTokenType::SEMICOLON, TypeType::UNDEFINED, set_token);
+				}
+				else if( set_token == "{" )
+				{
+					newScopeBegin();
+				}
+				else if( set_token == "}" )
+				{
+					newScopeEnd();
+				}
+				else if( set_token == "func" )
+				{
+					#ifdef DEBUG_RAE
+					cout<<"Got func. Waiting func_definition.\n";
+					//rae::log("Got func. Waiting func_definition.\n");
+					#endif
+					expectingToken(LangTokenType::FUNC_DEFINITION);
+					newFunc();
+				}
 			}
-			else if( set_token == "}" )
-			{
-				newScopeEnd();
-			}
-			else if( set_token == "." )
+
+
+			if( set_token == "." )
 			{
 				if( previousElement() && (previousToken() == LangTokenType::NUMBER || previousToken() == LangTokenType::INIT_DATA) )
 				{
@@ -3684,15 +3729,6 @@ public:
 			{
 				expectingToken(LangTokenType::DEFINE_REFERENCE);
 				expectingTypeType(TypeType::LINK);
-			}
-			else if( set_token == "func" )
-			{
-				#ifdef DEBUG_RAE
-				cout<<"Got func. Waiting func_definition.\n";
-				//rae::log("Got func. Waiting func_definition.\n");
-				#endif
-				expectingToken(LangTokenType::FUNC_DEFINITION);
-				newFunc();
 			}
 			else if( set_token == "bool" )
 			{
@@ -4356,6 +4392,8 @@ This never gets called. Look in expecting NAME thing...
 				#endif
 				newParenthesisBegin(LangTokenType::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES, "(");
 				expectingRole(Role::FUNC_RETURN);
+				//doReturnToExpectToken();
+				expectingToken(LangTokenType::UNDEFINED);
 				//expectingToken(LangTokenType::FUNC_RETURN_TYPE);
 			}
 			else
@@ -4415,6 +4453,7 @@ This never gets called. Look in expecting NAME thing...
 				expectingToken(LangTokenType::FUNC_ARGUMENT_TYPE);
 			}
 		}
+		/*
 		else if( expectingToken() == LangTokenType::FUNC_RETURN_TYPE )
 		{
 			if( set_token[0] == ')' )
@@ -4441,31 +4480,6 @@ This never gets called. Look in expecting NAME thing...
 				if(currentFunc)
 				{
 					newDefineFuncReturn(set_token);
-					
-					/*
-					LangElement* lang_el = currentFunc->newLangElement(lineNumber, LangTokenType::DEFINE_FUNC_RETURN);
-					//currentFunc->addTypeToCurrentElement(set_token);
-					lang_el->type(set_token);//TODO here we'd need to check the
-					//userDefinedTypes if we have this, and mark it unknown if it's not...
-
-					if( BuiltInType::isBuiltInType(set_token) )
-					{
-						//ok.
-					}
-					else
-					{
-						LangElement* found_elem = searchToken(set_token);
-						if( found_elem )
-						{
-							
-						}
-						else
-						{
-							lang_el->isUnknownType(true);
-							addToUnknownDefinitions( lang_el );
-						}
-					}
-					*/
 				}
 				expectingToken(LangTokenType::FUNC_RETURN_NAME);
 				//record return type1, 2 , 3 etc.
@@ -4518,10 +4532,10 @@ This never gets called. Look in expecting NAME thing...
 				//rae::log("Got final ): >", set_token, "< Going for the func BODY.\n");
 				#endif
 				//finalize func
-				/*if( currentFunc )
-				{
-					currentFunc->newLangElement(lineNumber, LangTokenType::PARENTHESIS_END_FUNC_DEFINITION, ")");
-				}*/
+				//if( currentFunc )
+				//{
+					//currentFunc->newLangElement(lineNumber, LangTokenType::PARENTHESIS_END_FUNC_DEFINITION, ")");
+				//}
 				//TODO: check parenthesisStack:
 				newParenthesisEnd(LangTokenType::PARENTHESIS_END_FUNC_PARAM_TYPES, ")");
 
@@ -4542,19 +4556,19 @@ This never gets called. Look in expecting NAME thing...
 				#ifdef DEBUG_RAE
 				//rae::log("Got comma between param types.>", set_token, "< Waiting rest FUNC_ARGUMENT_TYPE.\n");
 				#endif
-				/*if( currentFunc )
-				{
-					currentFunc->newLangElement(lineNumber, LangTokenType::COMMA, ",");
-				}*/
+				//if( currentFunc )
+				//{
+					//currentFunc->newLangElement(lineNumber, LangTokenType::COMMA, ",");
+				//}
 				newLangElement(LangTokenType::COMMA, TypeType::UNDEFINED, ",");
 				expectingToken(LangTokenType::FUNC_ARGUMENT_TYPE);
 			}
 			else if(set_token == "override")
 			{
-				/*if(currentFunc)
-				{
-					currentFunc->newLangElement(lineNumber, LangTokenType::OVERRIDE);
-				}*/
+				//if(currentFunc)
+				//{
+					//currentFunc->newLangElement(lineNumber, LangTokenType::OVERRIDE);
+				//}
 				newLangElement(LangTokenType::OVERRIDE, TypeType::UNDEFINED, set_token);
 			}
 			else if( set_token == "vector" )//Ooh, it's a vector
@@ -4562,10 +4576,10 @@ This never gets called. Look in expecting NAME thing...
 				#ifdef DEBUG_RAE
 				//rae::log("Got comma between param types.>", set_token, "< Waiting rest FUNC_ARGUMENT_TYPE.\n");
 				#endif
-				/*if(currentReference)
-				{
-					currentReference->typeType(TypeType::C_ARRAY);
-				}*/
+				//if(currentReference)
+				//{
+					//currentReference->typeType(TypeType::C_ARRAY);
+				//}
 				cout<<"TODO enable vector FUNC_ARGUMENTs.\n";
 				//returnToExpect( LangTokenType::FUNC_ARGUMENT_NAME );
 				//expectingToken( LangTokenType::VECTOR_STUFF );
@@ -4585,28 +4599,28 @@ This never gets called. Look in expecting NAME thing...
 				{
 					//replace these with a new func:
 					newDefineFuncArgument(set_token);
-					/*
-					currentFunc->newLangElement(lineNumber, LangTokenType::DEFINE_FUNC_ARGUMENT);
-					currentFunc->addTypeToCurrentElement(set_token);
+					
+					//currentFunc->newLangElement(lineNumber, LangTokenType::DEFINE_FUNC_ARGUMENT);
+					//currentFunc->addTypeToCurrentElement(set_token);
 
-					if( BuiltInType::isBuiltInType(set_token) )
-					{
-						//ok.
-					}
-					else
-					{
-						LangElement* found_elem = searchToken(set_token);
-						if( found_elem )
-						{
-							
-						}
-						else
-						{
-							currentFunc->currentElement()->isUnknownType(true);
-							addToUnknownDefinitions( currentFunc->currentElement() );
-						}
-					}
-					*/
+//					if( BuiltInType::isBuiltInType(set_token) )
+	//				{
+		//				//ok.
+			//		}
+				//	else
+					//{
+						//LangElement* found_elem = searchToken(set_token);
+						//if( found_elem )
+						//{
+						//	
+						//}
+						//else
+						//{
+						//	currentFunc->currentElement()->isUnknownType(true);
+						//	addToUnknownDefinitions( currentFunc->currentElement() );
+						//}
+					//}
+					
 				}
 				expectingToken(LangTokenType::FUNC_ARGUMENT_NAME);
 				//record return type1, 2 , 3 etc.
@@ -4635,10 +4649,10 @@ This never gets called. Look in expecting NAME thing...
 				//rae::log("Got final ), func_param not named: >", set_token, "< Going for the func BODY.\n");
 				#endif
 				//finalize func
-				/*if( currentFunc )
-				{
-					currentFunc->newLangElement(lineNumber, LangTokenType::PARENTHESIS_END_FUNC_DEFINITION, ")");
-				}*/
+				//if( currentFunc )
+				//{
+				//	currentFunc->newLangElement(lineNumber, LangTokenType::PARENTHESIS_END_FUNC_DEFINITION, ")");
+				//}
 				
 				//TODO: check parenthesisStack:
 				newParenthesisEnd(LangTokenType::PARENTHESIS_END_FUNC_PARAM_TYPES, ")");
@@ -4710,6 +4724,7 @@ This never gets called. Look in expecting NAME thing...
 				//expectingToken = LangTokenType::FUNC_ARGUMENT_TYPE;
 				//record return type1, 2 , 3 etc.
 			}
+
 		}
 		else
 		{
@@ -4719,7 +4734,7 @@ This never gets called. Look in expecting NAME thing...
 			//expectingToken = LangTokenType::UNDEFINED;
 			doReturnToExpectToken();
 		}
-	
+	*/
 	}
 
 	

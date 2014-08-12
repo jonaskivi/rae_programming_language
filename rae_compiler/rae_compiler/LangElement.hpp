@@ -938,7 +938,7 @@ public:
 		m_langTokenType = LangTokenType::UNDEFINED;
 		m_typeType = TypeType::UNDEFINED;
 		m_builtInType = BuiltInType::UNDEFINED;
-		m_role = TypeType::UNDEFINED;
+		m_role = Role::UNDEFINED;
 		m_currentElement = 0;
 		m_parent = 0;
 		m_initData = 0;
