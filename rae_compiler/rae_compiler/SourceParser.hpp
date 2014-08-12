@@ -1152,8 +1152,9 @@ public:
 	LangElement* newDefineBuiltInType(BuiltInType::e set_built_in_type, Role::e set_role, string set_type, string set_name = "")
 	{
 		//LangElement* lang_elem = newLangElement(LangTokenType::DEFINE_BUILT_IN_TYPE, set_name, set_type);
-		LangElement* lang_elem = newLangElement(LangTokenType::DEFINE_REFERENCE, TypeType::BUILT_IN_TYPE, set_role, set_name, set_type);
+		LangElement* lang_elem = newLangElement(LangTokenType::DEFINE_REFERENCE, TypeType::BUILT_IN_TYPE, set_name, set_type);
 		lang_elem->builtInType(set_built_in_type);
+		lang_elem->role(set_role);
 		//lang_elem->typeType(TypeType::BUILT_IN_TYPE);
 		
 		currentReference = lang_elem;
@@ -1313,10 +1314,11 @@ public:
 		return lang_elem;
 	}
 
-	LangElement* newDefineReference(TypeType::e set_type_type, LangElement* maybe_found_class, string set_type, string set_name = "")
+	LangElement* newDefineReference(TypeType::e set_type_type, Role::e set_role, LangElement* maybe_found_class, string set_type, string set_name = "")
 	{
 		LangElement* lang_elem = newLangElement(LangTokenType::DEFINE_REFERENCE, set_type_type, set_name, set_type);
 		//lang_elem->typeType(TypeType::REF);
+		lang_elem->role(set_role);
 		currentReference = lang_elem;
 
 		if(maybe_found_class)
@@ -1340,6 +1342,7 @@ public:
 			if( set_type_type == TypeType::REF )
 			{
 				listOfAutoInitObjects.push_back(lang_elem);
+				//TODO VAL and OPT?
 			}
 		}
 
@@ -3633,42 +3636,43 @@ public:
 			{
 
 			}*/
-
+			
+			/*
 			if( expectingRole() != Role::FUNC_RETURN 
 				&& expectingRole() != Role::FUNC_PARAMETER
 				)
 			{
 				//These things are not allowed with FUNC_RETURN or FUNC_PARAMETER:
-
-				if( set_token == "\n" )
-				{
-						newLine();
-				}
-				else if( set_token == ";" )
-				{
-					newLangElement(LangTokenType::SEMICOLON, TypeType::UNDEFINED, set_token);
-				}
-				else if( set_token == "{" )
-				{
-					newScopeBegin();
-				}
-				else if( set_token == "}" )
-				{
-					newScopeEnd();
-				}
-				else if( set_token == "func" )
-				{
-					#ifdef DEBUG_RAE
-					cout<<"Got func. Waiting func_definition.\n";
-					//rae::log("Got func. Waiting func_definition.\n");
-					#endif
-					expectingToken(LangTokenType::FUNC_DEFINITION);
-					newFunc();
-				}
 			}
+			*/
 
 
-			if( set_token == "." )
+			if( set_token == "\n" )
+			{
+					newLine();
+			}
+			else if( set_token == ";" )
+			{
+				newLangElement(LangTokenType::SEMICOLON, TypeType::UNDEFINED, set_token);
+			}
+			else if( set_token == "{" )
+			{
+				newScopeBegin();
+			}
+			else if( set_token == "}" )
+			{
+				newScopeEnd();
+			}
+			else if( set_token == "func" )
+			{
+				#ifdef DEBUG_RAE
+				cout<<"Got func. Waiting func_definition.\n";
+				//rae::log("Got func. Waiting func_definition.\n");
+				#endif
+				expectingToken(LangTokenType::FUNC_DEFINITION);
+				newFunc();
+			}
+			else if( set_token == "." )
 			{
 				if( previousElement() && (previousToken() == LangTokenType::NUMBER || previousToken() == LangTokenType::INIT_DATA) )
 				{
@@ -3699,15 +3703,27 @@ public:
 				}
 				*/
 				
-				LangTokenType::e parenthesis_type = parenthesisStackTokenType();
-
-				if( parenthesis_type == LangTokenType::PARENTHESIS_BEGIN_LOG || parenthesis_type == LangTokenType::PARENTHESIS_BEGIN_LOG_LN )
+				if( expectingRole() == Role::FUNC_RETURN )
 				{
-					newLangElement(LangTokenType::LOG_SEPARATOR, TypeType::UNDEFINED, set_token);//it is still a comma "," but we write it out as << for C++
+					//TODO: Hmm. These are the same as normal case. So we could just remove the expectingRoles here...
+					newLangElement(LangTokenType::COMMA, TypeType::UNDEFINED, ",");
 				}
-				else
+				else if( expectingRole() == Role::FUNC_PARAMETER )
 				{
-					newLangElement(LangTokenType::COMMA, TypeType::UNDEFINED, set_token);
+					newLangElement(LangTokenType::COMMA, TypeType::UNDEFINED, ",");
+				}
+				else //Role::UNDEFINED or something. Normal function body etc.
+				{
+					LangTokenType::e parenthesis_type = parenthesisStackTokenType();
+
+					if( parenthesis_type == LangTokenType::PARENTHESIS_BEGIN_LOG || parenthesis_type == LangTokenType::PARENTHESIS_BEGIN_LOG_LN )
+					{
+						newLangElement(LangTokenType::LOG_SEPARATOR, TypeType::UNDEFINED, set_token);//it is still a comma "," but we write it out as << for C++
+					}
+					else
+					{
+						newLangElement(LangTokenType::COMMA, TypeType::UNDEFINED, set_token);
+					}
 				}
 			}
 			else if( set_token == "val" )
@@ -3733,62 +3749,62 @@ public:
 			else if( set_token == "bool" )
 			{
 				expectingToken(LangTokenType::DEFINE_BUILT_IN_TYPE_NAME);
-				newDefineBuiltInType(BuiltInType::BOOL, set_token);
+				newDefineBuiltInType(BuiltInType::BOOL, expectingRole(), set_token);
 			}
 			else if( set_token == "byte" )
 			{
 				expectingToken(LangTokenType::DEFINE_BUILT_IN_TYPE_NAME);
-				newDefineBuiltInType(BuiltInType::BYTE, set_token);
+				newDefineBuiltInType(BuiltInType::BYTE, expectingRole(), set_token);
 			}
 			else if( set_token == "ubyte" )
 			{
 				expectingToken(LangTokenType::DEFINE_BUILT_IN_TYPE_NAME);
-				newDefineBuiltInType(BuiltInType::UBYTE, set_token);
+				newDefineBuiltInType(BuiltInType::UBYTE, expectingRole(), set_token);
 			}
 			else if( set_token == "char" )
 			{
 				expectingToken(LangTokenType::DEFINE_BUILT_IN_TYPE_NAME);
-				newDefineBuiltInType(BuiltInType::CHAR, set_token);
+				newDefineBuiltInType(BuiltInType::CHAR, expectingRole(), set_token);
 			}
 			else if( set_token == "wchar" )
 			{
 				expectingToken(LangTokenType::DEFINE_BUILT_IN_TYPE_NAME);
-				newDefineBuiltInType(BuiltInType::WCHAR, set_token);
+				newDefineBuiltInType(BuiltInType::WCHAR, expectingRole(), set_token);
 			}
 			else if( set_token == "dchar" )
 			{
 				expectingToken(LangTokenType::DEFINE_BUILT_IN_TYPE_NAME);
-				newDefineBuiltInType(BuiltInType::DCHAR, set_token);
+				newDefineBuiltInType(BuiltInType::DCHAR, expectingRole(), set_token);
 			}
 			else if( set_token == "int" )
 			{
 				expectingToken(LangTokenType::DEFINE_BUILT_IN_TYPE_NAME);
-				newDefineBuiltInType(BuiltInType::INT, set_token);
+				newDefineBuiltInType(BuiltInType::INT, expectingRole(), set_token);
 			}
 			else if( set_token == "uint" )
 			{
 				expectingToken(LangTokenType::DEFINE_BUILT_IN_TYPE_NAME);
-				newDefineBuiltInType(BuiltInType::UINT, set_token);
+				newDefineBuiltInType(BuiltInType::UINT, expectingRole(), set_token);
 			}
 			else if( set_token == "long" )
 			{
 				expectingToken(LangTokenType::DEFINE_BUILT_IN_TYPE_NAME);
-				newDefineBuiltInType(BuiltInType::LONG, set_token);
+				newDefineBuiltInType(BuiltInType::LONG, expectingRole(), set_token);
 			}
 			else if( set_token == "ulong" )
 			{
 				expectingToken(LangTokenType::DEFINE_BUILT_IN_TYPE_NAME);
-				newDefineBuiltInType(BuiltInType::ULONG, set_token);
+				newDefineBuiltInType(BuiltInType::ULONG, expectingRole(), set_token);
 			}
 			else if( set_token == "float" )
 			{
 				expectingToken(LangTokenType::DEFINE_BUILT_IN_TYPE_NAME);
-				newDefineBuiltInType(BuiltInType::FLOAT, set_token);
+				newDefineBuiltInType(BuiltInType::FLOAT, expectingRole(), set_token);
 			}
 			else if( set_token == "double" )
 			{
 				expectingToken(LangTokenType::DEFINE_BUILT_IN_TYPE_NAME);
-				newDefineBuiltInType(BuiltInType::DOUBLE, set_token);
+				newDefineBuiltInType(BuiltInType::DOUBLE, expectingRole(), set_token);
 			}
 			/*else if( set_token == "real" )
 			{
@@ -3798,7 +3814,7 @@ public:
 			else if( set_token == "string" )
 			{
 				expectingToken(LangTokenType::DEFINE_BUILT_IN_TYPE_NAME);
-				newDefineBuiltInType(BuiltInType::STRING, set_token);
+				newDefineBuiltInType(BuiltInType::STRING, expectingRole(), set_token);
 			}
 			else if( set_token == "vector" )
 			{
@@ -3816,6 +3832,11 @@ public:
 					previousElement()->typeType(TypeType::TEMPLATE);
 					expectingToken(LangTokenType::CLASS_TEMPLATE_SECOND_TYPE);
 				}
+				else if( expectingRole() == Role::FUNC_PARAMETER )
+				{
+					//TODO: check parenthesisStack:
+					newParenthesisBegin(LangTokenType::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES, "(");
+				}
 				else //normal (
 				{
 					//cout<<"normal (\n";
@@ -3827,8 +3848,27 @@ public:
 			}
 			else if( set_token == ")" )
 			{
-				//cout<<"normal )\n";
-				newParenthesisEnd(LangTokenType::PARENTHESIS_END, set_token);
+				if( expectingRole() == Role::FUNC_RETURN )
+				{
+					cout<<"Got ending ) for FUNC_RETURNs. Going back to FUNC_DEFINITION.\n";
+					expectingRole(Role::UNDEFINED);//could also be Role::FUNC_DEFINITION, but we don't need that, so.
+					//TODO: check parenthesisStack:
+					newParenthesisEnd(LangTokenType::PARENTHESIS_END_FUNC_RETURN_TYPES, ")");
+					expectingToken(LangTokenType::FUNC_DEFINITION);
+				}
+				else if( expectingRole() == Role::FUNC_PARAMETER )
+				{
+					cout<<"Got ending ) for FUNC_PARAMETERs. Going back to UNDEFINED.\n";
+					expectingRole(Role::UNDEFINED);//could also be Role::FUNC_DEFINITION, but we don't need that, so.
+					//TODO: check parenthesisStack:
+					newParenthesisEnd(LangTokenType::PARENTHESIS_END_FUNC_PARAM_TYPES, ")");
+					expectingToken(LangTokenType::UNDEFINED);
+				}
+				else
+				{
+					//cout<<"normal )\n";
+					newParenthesisEnd(LangTokenType::PARENTHESIS_END, set_token);
+				}
 			}
 			else if( set_token == "[" )
 			{
@@ -4259,7 +4299,22 @@ This never gets called. Look in expecting NAME thing...
 		}
 		else if( expectingToken() == LangTokenType::DEFINE_BUILT_IN_TYPE_NAME )
 		{
-			if( currentReference )
+			if(set_token == ")")
+			{
+				if(expectingRole() == Role::FUNC_RETURN )
+				{
+					cout<<"Got ending ) for FUNC_RETURNs. Going back to FUNC_DEFINITION.\n";
+					expectingRole(Role::UNDEFINED);//could also be Role::FUNC_DEFINITION, but we don't need that, so.
+					//TODO: check parenthesisStack:
+					newParenthesisEnd(LangTokenType::PARENTHESIS_END_FUNC_RETURN_TYPES, ")");
+					expectingToken(LangTokenType::FUNC_DEFINITION);
+				}
+				else
+				{
+					reportError(") parenthesis_end - can't be a name for built in type.\n");
+				}
+			}
+			else if( currentReference )
 			{
 				setNameAndCheckForPreviousDefinitions(currentReference, set_token);
 
@@ -4450,7 +4505,9 @@ This never gets called. Look in expecting NAME thing...
 						currentFunc->langTokenType( LangTokenType::MAIN );
 					}
 				}
-				expectingToken(LangTokenType::FUNC_ARGUMENT_TYPE);
+				//expectingToken(LangTokenType::FUNC_ARGUMENT_TYPE);
+				expectingRole(Role::FUNC_PARAMETER);
+				expectingToken(LangTokenType::UNDEFINED);
 			}
 		}
 		/*
@@ -5938,7 +5995,11 @@ This never gets called. Look in expecting NAME thing...
 								reportError("handleUserDefinedToken. expectingTypeType was UNDEFINED, when we found a class. Compiler error.");
 							}
 							
-							our_new_element = newDefineReference(expectingTypeType(), found_elem, set_token);
+							//expectingRole can be undefined for now. If it's set it's most likely
+							//just FUNC_RETURN or FUNC_ARGUMENT. But this remark is early days, so
+							//it might change in the future.
+
+							our_new_element = newDefineReference(expectingTypeType(), expectingRole(), found_elem, set_token);
 
 							/*if( clob->parentLangTokenType() == LangTokenType::CLASS )
 							{
@@ -7477,7 +7538,10 @@ This never gets called. Look in expecting NAME thing...
 					{	
 						writer.writeString(set_elem.typeInCpp());
 						writer.writeChar(' ');
-						writer.writeString(set_elem.name());
+						if(set_elem.role() != Role::FUNC_RETURN )
+						{
+							writer.writeString(set_elem.name());
+						}
 					}
 				}
 				else if( set_elem.typeType() == TypeType::REF
@@ -7494,7 +7558,10 @@ This never gets called. Look in expecting NAME thing...
 
 						writer.writeString(set_elem.typeInCpp());
 						writer.writeString("* ");
-						writer.writeString(set_elem.name());
+						if(set_elem.role() != Role::FUNC_RETURN )
+						{
+							writer.writeString(set_elem.name());
+						}
 					}
 					else
 					{	
@@ -7502,10 +7569,16 @@ This never gets called. Look in expecting NAME thing...
 						{
 							writer.writeString(set_elem.typeInCpp());
 							writer.writeString("* ");
-							writer.writeString(set_elem.name());
-							writer.writeString(" = new ");
-							writer.writeString(set_elem.typeInCpp());
-							writer.writeString("()");
+							if(set_elem.role() != Role::FUNC_RETURN)
+							{
+								writer.writeString(set_elem.name());
+							}
+							else if(set_elem.role() != Role::FUNC_RETURN && set_elem.role() != Role::FUNC_PARAMETER)
+							{
+								writer.writeString(" = new ");
+								writer.writeString(set_elem.typeInCpp());
+								writer.writeString("()");
+							}
 						}
 						else //opt or link
 						{
@@ -7513,16 +7586,25 @@ This never gets called. Look in expecting NAME thing...
 							{
 								writer.writeString(set_elem.typeInCpp());
 								writer.writeString("* ");
-								writer.writeString(set_elem.name());		
+								if(set_elem.role() != Role::FUNC_RETURN)
+								{
+									writer.writeString(set_elem.name());		
+								}
 							}
 							else
 							{
 								writer.writeString(set_elem.typeInCpp());
 								writer.writeString("* ");
-								writer.writeString(set_elem.name());
-								writer.writeString(" = new ");
-								writer.writeString(set_elem.typeInCpp());
-								writer.writeString("()");
+								if(set_elem.role() != Role::FUNC_RETURN)
+								{
+									writer.writeString(set_elem.name());
+								}
+								else if(set_elem.role() != Role::FUNC_RETURN && set_elem.role() != Role::FUNC_PARAMETER)
+								{
+									writer.writeString(" = new ");
+									writer.writeString(set_elem.typeInCpp());
+									writer.writeString("()");
+								}
 							}
 						}
 					}
@@ -7572,16 +7654,21 @@ This never gets called. Look in expecting NAME thing...
 					{
 						writer.writeString( set_elem.builtInTypeStringCpp() );
 						writer.writeChar(' ');
-						writer.writeString(set_elem.name());
-						
-						if( writer.nextToken() == LangTokenType::EQUALS )
+						if(set_elem.role() != Role::FUNC_RETURN)
 						{
-							//don't write initdata. it should come...
+							writer.writeString(set_elem.name());
 						}
-						else if( set_elem.initData() )
+						else if(set_elem.role() != Role::FUNC_RETURN && set_elem.role() != Role::FUNC_PARAMETER)
 						{
-							writer.writeString(" = ");
-							writer.writeString( set_elem.initData()->name() );
+							if( writer.nextToken() == LangTokenType::EQUALS )
+							{
+								//don't write initdata. it should come...
+							}
+							else if( set_elem.initData() )
+							{
+								writer.writeString(" = ");
+								writer.writeString( set_elem.initData()->name() );
+							}
 						}
 					}
 				}
@@ -7913,19 +8000,11 @@ This never gets called. Look in expecting NAME thing...
 					{
 						//NOT: reuse myelem //<-- That might be a good keyword for Rae! Not really.
 						//LangElement* myelem = set_elem.langElements.front();
-						LangElement* myelem = set_elem.searchFirst(LangTokenType::DEFINE_FUNC_RETURN);
-
+						
 						/*
-						if( myelem != 0 )
-						{
-							//rae::log("func_elem: front: ", myelem->langTokenTypeString();
-							writer.writeString( myelem->langTokenTypeString() );
-							writer.writeChar( '\n' );
-							writer.writeIndents();
-						}
-						*/
+						//THIS is how we used to do it. YAGNI.
 
-
+						LangElement* myelem = set_elem.searchFirst(LangTokenType::DEFINE_FUNC_RETURN);
 
 						if( myelem != 0 )
 						{
@@ -7948,12 +8027,71 @@ This never gets called. Look in expecting NAME thing...
 							writer.writeString( "void " );
 							//writer.writeChar( ' ' );
 						}
+						*/
+
+						LangElement* myelem = set_elem.searchFirst(LangTokenType::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES);
+
+						if( myelem != 0 )
+						{
+							if( myelem->langTokenType() == LangTokenType::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES )
+							{
+								LangElement* first_return_elem = myelem->nextElement();
+
+								if(first_return_elem != 0)
+								{
+									if( first_return_elem->langTokenType() == LangTokenType::PARENTHESIS_END_FUNC_RETURN_TYPES )
+									{
+										//Nothing between parentheses. Mark void return type.
+										////rae::log("No DEFINE_FUNC_RETURN: it was: ", myelem->toString();
+										writer.writeString( "void " );
+										//writer.writeChar( ' ' );		
+									}
+									/*else if( first_return_elem->langTokenType() == LangTokenType::DEFINE_REFERENCE )
+									{
+										//These three lines just document the return type name:
+										writer.writeString( "//return type name: " );
+										writer.writeString( first_return_elem->name() );
+										writer.writeChar( '\n' );
+										writer.writeIndents();
+										
+										if( set_elem.typeType() == TypeType::VAL )
+										{
+											writer.writeString( first_return_elem->typeInCpp() );
+										}
+										else if( set_elem.typeType() == TypeType::REF
+											|| set_elem.typeType() == TypeType::OPT
+											|| set_elem.typeType() == TypeType::LINK )
+										{
+											writer.writeString(set_elem.typeInCpp());
+											writer.writeString("* ");
+										} 
+										//TODO returning TypeType::TEMPLATE
+										else if( set_elem.typeType() == TypeType::BUILT_IN_TYPE )
+										{
+											writer.writeString( set_elem.builtInTypeStringCpp() );
+										}
+										//TODO returning TypeType::VECTOR
+										
+										writer.writeChar( ' ' );	
+									}
+									*/
+								}
+								else
+								{
+									reportError("Compiler error in func return type: ", &set_elem);		
+								}
+							}
+							else
+							{
+								reportError("No return_type parenthesis in func: ", &set_elem);
+							}
+						}
 
 						if( writer.isHeader() == false )//cpp
 						{
 							if( set_elem.langTokenType() != LangTokenType::MAIN && set_elem.parent() )
 							{
-								//This one does writes the class name in cpp func implementations.
+								//This one writes the class name in cpp func implementations.
 								//Class::funcName(params)
 								writer.writeString( set_elem.parent()->name() );
 								writer.writeString( "::" );
@@ -8152,6 +8290,9 @@ This never gets called. Look in expecting NAME thing...
 								}
 								else if( set_elem.langElements[i]->langTokenType() == LangTokenType::DEFINE_FUNC_ARGUMENT )
 								{
+									cout<<"DEFINE_FUNC_ARGUMENT should be removed now We'll see.\n";
+									assert(0);
+									
 									//if( set_elem.langElements[i]->isBuiltInType() )
 									if( set_elem.langElements[i]->typeType() == TypeType::BUILT_IN_TYPE )
 									{

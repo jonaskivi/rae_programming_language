@@ -26,8 +26,8 @@ public:
 	HelloWorld();//line: 20
 	~HelloWorld();//line: 24
 	public: void sayHello();//line: 29
-	public: //return type name: result
-	int32_t count(int32_t param1,  param2);//line: 38
+	publicint32_t /*possible error, unknown token:*/count(int32_t Tester* );//line: 38
+	
 	int32_t num;//line: 43
 	protected: int64_t anotherNumber;//line: 44
 	public: float afloat;//line: 45
@@ -37,5 +37,6 @@ public:
 	Tester* tester_opt;
 };
 
+int32_t  = main(std::string [/*possible error, unknown token:*/args)
 #endif // _rae_examples_HelloWorld_hpp_
 

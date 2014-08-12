@@ -1892,7 +1892,7 @@ public:
 		m_currentElement = lang_elem;//Should this be default for addElement too?
 		
 		#ifdef DEBUG_RAE
-			cout<<"this.name: "<<name()<<" LangElement.newLangElement: "<<LangTokenType::toString(set_lang_token_type)<<" name:>"<<set_name<<"< type: "<<set_type<<"\n");
+			cout<<"this.name: "<<name()<<" LangElement.newLangElement: "<<LangTokenType::toString(set_lang_token_type)<<" name:>"<<set_name<<"< type: "<<set_type<<"\n";
 			//rae::log("this.name: ",name()," LangElement.newLangElement: ",LangTokenType::toString(set_lang_token_type)," name:>",set_name,"< type: ",set_type,"\n");
 		#endif
 
@@ -1906,7 +1906,7 @@ public:
 		m_currentElement = lang_elem;//Should this be default for addElement too?
 		
 		#ifdef DEBUG_RAE
-			cout<<"this.name: "<<name()<<" LangElement.newLangElementToTop: "<<LangTokenType::toString(set_lang_token_type)<<" name:>"<<set_name<<"< type: "<<set_type<<"\n");
+			cout<<"this.name: "<<name()<<" LangElement.newLangElementToTop: "<<LangTokenType::toString(set_lang_token_type)<<" name:>"<<set_name<<"< type: "<<set_type<<"\n";
 			//rae::log("this.name: ",name()," LangElement.newLangElementToTop: ",LangTokenType::toString(set_lang_token_type)," name:>",set_name,"< type: ",set_type,"\n");
 		#endif
 
@@ -1921,7 +1921,7 @@ public:
 		m_currentElement = lang_elem;//Should this be default for addElement too?
 		
 		#ifdef DEBUG_RAE
-			cout<<"this.name: "<<name()<<" LangElement.newLangElementToTop: "<<LangTokenType::toString(set_lang_token_type)<<" name:>"<<set_name<<"< type: "<<set_type<<"\n");
+			cout<<"this.name: "<<name()<<" LangElement.newLangElementToTop: "<<LangTokenType::toString(set_lang_token_type)<<" name:>"<<set_name<<"< type: "<<set_type<<"\n";
 			//rae::log("this.name: ",name()," LangElement.newLangElementToTop: ",LangTokenType::toString(set_lang_token_type)," name:>",set_name,"< type: ",set_type,"\n");
 		#endif
 
@@ -1936,7 +1936,7 @@ public:
 		m_currentElement = lang_elem;//Should this be default for addElement too?
 		
 		#ifdef DEBUG_RAE
-			cout<<"this.name: "<<name()<<" LangElement.newLangElementToTopOfFunc: "<<LangTokenType::toString(set_lang_token_type)<<" name:>"<<set_name<<"< type: "<<set_type<<"\n");
+			cout<<"this.name: "<<name()<<" LangElement.newLangElementToTopOfFunc: "<<LangTokenType::toString(set_lang_token_type)<<" name:>"<<set_name<<"< type: "<<set_type<<"\n";
 			//rae::log("this.name: ",name()," LangElement.newLangElementToTop: ",LangTokenType::toString(set_lang_token_type)," name:>",set_name,"< type: ",set_type,"\n");
 		#endif
 
@@ -1951,7 +1951,7 @@ public:
 		m_currentElement = lang_elem;//Should this be default for addElement too?
 		
 		#ifdef DEBUG_RAE
-			cout<<"this.name: "<<name()<<" LangElement.newLangElementToTopOfClass: "<<LangTokenType::toString(set_lang_token_type)<<" name:>"<<set_name<<"< type: "<<set_type<<"\n");
+			cout<<"this.name: "<<name()<<" LangElement.newLangElementToTopOfClass: "<<LangTokenType::toString(set_lang_token_type)<<" name:>"<<set_name<<"< type: "<<set_type<<"\n";
 			//rae::log("this.name: ",name()," LangElement.newLangElementToTop: ",LangTokenType::toString(set_lang_token_type)," name:>",set_name,"< type: ",set_type,"\n");
 		#endif
 

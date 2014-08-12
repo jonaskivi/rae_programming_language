@@ -41,13 +41,27 @@ void HelloWorld::sayHello()
 	/*possible error, unknown token:*/tester_opt?->/*possible error, unknown token:*/logMe();
 }
 
-//return type name: result
-int32_t HelloWorld::count(int32_t param1,  param2)
+HelloWorld::publicint32_t /*possible error, unknown token:*/count(int32_t Tester* )
 {
-	return(param1 + param2->/*possible error, unknown token:*/data);
+	return(param1 + param2->data);
 }
 
-//return type name: 
-int32_t main(int argc, char* const argv[])//semicolons are allowed, but not required.
-"5 + 2 = ";//the following line will not run if tester_lnk is null.
-
+rae.examples.HelloWorld::int32_t  = main(std::string [/*possible error, unknown token:*/args)
+{
+	HelloWorld hello; //semicolons are allowed, but not required.
+	
+	Tester* tester_lnk = hello.tester;//line: 57
+	
+	hello.sayHello();//line: 59
+	
+	std::cout<<"5 + 2 = ";//line: 61
+	
+	//the following line will not run if tester_lnk is null.
+	std::cout<<hello./*possible error, unknown token:*/count(hello.num, Tester* param2/*possible error, unknown token:*/tester_lnk?)<<"\n";//line: 64
+	
+	hello.tester.data = 3;//line: 66
+	
+	return(0);//line: 68
+	delete tester_lnk;//line: 52
+	delete param2;
+}
