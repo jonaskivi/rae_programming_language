@@ -1271,6 +1271,10 @@ public:
 
 	LangElement* newDefineFuncArgument(string set_type, string set_name = "")
 	{
+
+		cout<<"Remove this FUNC_ARGUMENT thing, and just use parent() which is scope, to know if it's inside a func def. Use DEFINE_REFERENCE for them instead.\n";
+		assert(0);
+
 		LangElement* lang_elem = newLangElement(LangTokenType::DEFINE_FUNC_ARGUMENT, TypeType::UNDEFINED, set_name, set_type);
 		currentReference = lang_elem;
 
@@ -1418,7 +1422,7 @@ public:
 
 		return lang_elem;
 	}
-
+/*
 	LangElement* newUseArray(LangElement* set_elem)
 	{
 		if( set_elem == 0 )
@@ -1437,7 +1441,7 @@ public:
 		#endif
 		return lang_elem;
 	}
-
+*/
 	LangElement* newUseVector(LangElement* set_elem)
 	{
 		if( set_elem == 0 )
@@ -3395,7 +3399,7 @@ public:
 				}
 			}
 		}
-		else if( expectingToken() == LangTokenType::DEFINE_C_ARRAY_NAME )
+		/*else if( expectingToken() == LangTokenType::DEFINE_C_ARRAY_NAME )
 		{
 			if( set_token == "[" )
 			{
@@ -3429,7 +3433,7 @@ public:
 				//expectingToken = LangTokenType::UNDEFINED;
 				doReturnToExpectToken();
 			}
-		}
+		}*/
 		else if( expectingToken() == LangTokenType::ARRAY_VECTOR_STUFF )
 		{
 			if( set_token == "[" )
@@ -3794,6 +3798,9 @@ public:
 			{
 				//cout<<"BRACKET we got a bracket in the normal place and it is strange!\n";
 
+				cout<<"Wise people say, this should never get called. SourceParser line 3806.\n";
+				assert(0);
+
 				if(previousElement())
 				{
 					if( previousElement()->langTokenType() == LangTokenType::DEFINE_REFERENCE )
@@ -3802,6 +3809,8 @@ public:
 !!!!!!!!!!!!!!!!!!!OK
 This never gets called. Look in expecting NAME thing...
 						*/
+
+						
 
 						#ifdef DEBUG_RAE_PARSER
 						cout<<"bracket, make previous definition a DEFINE_VECTOR.\n";
@@ -4604,6 +4613,9 @@ This never gets called. Look in expecting NAME thing...
 		}
 		else if( expectingToken() == LangTokenType::FUNC_ARGUMENT_NAME )
 		{
+			cout<<"Remove this FUNC_ARGUMENT thing, and just use parent() which is scope, to know if it's inside a func def. Use DEFINE_REFERENCE for them instead.\n";
+			assert(0);
+
 			if( set_token[0] == '(' )
 			{
 				//rae::log("ERROR: ");
@@ -4649,7 +4661,10 @@ This never gets called. Look in expecting NAME thing...
 				#endif
 				if(currentReference)
 				{
-					currentReference->typeType(TypeType::C_ARRAY);
+					expectingToken(LangTokenType::ARRAY_VECTOR_STUFF);
+					//cout<<"Got a bracket. TODO something with it. VECTOR\n";
+					//assert(0);
+					//currentReference->typeType(TypeType::C_ARRAY);
 				}
 			}
 			else if( set_token[0] == ']' )//just ignore...
@@ -4658,6 +4673,7 @@ This never gets called. Look in expecting NAME thing...
 				//rae::log("Got comma between param types.>", set_token, "< Waiting rest FUNC_ARGUMENT_TYPE.\n");
 				#endif
 				//ignore
+				reportError("An ending array bracket ] in a strange place. Element before: " + previousElement()->toString() );
 			}
 			else if( set_token[0] == '=' )//ooh, we are getting init_data...
 			{
@@ -5854,7 +5870,11 @@ This never gets called. Look in expecting NAME thing...
 				else
 				{*/
 					//our_array_definition->langTokenType(LangTokenType::DEFINE_ARRAY);
-				our_array_definition->typeType(TypeType::C_ARRAY);
+				
+				cout<<"Got a bracket end. TODO something with it. VECTOR\n";
+				assert(0);
+				//////////////////our_array_definition->typeType(TypeType::C_ARRAY);
+				
 				//}
 				
 				//setNameAndCheckForPreviousDefinitions
@@ -7119,13 +7139,13 @@ This never gets called. Look in expecting NAME thing...
 				}
 				//case LangTokenType::C_ARRAY_AUTO_INIT:
 				
-				else if(set_elem.typeType() == TypeType::C_ARRAY)
+				/*else if(set_elem.typeType() == TypeType::C_ARRAY)
 				{
 					writer.writeString(set_elem.name());
 					writer.writeString(" = new ");
 					writer.writeString(set_elem.typeInCpp());
 					writer.writeString("[10]");
-				}
+				}*/
 				else
 				{
 					reportError("writeElement: AUTO_INIT failed because typeType was invalid.");
@@ -7140,16 +7160,16 @@ This never gets called. Look in expecting NAME thing...
 					//writer.writeString("* ");
 					
 					//case LangTokenType::C_ARRAY_AUTO_FREE:
-					if( set_elem.typeType() == TypeType::C_ARRAY)
+					/*if( set_elem.typeType() == TypeType::C_ARRAY)
 					{
 						writer.writeString("delete[] ");
 						writer.writeString(set_elem.name());
 					}
 					else
-					{
+					{*/
 						writer.writeString("delete ");
 						writer.writeString(set_elem.name());
-					}
+					//}
 
 			break;
 			/*
@@ -7374,27 +7394,28 @@ This never gets called. Look in expecting NAME thing...
 			break;
 			case LangTokenType::BRACKET_BEGIN:
 				//if( set_elem.previousToken() == LangTokenType::DEFINE_ARRAY || set_elem.previousToken() == LangTokenType::DEFINE_ARRAY_IN_CLASS )
-				if( set_elem.previousToken() == LangTokenType::DEFINE_REFERENCE && set_elem.previousElement()->typeType() == TypeType::C_ARRAY )
-				{
+				
+				//if( set_elem.previousToken() == LangTokenType::DEFINE_REFERENCE && set_elem.previousElement()->typeType() == TypeType::C_ARRAY )
+				//{
 					//ignore them after definition.
-				}
-				else
-				{
+				//}
+				//else
+				//{
 					writer.writeString(set_elem.name());
-				}
+				//}
 			break;
 			case LangTokenType::BRACKET_END:
-				if( set_elem.previousToken() == LangTokenType::BRACKET_BEGIN
-					//&& (set_elem.previous2ndToken() == LangTokenType::DEFINE_ARRAY || set_elem.previous2ndToken() == LangTokenType::DEFINE_ARRAY_IN_CLASS)
-				   && (set_elem.previous2ndToken() == LangTokenType::DEFINE_REFERENCE && set_elem.previous2ndElement()->typeType() == TypeType::C_ARRAY )
-					)
-				{
+				//if( set_elem.previousToken() == LangTokenType::BRACKET_BEGIN
+					//NO: && (set_elem.previous2ndToken() == LangTokenType::DEFINE_ARRAY || set_elem.previous2ndToken() == LangTokenType::DEFINE_ARRAY_IN_CLASS)
+				   //&& (set_elem.previous2ndToken() == LangTokenType::DEFINE_REFERENCE && set_elem.previous2ndElement()->typeType() == TypeType::C_ARRAY )
+					//)
+				//{
 					//ignore them after definition.
-				}
-				else
-				{
+				//}
+				//else
+				//{
 					writer.writeString(set_elem.name());
-				}
+				//}
 			break;
 			case LangTokenType::BRACKET_DEFINE_ARRAY_BEGIN:
 				//writer.writeString("*");//a dynamic array is a pointer in C/C++
@@ -7550,7 +7571,7 @@ This never gets called. Look in expecting NAME thing...
 				}
 				//break;
 				//case LangTokenType::DEFINE_ARRAY_IN_CLASS:
-				else if( set_elem.typeType() == TypeType::C_ARRAY )
+				/*else if( set_elem.typeType() == TypeType::C_ARRAY )
 				{
 					if(set_elem.isInClass())
 					{
@@ -7574,7 +7595,7 @@ This never gets called. Look in expecting NAME thing...
 						writer.writeString(set_elem.typeInCpp());
 						writer.writeString("[10]");
 					}
-				}
+				}*/
 				//break;
 				//case LangTokenType::DEFINE_VECTOR_IN_CLASS:
 				else if( set_elem.typeType() == TypeType::VECTOR )
@@ -8126,11 +8147,11 @@ This never gets called. Look in expecting NAME thing...
 										writer.writeString( set_elem.langElements[i]->typeInCpp() );
 										writer.writeChar('*');	
 									}
-									else if( set_elem.langElements[i]->typeType() == TypeType::C_ARRAY )
+									/*else if( set_elem.langElements[i]->typeType() == TypeType::C_ARRAY )
 									{
 										writer.writeString( set_elem.langElements[i]->typeInCpp() );
 										writer.writeChar('*');	
-									}
+									}*/
 									else if( set_elem.langElements[i]->typeType() == TypeType::VECTOR )
 									{
 										writer.writeString( "std::vector<" );

@@ -11,7 +11,7 @@ enum e
 	LINK,
 	PTR,
 	BUILT_IN_TYPE,
-	C_ARRAY,
+	//ARRAY,
 	VECTOR,
 	TEMPLATE
 };
@@ -36,8 +36,8 @@ string toString(TypeType::e set)
 		return "TypeType::PTR";
 		case TypeType::BUILT_IN_TYPE:
 		return "TypeType::BUILT_IN_TYPE";
-		case TypeType::C_ARRAY:
-		return "TypeType::C_ARRAY";
+		//case TypeType::ARRAY:
+		//return "TypeType::ARRAY";
 		case TypeType::VECTOR:
 		return "TypeType::VECTOR";
 		case TypeType::TEMPLATE:
@@ -85,7 +85,7 @@ enum e
 
 	//DEFINE_ARRAY, //SomeClass[] an_array
 	//DEFINE_ARRAY_IN_CLASS,
-	DEFINE_C_ARRAY_NAME,
+	//////////DEFINE_C_ARRAY_NAME,
 	//////USE_ARRAY,
 
 	//DEFINE_VECTOR_IN_CLASS,

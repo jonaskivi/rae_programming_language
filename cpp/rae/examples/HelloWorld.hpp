@@ -27,7 +27,7 @@ public:
 	~HelloWorld();//line: 24
 	public: void sayHello();//line: 29
 	public: //return type name: result
-	int32_t count(int32_t param1, param2);//line: 38
+	int32_t count(int32_t param1,  param2);//line: 38
 	int32_t num;//line: 43
 	protected: int64_t anotherNumber;//line: 44
 	public: float afloat;//line: 45
