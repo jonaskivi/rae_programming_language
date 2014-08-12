@@ -1,5 +1,18 @@
 
 
+namespace Role
+{
+enum e
+{
+	UNDEFINED,
+	GLOBAL,
+	INSIDE_CLASS,
+	FUNC_RETURN,
+	FUNC_PARAMETER,
+	INSIDE_FUNCTION
+};	
+}
+
 namespace TypeType
 {
 enum e
@@ -925,6 +938,7 @@ public:
 		m_langTokenType = LangTokenType::UNDEFINED;
 		m_typeType = TypeType::UNDEFINED;
 		m_builtInType = BuiltInType::UNDEFINED;
+		m_role = TypeType::UNDEFINED;
 		m_currentElement = 0;
 		m_parent = 0;
 		m_initData = 0;
@@ -1005,6 +1019,7 @@ public:
 		res->m_isUnknownType = m_isUnknownType;
 		res->m_builtInType = m_builtInType;//must NOT be initialized after the next call to type().
 		res->m_typeType = m_typeType;
+		res->m_role = m_role;
 		res->m_type = m_type; //automatically tests if it is built_in_type.
 
 		foreach(LangElement* an_elem, langElements)
@@ -1331,6 +1346,10 @@ public:
 	public: TypeType::e typeType() { return m_typeType; }
 	public: void typeType(TypeType::e set) { m_typeType = set; }
 	protected: TypeType::e m_typeType;
+
+	public: Role::e role() { return m_role; }
+	public: void role(Role::e set) { m_role = set; }
+	protected: Role::e m_role;
 
 	//the type is here, if it's a built_in_type, NOW:
 	//The reason for this separate builtIntype thing is that

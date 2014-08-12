@@ -4355,7 +4355,8 @@ This never gets called. Look in expecting NAME thing...
 					//rae::log("Got func_def (. Waiting return_types.\n");
 				#endif
 				newParenthesisBegin(LangTokenType::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES, "(");
-				expectingToken(LangTokenType::FUNC_RETURN_TYPE);
+				expectingRole(Role::FUNC_RETURN);
+				//expectingToken(LangTokenType::FUNC_RETURN_TYPE);
 			}
 			else
 			{
