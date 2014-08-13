@@ -59,7 +59,7 @@ string toString(TypeType::e set)
 }
 }
 
-namespace LangTokenType
+namespace Token
 {
 enum e
 {
@@ -222,397 +222,397 @@ enum e
 	NEWLINE_BEFORE_SCOPE_END
 };
 
-	string toString(LangTokenType::e set)
+	string toString(Token::e set)
 	{
 		switch(set)
 		{
 			default:
-			return "ERROR LangTokenType:: not recognized.";
-			case LangTokenType::UNDEFINED:
-			return "LangTokenType::UNDEFINED";
-			case LangTokenType::EMPTY:
-			return "LangTokenType::EMPTY";
-			case LangTokenType::MODULE:
-			return "LangTokenType::MODULE";
-			case LangTokenType::MODULE_NAME:
-			return "LangTokenType::MODULE_NAME";
-			case LangTokenType::CLOSE_MODULE:
-			return "LangTokenType::CLOSE_MODULE";
-			case LangTokenType::IMPORT:
-			return "LangTokenType::IMPORT";
-			case LangTokenType::IMPORT_NAME:
-			return "LangTokenType::IMPORT_NAME";
-			case LangTokenType::CLASS:
-			return "LangTokenType::CLASS";
-			case LangTokenType::CLASS_NAME:
-			return "LangTokenType::CLASS_NAME";
-			case LangTokenType::CLASS_TEMPLATE_SECOND_TYPE:
-			return "LangTokenType::CLASS_TEMPLATE_SECOND_TYPE";
-			case LangTokenType::DEFINE_REFERENCE:
-			return "LangTokenType::DEFINE_REFERENCE";
-			//case LangTokenType::DEFINE_REFERENCE_IN_CLASS:
-			//return "LangTokenType::DEFINE_REFERENCE_IN_CLASS";
-			case LangTokenType::DEFINE_REFERENCE_NAME:
-			return "LangTokenType::DEFINE_REFERENCE_NAME";
-			case LangTokenType::USE_REFERENCE:
-			return "LangTokenType::USE_REFERENCE";
-			case LangTokenType::USE_MEMBER:
-			return "LangTokenType::USE_MEMBER";
+			return "ERROR Token:: not recognized.";
+			case Token::UNDEFINED:
+			return "Token::UNDEFINED";
+			case Token::EMPTY:
+			return "Token::EMPTY";
+			case Token::MODULE:
+			return "Token::MODULE";
+			case Token::MODULE_NAME:
+			return "Token::MODULE_NAME";
+			case Token::CLOSE_MODULE:
+			return "Token::CLOSE_MODULE";
+			case Token::IMPORT:
+			return "Token::IMPORT";
+			case Token::IMPORT_NAME:
+			return "Token::IMPORT_NAME";
+			case Token::CLASS:
+			return "Token::CLASS";
+			case Token::CLASS_NAME:
+			return "Token::CLASS_NAME";
+			case Token::CLASS_TEMPLATE_SECOND_TYPE:
+			return "Token::CLASS_TEMPLATE_SECOND_TYPE";
+			case Token::DEFINE_REFERENCE:
+			return "Token::DEFINE_REFERENCE";
+			//case Token::DEFINE_REFERENCE_IN_CLASS:
+			//return "Token::DEFINE_REFERENCE_IN_CLASS";
+			case Token::DEFINE_REFERENCE_NAME:
+			return "Token::DEFINE_REFERENCE_NAME";
+			case Token::USE_REFERENCE:
+			return "Token::USE_REFERENCE";
+			case Token::USE_MEMBER:
+			return "Token::USE_MEMBER";
 			
-			/*case LangTokenType::UNKNOWN_DEFINITION:
-			return "LangTokenType::UNKNOWN_DEFINITION";
-			case LangTokenType::UNKNOWN_USE_REFERENCE:
-			return "LangTokenType::UNKNOWN_USE_REFERENCE";
-			case LangTokenType::UNKNOWN_USE_MEMBER:
-			return "LangTokenType::UNKNOWN_USE_MEMBER";*/
+			/*case Token::UNKNOWN_DEFINITION:
+			return "Token::UNKNOWN_DEFINITION";
+			case Token::UNKNOWN_USE_REFERENCE:
+			return "Token::UNKNOWN_USE_REFERENCE";
+			case Token::UNKNOWN_USE_MEMBER:
+			return "Token::UNKNOWN_USE_MEMBER";*/
 
-			//case LangTokenType::DEFINE_ARRAY:
-			//return "LangTokenType::DEFINE_ARRAY";
-			//case LangTokenType::DEFINE_ARRAY_IN_CLASS:
-			//return "LangTokenType::DEFINE_ARRAY_IN_CLASS";
-			//case LangTokenType::USE_ARRAY:
-			//return "LangTokenType::USE_ARRAY";
+			//case Token::DEFINE_ARRAY:
+			//return "Token::DEFINE_ARRAY";
+			//case Token::DEFINE_ARRAY_IN_CLASS:
+			//return "Token::DEFINE_ARRAY_IN_CLASS";
+			//case Token::USE_ARRAY:
+			//return "Token::USE_ARRAY";
 
-			//case LangTokenType::DEFINE_VECTOR_IN_CLASS:
-			//return "LangTokenType::DEFINE_VECTOR_IN_CLASS";
-			//case LangTokenType::DEFINE_VECTOR:
-			//return "LangTokenType::DEFINE_VECTOR";
-			case LangTokenType::ARRAY_VECTOR_STUFF:
-			return "LangTokenType::ARRAY_VECTOR_STUFF";
-			case LangTokenType::VECTOR_STUFF:
-			return "LangTokenType::VECTOR_STUFF";
-			case LangTokenType::VECTOR_NAME:
-			return "LangTokenType::VECTOR_NAME";
-			//case LangTokenType::USE_VECTOR:
-			//return "LangTokenType::USE_VECTOR";
+			//case Token::DEFINE_VECTOR_IN_CLASS:
+			//return "Token::DEFINE_VECTOR_IN_CLASS";
+			//case Token::DEFINE_VECTOR:
+			//return "Token::DEFINE_VECTOR";
+			case Token::ARRAY_VECTOR_STUFF:
+			return "Token::ARRAY_VECTOR_STUFF";
+			case Token::VECTOR_STUFF:
+			return "Token::VECTOR_STUFF";
+			case Token::VECTOR_NAME:
+			return "Token::VECTOR_NAME";
+			//case Token::USE_VECTOR:
+			//return "Token::USE_VECTOR";
 
-			case LangTokenType::TEMPLATE_STUFF:
-			return "LangTokenType::TEMPLATE_STUFF";
-			case LangTokenType::TEMPLATE_NAME:
-			return "LangTokenType::TEMPLATE_NAME";
-			case LangTokenType::TEMPLATE_SECOND_TYPE:// firstType!(secondType) name
-			return "LangTokenType::TEMPLATE_SECOND_TYPE";
+			case Token::TEMPLATE_STUFF:
+			return "Token::TEMPLATE_STUFF";
+			case Token::TEMPLATE_NAME:
+			return "Token::TEMPLATE_NAME";
+			case Token::TEMPLATE_SECOND_TYPE:// firstType!(secondType) name
+			return "Token::TEMPLATE_SECOND_TYPE";
 
-			//case LangTokenType::DEFINE_BUILT_IN_TYPE:
-			//return "LangTokenType::DEFINE_BUILT_IN_TYPE";
-			//case LangTokenType::DEFINE_BUILT_IN_TYPE_IN_CLASS:
-			//return "LangTokenType::DEFINE_BUILT_IN_TYPE_IN_CLASS";
-			case LangTokenType::DEFINE_BUILT_IN_TYPE_NAME:
-			return "LangTokenType::DEFINE_BUILT_IN_TYPE_NAME";
-			//case LangTokenType::USE_BUILT_IN_TYPE:
-			//return "LangTokenType::USE_BUILT_IN_TYPE";
+			//case Token::DEFINE_BUILT_IN_TYPE:
+			//return "Token::DEFINE_BUILT_IN_TYPE";
+			//case Token::DEFINE_BUILT_IN_TYPE_IN_CLASS:
+			//return "Token::DEFINE_BUILT_IN_TYPE_IN_CLASS";
+			case Token::DEFINE_BUILT_IN_TYPE_NAME:
+			return "Token::DEFINE_BUILT_IN_TYPE_NAME";
+			//case Token::USE_BUILT_IN_TYPE:
+			//return "Token::USE_BUILT_IN_TYPE";
 
-			case LangTokenType::NUMBER:
-			return "LangTokenType::NUMBER";
-			case LangTokenType::NUMBER_AFTER_DOT:
-			return "LangTokenType::NUMBER_AFTER_DOT";
+			case Token::NUMBER:
+			return "Token::NUMBER";
+			case Token::NUMBER_AFTER_DOT:
+			return "Token::NUMBER_AFTER_DOT";
 			
-			case LangTokenType::REFERENCE_DOT:
-			return "LangTokenType::REFERENCE_DOT";
-			case LangTokenType::DOT:
-			return "LangTokenType::DOT";
+			case Token::REFERENCE_DOT:
+			return "Token::REFERENCE_DOT";
+			case Token::DOT:
+			return "Token::DOT";
 			
-			case LangTokenType::NEW:
-			return "LangTokenType::NEW";
-			case LangTokenType::FREE:
-			return "LangTokenType::FREE";
-			case LangTokenType::FREE_NAME:
-			return "LangTokenType::FREE_NAME";
+			case Token::NEW:
+			return "Token::NEW";
+			case Token::FREE:
+			return "Token::FREE";
+			case Token::FREE_NAME:
+			return "Token::FREE_NAME";
 			
-			case LangTokenType::AUTO_INIT:
-			return "LangTokenType::AUTO_INIT";
-			case LangTokenType::AUTO_FREE:
-			return "LangTokenType::AUTO_FREE";
-			/*case LangTokenType::OBJECT_AUTO_INIT:
-			return "LangTokenType::OBJECT_AUTO_INIT";
-			case LangTokenType::OBJECT_AUTO_FREE:
-			return "LangTokenType::OBJECT_AUTO_FREE";
-			case LangTokenType::ARRAY_AUTO_INIT:
-			return "LangTokenType::ARRAY_AUTO_INIT";
-			case LangTokenType::ARRAY_AUTO_FREE:
-			return "LangTokenType::ARRAY_AUTO_FREE";
-			case LangTokenType::VECTOR_AUTO_INIT:
-			return "LangTokenType::VECTOR_AUTO_INIT";
-			case LangTokenType::VECTOR_AUTO_FREE:
-			return "LangTokenType::VECTOR_AUTO_FREE";
-			case LangTokenType::TEMPLATE_AUTO_INIT:
-			return "LangTokenType::TEMPLATE_AUTO_INIT";
-			case LangTokenType::TEMPLATE_AUTO_FREE:
-			return "LangTokenType::TEMPLATE_AUTO_FREE";
-			case LangTokenType::BUILT_IN_TYPE_AUTO_INIT:
-			return "LangTokenType::BUILT_IN_TYPE_AUTO_INIT";
+			case Token::AUTO_INIT:
+			return "Token::AUTO_INIT";
+			case Token::AUTO_FREE:
+			return "Token::AUTO_FREE";
+			/*case Token::OBJECT_AUTO_INIT:
+			return "Token::OBJECT_AUTO_INIT";
+			case Token::OBJECT_AUTO_FREE:
+			return "Token::OBJECT_AUTO_FREE";
+			case Token::ARRAY_AUTO_INIT:
+			return "Token::ARRAY_AUTO_INIT";
+			case Token::ARRAY_AUTO_FREE:
+			return "Token::ARRAY_AUTO_FREE";
+			case Token::VECTOR_AUTO_INIT:
+			return "Token::VECTOR_AUTO_INIT";
+			case Token::VECTOR_AUTO_FREE:
+			return "Token::VECTOR_AUTO_FREE";
+			case Token::TEMPLATE_AUTO_INIT:
+			return "Token::TEMPLATE_AUTO_INIT";
+			case Token::TEMPLATE_AUTO_FREE:
+			return "Token::TEMPLATE_AUTO_FREE";
+			case Token::BUILT_IN_TYPE_AUTO_INIT:
+			return "Token::BUILT_IN_TYPE_AUTO_INIT";
 			*/
-			case LangTokenType::INIT_DATA:
-			return "LangTokenType::INIT_DATA";
+			case Token::INIT_DATA:
+			return "Token::INIT_DATA";
 			
-			case LangTokenType::VISIBILITY_DEFAULT:
-			return "LangTokenType::VISIBILITY_DEFAULT";
-			case LangTokenType::VISIBILITY:
-			return "LangTokenType::VISIBILITY";
-			case LangTokenType::VISIBILITY_PARENT_CLASS:
-			return "LangTokenType::VISIBILITY_PARENT_CLASS";
+			case Token::VISIBILITY_DEFAULT:
+			return "Token::VISIBILITY_DEFAULT";
+			case Token::VISIBILITY:
+			return "Token::VISIBILITY";
+			case Token::VISIBILITY_PARENT_CLASS:
+			return "Token::VISIBILITY_PARENT_CLASS";
 			
-			case LangTokenType::OVERRIDE:
-			return "LangTokenType::OVERRIDE";
+			case Token::OVERRIDE:
+			return "Token::OVERRIDE";
 
-			case LangTokenType::FUNC:
-			return "LangTokenType::FUNC";
-			case LangTokenType::FUNC_DEFINITION:
-			return "LangTokenType::FUNC_DEFINITION";
-			case LangTokenType::FUNC_NAME:
-			return "LangTokenType::FUNC_NAME";
-			case LangTokenType::DEFINE_FUNC_RETURN:
-			return "LangTokenType::DEFINE_FUNC_RETURN";
-			case LangTokenType::FUNC_RETURN_TYPE:
-			return "LangTokenType::FUNC_RETURN_TYPE";
-			case LangTokenType::FUNC_RETURN_NAME:
-			return "LangTokenType::FUNC_RETURN_NAME";
-			case LangTokenType::DEFINE_FUNC_ARGUMENT:
-			return "LangTokenType::DEFINE_FUNC_ARGUMENT";
-			case LangTokenType::FUNC_ARGUMENT_TYPE:
-			return "LangTokenType::FUNC_ARGUMENT_TYPE";
-			case LangTokenType::FUNC_ARGUMENT_NAME:
-			return "LangTokenType::FUNC_ARGUMENT_NAME";
-			case LangTokenType::FUNC_CALL:
-			return "LangTokenType::FUNC_CALL";
+			case Token::FUNC:
+			return "Token::FUNC";
+			case Token::FUNC_DEFINITION:
+			return "Token::FUNC_DEFINITION";
+			case Token::FUNC_NAME:
+			return "Token::FUNC_NAME";
+			case Token::DEFINE_FUNC_RETURN:
+			return "Token::DEFINE_FUNC_RETURN";
+			case Token::FUNC_RETURN_TYPE:
+			return "Token::FUNC_RETURN_TYPE";
+			case Token::FUNC_RETURN_NAME:
+			return "Token::FUNC_RETURN_NAME";
+			case Token::DEFINE_FUNC_ARGUMENT:
+			return "Token::DEFINE_FUNC_ARGUMENT";
+			case Token::FUNC_ARGUMENT_TYPE:
+			return "Token::FUNC_ARGUMENT_TYPE";
+			case Token::FUNC_ARGUMENT_NAME:
+			return "Token::FUNC_ARGUMENT_NAME";
+			case Token::FUNC_CALL:
+			return "Token::FUNC_CALL";
 			
-			case LangTokenType::INFO_FUNC_PARAM:
-			return "LangTokenType::INFO_FUNC_PARAM";
+			case Token::INFO_FUNC_PARAM:
+			return "Token::INFO_FUNC_PARAM";
 			
-			case LangTokenType::CONSTRUCTOR:
-			return "LangTokenType::CONSTRUCTOR";
-			case LangTokenType::DESTRUCTOR:
-			return "LangTokenType::DESTRUCTOR";
-			case LangTokenType::MAIN:
-			return "LangTokenType::MAIN";
+			case Token::CONSTRUCTOR:
+			return "Token::CONSTRUCTOR";
+			case Token::DESTRUCTOR:
+			return "Token::DESTRUCTOR";
+			case Token::MAIN:
+			return "Token::MAIN";
 
-			case LangTokenType::ENUM:
-			return "LangTokenType::ENUM";
-			case LangTokenType::COMMENT:
-			return "LangTokenType::COMMENT";
-			case LangTokenType::STAR_COMMENT:
-			return "LangTokenType::STAR_COMMENT";
-			case LangTokenType::PLUS_COMMENT:
-			return "LangTokenType::PLUS_COMMENT";
-			case LangTokenType::QUOTE:
-			return "LangTokenType::QUOTE";
+			case Token::ENUM:
+			return "Token::ENUM";
+			case Token::COMMENT:
+			return "Token::COMMENT";
+			case Token::STAR_COMMENT:
+			return "Token::STAR_COMMENT";
+			case Token::PLUS_COMMENT:
+			return "Token::PLUS_COMMENT";
+			case Token::QUOTE:
+			return "Token::QUOTE";
 			
-			case LangTokenType::LOG:
-			return "LangTokenType::LOG";
-			case LangTokenType::LOG_LN:
-			return "LangTokenType::LOG_LN";
-			case LangTokenType::LOG_SEPARATOR:
-			return "LangTokenType::LOG_SEPARATOR";
+			case Token::LOG:
+			return "Token::LOG";
+			case Token::LOG_LN:
+			return "Token::LOG_LN";
+			case Token::LOG_SEPARATOR:
+			return "Token::LOG_SEPARATOR";
 			
-			case LangTokenType::SCOPE_BEGIN:
-			return "LangTokenType::SCOPE_BEGIN";
-			case LangTokenType::SCOPE_END:
-			return "LangTokenType::SCOPE_END";
+			case Token::SCOPE_BEGIN:
+			return "Token::SCOPE_BEGIN";
+			case Token::SCOPE_END:
+			return "Token::SCOPE_END";
 			
-			case LangTokenType::PARENTHESIS_BEGIN:
-			return "LangTokenType::PARENTHESIS_BEGIN";
-			case LangTokenType::PARENTHESIS_END:
-			return "LangTokenType::PARENTHESIS_END";
-			case LangTokenType::PARENTHESIS_BEGIN_LOG:
-			return "LangTokenType::PARENTHESIS_BEGIN_LOG";
-			case LangTokenType::PARENTHESIS_END_LOG:
-			return "LangTokenType::PARENTHESIS_END_LOG";
-			case LangTokenType::PARENTHESIS_BEGIN_LOG_LN:
-			return "LangTokenType::PARENTHESIS_BEGIN_LOG_LN";
-			case LangTokenType::PARENTHESIS_END_LOG_LN:
-			return "LangTokenType::PARENTHESIS_END_LOG_LN";
-			case LangTokenType::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES:
-			return "LangTokenType::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES";
-			case LangTokenType::PARENTHESIS_END_FUNC_RETURN_TYPES:
-			return "LangTokenType::PARENTHESIS_END_FUNC_RETURN_TYPES";
-			case LangTokenType::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES:
-			return "LangTokenType::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES";
-			case LangTokenType::PARENTHESIS_END_FUNC_PARAM_TYPES:
-			return "LangTokenType::PARENTHESIS_END_FUNC_PARAM_TYPES";
-			//case LangTokenType::PARENTHESIS_END_FUNC_DEFINITION:
-			//return "LangTokenType::PARENTHESIS_END_FUNC_DEFINITION";
+			case Token::PARENTHESIS_BEGIN:
+			return "Token::PARENTHESIS_BEGIN";
+			case Token::PARENTHESIS_END:
+			return "Token::PARENTHESIS_END";
+			case Token::PARENTHESIS_BEGIN_LOG:
+			return "Token::PARENTHESIS_BEGIN_LOG";
+			case Token::PARENTHESIS_END_LOG:
+			return "Token::PARENTHESIS_END_LOG";
+			case Token::PARENTHESIS_BEGIN_LOG_LN:
+			return "Token::PARENTHESIS_BEGIN_LOG_LN";
+			case Token::PARENTHESIS_END_LOG_LN:
+			return "Token::PARENTHESIS_END_LOG_LN";
+			case Token::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES:
+			return "Token::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES";
+			case Token::PARENTHESIS_END_FUNC_RETURN_TYPES:
+			return "Token::PARENTHESIS_END_FUNC_RETURN_TYPES";
+			case Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES:
+			return "Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES";
+			case Token::PARENTHESIS_END_FUNC_PARAM_TYPES:
+			return "Token::PARENTHESIS_END_FUNC_PARAM_TYPES";
+			//case Token::PARENTHESIS_END_FUNC_DEFINITION:
+			//return "Token::PARENTHESIS_END_FUNC_DEFINITION";
 			
-			case LangTokenType::BRACKET_BEGIN:
-			return "LangTokenType::BRACKET_BEGIN";
-			case LangTokenType::BRACKET_END:
-			return "LangTokenType::BRACKET_END";
-			case LangTokenType::BRACKET_DEFINE_ARRAY_BEGIN:
-			return "LangTokenType::BRACKET_DEFINE_ARRAY_BEGIN";
-			case LangTokenType::BRACKET_DEFINE_ARRAY_END:
-			return "LangTokenType::BRACKET_DEFINE_ARRAY_END";
+			case Token::BRACKET_BEGIN:
+			return "Token::BRACKET_BEGIN";
+			case Token::BRACKET_END:
+			return "Token::BRACKET_END";
+			case Token::BRACKET_DEFINE_ARRAY_BEGIN:
+			return "Token::BRACKET_DEFINE_ARRAY_BEGIN";
+			case Token::BRACKET_DEFINE_ARRAY_END:
+			return "Token::BRACKET_DEFINE_ARRAY_END";
 
-			case LangTokenType::RETURN:
-			return "LangTokenType::RETURN";
+			case Token::RETURN:
+			return "Token::RETURN";
 			
-			case LangTokenType::COMMA:
-			return "LangTokenType::COMMA";
-			case LangTokenType::SEMICOLON:
-			return "LangTokenType::SEMICOLON";
-			case LangTokenType::PLUS:
-			return "LangTokenType::PLUS";
-			case LangTokenType::MINUS:
-			return "LangTokenType::MINUS";
-			case LangTokenType::EQUALS:
-			return "LangTokenType::EQUALS";
-			case LangTokenType::DIVIDE:
-			return "LangTokenType::DIVIDE";
-			case LangTokenType::STAR:
-			return "LangTokenType::STAR";
-			case LangTokenType::SMALLER_THAN:
-			return "LangTokenType::SMALLER_THAN";
-			case LangTokenType::BIGGER_THAN:
-			return "LangTokenType::BIGGER_THAN";
+			case Token::COMMA:
+			return "Token::COMMA";
+			case Token::SEMICOLON:
+			return "Token::SEMICOLON";
+			case Token::PLUS:
+			return "Token::PLUS";
+			case Token::MINUS:
+			return "Token::MINUS";
+			case Token::EQUALS:
+			return "Token::EQUALS";
+			case Token::DIVIDE:
+			return "Token::DIVIDE";
+			case Token::STAR:
+			return "Token::STAR";
+			case Token::SMALLER_THAN:
+			return "Token::SMALLER_THAN";
+			case Token::BIGGER_THAN:
+			return "Token::BIGGER_THAN";
 			
-			case LangTokenType::IF:
-			return "LangTokenType::IF";
-			case LangTokenType::FOR:
-			return "LangTokenType::FOR";
-			case LangTokenType::FOREACH:
-			return "LangTokenType::FOREACH";
+			case Token::IF:
+			return "Token::IF";
+			case Token::FOR:
+			return "Token::FOR";
+			case Token::FOREACH:
+			return "Token::FOREACH";
 			
-			case LangTokenType::NEWLINE:
-			return "LangTokenType::NEWLINE";
-			case LangTokenType::NEWLINE_BEFORE_SCOPE_END:
-			return "LangTokenType::NEWLINE_BEFORE_SCOPE_END";
+			case Token::NEWLINE:
+			return "Token::NEWLINE";
+			case Token::NEWLINE_BEFORE_SCOPE_END:
+			return "Token::NEWLINE_BEFORE_SCOPE_END";
 			/*
-			case LangTokenType::BOOL:
-			return "LangTokenType::BOOL";
-			case LangTokenType::BYTE:
-			return "LangTokenType::BYTE";
-			case LangTokenType::UBYTE:
-			return "LangTokenType::UBYTE";
-			case LangTokenType::CHAR:
-			return "LangTokenType::CHAR";
-			case LangTokenType::WCHAR:
-			return "LangTokenType::WCHAR";
-			case LangTokenType::DCHAR:
-			return "LangTokenType::DCHAR";
-			case LangTokenType::INT:
-			return "LangTokenType::INT";
-			case LangTokenType::UINT:
-			return "LangTokenType::UINT";
-			case LangTokenType::LONG:
-			return "LangTokenType::LONG";
-			case LangTokenType::ULONG:
-			return "LangTokenType::ULONG";
-			case LangTokenType::FLOAT:
-			return "LangTokenType::FLOAT";
-			case LangTokenType::DOUBLE:
-			return "LangTokenType::DOUBLE";
-			//case LangTokenType::REAL:
-			//return "LangTokenType::REAL";
-			case LangTokenType::BOOL_IN_CLASS:
-			return "LangTokenType::BOOL_IN_CLASS";
-			case LangTokenType::BYTE_IN_CLASS:
-			return "LangTokenType::BYTE_IN_CLASS";
-			case LangTokenType::UBYTE_IN_CLASS:
-			return "LangTokenType::UBYTE_IN_CLASS";
-			case LangTokenType::CHAR_IN_CLASS:
-			return "LangTokenType::CHAR_IN_CLASS";
-			case LangTokenType::WCHAR_IN_CLASS:
-			return "LangTokenType::WCHAR_IN_CLASS";
-			case LangTokenType::DCHAR_IN_CLASS:
-			return "LangTokenType::DCHAR_IN_CLASS";
-			case LangTokenType::INT_IN_CLASS:
-			return "LangTokenType::INT_IN_CLASS";
-			case LangTokenType::UINT_IN_CLASS:
-			return "LangTokenType::UINT_IN_CLASS";
-			case LangTokenType::LONG_IN_CLASS:
-			return "LangTokenType::LONG_IN_CLASS";
-			case LangTokenType::ULONG_IN_CLASS:
-			return "LangTokenType::ULONG_IN_CLASS";
-			case LangTokenType::FLOAT_IN_CLASS:
-			return "LangTokenType::FLOAT_IN_CLASS";
-			case LangTokenType::DOUBLE_IN_CLASS:
-			return "LangTokenType::DOUBLE_IN_CLASS";
-			//case LangTokenType::REAL_IN_CLASS:
-			//return "LangTokenType::REAL_IN_CLASS";
+			case Token::BOOL:
+			return "Token::BOOL";
+			case Token::BYTE:
+			return "Token::BYTE";
+			case Token::UBYTE:
+			return "Token::UBYTE";
+			case Token::CHAR:
+			return "Token::CHAR";
+			case Token::WCHAR:
+			return "Token::WCHAR";
+			case Token::DCHAR:
+			return "Token::DCHAR";
+			case Token::INT:
+			return "Token::INT";
+			case Token::UINT:
+			return "Token::UINT";
+			case Token::LONG:
+			return "Token::LONG";
+			case Token::ULONG:
+			return "Token::ULONG";
+			case Token::FLOAT:
+			return "Token::FLOAT";
+			case Token::DOUBLE:
+			return "Token::DOUBLE";
+			//case Token::REAL:
+			//return "Token::REAL";
+			case Token::BOOL_IN_CLASS:
+			return "Token::BOOL_IN_CLASS";
+			case Token::BYTE_IN_CLASS:
+			return "Token::BYTE_IN_CLASS";
+			case Token::UBYTE_IN_CLASS:
+			return "Token::UBYTE_IN_CLASS";
+			case Token::CHAR_IN_CLASS:
+			return "Token::CHAR_IN_CLASS";
+			case Token::WCHAR_IN_CLASS:
+			return "Token::WCHAR_IN_CLASS";
+			case Token::DCHAR_IN_CLASS:
+			return "Token::DCHAR_IN_CLASS";
+			case Token::INT_IN_CLASS:
+			return "Token::INT_IN_CLASS";
+			case Token::UINT_IN_CLASS:
+			return "Token::UINT_IN_CLASS";
+			case Token::LONG_IN_CLASS:
+			return "Token::LONG_IN_CLASS";
+			case Token::ULONG_IN_CLASS:
+			return "Token::ULONG_IN_CLASS";
+			case Token::FLOAT_IN_CLASS:
+			return "Token::FLOAT_IN_CLASS";
+			case Token::DOUBLE_IN_CLASS:
+			return "Token::DOUBLE_IN_CLASS";
+			//case Token::REAL_IN_CLASS:
+			//return "Token::REAL_IN_CLASS";
 			*/
 			
 		}
 	}
 
-	LangTokenType::e matchParenthesisEnd(LangTokenType::e parenthesis_begin_type)
+	Token::e matchParenthesisEnd(Token::e parenthesis_begin_type)
 	{
 		switch(parenthesis_begin_type)
 		{
 			default:
-			return LangTokenType::ERROR;
-			case LangTokenType::PARENTHESIS_BEGIN:
-			//return LangTokenType::PARENTHESIS_BEGIN;
-			//case LangTokenType::PARENTHESIS_END:
-			return LangTokenType::PARENTHESIS_END;
-			case LangTokenType::PARENTHESIS_BEGIN_LOG:
-			//return LangTokenType::PARENTHESIS_BEGIN_LOG;
-			//case LangTokenType::PARENTHESIS_END_LOG:
-			return LangTokenType::PARENTHESIS_END_LOG;
-			case LangTokenType::PARENTHESIS_BEGIN_LOG_LN:
-			//return LangTokenType::PARENTHESIS_BEGIN_LOG_LN;
-			//case LangTokenType::PARENTHESIS_END_LOG_LN:
-			return LangTokenType::PARENTHESIS_END_LOG_LN;
-			case LangTokenType::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES:
-			//return LangTokenType::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES;
-			//case LangTokenType::PARENTHESIS_END_FUNC_RETURN_TYPES:
-			return LangTokenType::PARENTHESIS_END_FUNC_RETURN_TYPES;
-			case LangTokenType::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES:
-			//return LangTokenType::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES;
-			//case LangTokenType::PARENTHESIS_END_FUNC_PARAM_TYPES:
-			return LangTokenType::PARENTHESIS_END_FUNC_PARAM_TYPES;
+			return Token::ERROR;
+			case Token::PARENTHESIS_BEGIN:
+			//return Token::PARENTHESIS_BEGIN;
+			//case Token::PARENTHESIS_END:
+			return Token::PARENTHESIS_END;
+			case Token::PARENTHESIS_BEGIN_LOG:
+			//return Token::PARENTHESIS_BEGIN_LOG;
+			//case Token::PARENTHESIS_END_LOG:
+			return Token::PARENTHESIS_END_LOG;
+			case Token::PARENTHESIS_BEGIN_LOG_LN:
+			//return Token::PARENTHESIS_BEGIN_LOG_LN;
+			//case Token::PARENTHESIS_END_LOG_LN:
+			return Token::PARENTHESIS_END_LOG_LN;
+			case Token::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES:
+			//return Token::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES;
+			//case Token::PARENTHESIS_END_FUNC_RETURN_TYPES:
+			return Token::PARENTHESIS_END_FUNC_RETURN_TYPES;
+			case Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES:
+			//return Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES;
+			//case Token::PARENTHESIS_END_FUNC_PARAM_TYPES:
+			return Token::PARENTHESIS_END_FUNC_PARAM_TYPES;
 		}
 
 	}
 
-	LangTokenType::e matchBracketEnd(LangTokenType::e begin_type)
+	Token::e matchBracketEnd(Token::e begin_type)
 	{
 		switch(begin_type)
 		{
 			default:
-			return LangTokenType::ERROR;
-			case LangTokenType::BRACKET_BEGIN:
-			//return LangTokenType::BRACKET_BEGIN;
-			//case LangTokenType::BRACKET_END:
-			return LangTokenType::BRACKET_END;
-			case LangTokenType::BRACKET_DEFINE_ARRAY_BEGIN:
-			//return LangTokenType::BRACKET_DEFINE_ARRAY_BEGIN;
-			//case LangTokenType::BRACKET_DEFINE_ARRAY_END:
-			return LangTokenType::BRACKET_DEFINE_ARRAY_END;
+			return Token::ERROR;
+			case Token::BRACKET_BEGIN:
+			//return Token::BRACKET_BEGIN;
+			//case Token::BRACKET_END:
+			return Token::BRACKET_END;
+			case Token::BRACKET_DEFINE_ARRAY_BEGIN:
+			//return Token::BRACKET_DEFINE_ARRAY_BEGIN;
+			//case Token::BRACKET_DEFINE_ARRAY_END:
+			return Token::BRACKET_DEFINE_ARRAY_END;
 			
 		}
 
 	}
 /*
-	LangTokenType::e matchBuiltIntTypesToInClass(LangTokenType::e lang_token_type)
+	Token::e matchBuiltIntTypesToInClass(Token::e lang_token_type)
 	{
 		switch(lang_token_type)
 		{
 			default:
-			return LangTokenType::ERROR;
-			case LangTokenType::BOOL:
-			return LangTokenType::BOOL_IN_CLASS;
-			case LangTokenType::BYTE:
-			return LangTokenType::BYTE_IN_CLASS;
-			case LangTokenType::UBYTE:
-			return LangTokenType::UBYTE_IN_CLASS;
-			case LangTokenType::CHAR:
-			return LangTokenType::CHAR_IN_CLASS;
-			case LangTokenType::WCHAR:
-			return LangTokenType::WCHAR_IN_CLASS;
-			case LangTokenType::DCHAR:
-			return LangTokenType::DCHAR_IN_CLASS;
-			case LangTokenType::INT:
-			return LangTokenType::INT_IN_CLASS;
-			case LangTokenType::UINT:
-			return LangTokenType::UINT_IN_CLASS;
-			case LangTokenType::LONG:
-			return LangTokenType::LONG_IN_CLASS;
-			case LangTokenType::ULONG:
-			return LangTokenType::ULONG_IN_CLASS;
-			case LangTokenType::FLOAT:
-			return LangTokenType::FLOAT_IN_CLASS;
-			case LangTokenType::DOUBLE:
-			return LangTokenType::DOUBLE_IN_CLASS;
-			//case LangTokenType::REAL:
-			//return LangTokenType::REAL_IN_CLASS;
+			return Token::ERROR;
+			case Token::BOOL:
+			return Token::BOOL_IN_CLASS;
+			case Token::BYTE:
+			return Token::BYTE_IN_CLASS;
+			case Token::UBYTE:
+			return Token::UBYTE_IN_CLASS;
+			case Token::CHAR:
+			return Token::CHAR_IN_CLASS;
+			case Token::WCHAR:
+			return Token::WCHAR_IN_CLASS;
+			case Token::DCHAR:
+			return Token::DCHAR_IN_CLASS;
+			case Token::INT:
+			return Token::INT_IN_CLASS;
+			case Token::UINT:
+			return Token::UINT_IN_CLASS;
+			case Token::LONG:
+			return Token::LONG_IN_CLASS;
+			case Token::ULONG:
+			return Token::ULONG_IN_CLASS;
+			case Token::FLOAT:
+			return Token::FLOAT_IN_CLASS;
+			case Token::DOUBLE:
+			return Token::DOUBLE_IN_CLASS;
+			//case Token::REAL:
+			//return Token::REAL_IN_CLASS;
 		}
 	}
 	*/
@@ -935,7 +935,7 @@ public:
 	
 	LangElement()
 	{
-		m_langTokenType = LangTokenType::UNDEFINED;
+		m_langTokenType = Token::UNDEFINED;
 		m_typeType = TypeType::UNDEFINED;
 		m_builtInType = BuiltInType::UNDEFINED;
 		m_role = Role::UNDEFINED;
@@ -948,7 +948,7 @@ public:
 		m_isUnknownType = false;
 	}
 	
-	LangElement(LineNumber& set_line_number, LangTokenType::e set_lang_token_type, TypeType::e set_type_type, string set_name = "", string set_type = "")
+	LangElement(LineNumber& set_line_number, Token::e set_lang_token_type, TypeType::e set_type_type, string set_name = "", string set_type = "")
 	{
 		lineNumber(set_line_number);
 		m_langTokenType = set_lang_token_type;
@@ -1082,7 +1082,7 @@ public:
 		cout<<"Functions in "<<toString()<<"\n-------------------------\n";
 		foreach(LangElement* elem, langElements)
 		{
-			if( elem->langTokenType() == LangTokenType::FUNC )
+			if( elem->langTokenType() == Token::FUNC )
 			{
 				cout<<elem->toString()<<"\n";
 			}
@@ -1095,7 +1095,7 @@ public:
 		cout<<"Defined references in "<<toString()<<"\n-------------------------\n";
 		foreach(LangElement* elem, langElements)
 		{
-			if( elem->langTokenType() == LangTokenType::DEFINE_REFERENCE )
+			if( elem->langTokenType() == Token::DEFINE_REFERENCE )
 			{
 				cout<<elem->toString()<<"\n";
 			}
@@ -1103,10 +1103,10 @@ public:
 		cout<<"-------------------------\n";
 	}
 
-	//a specialized func for use with LangTokenType::IMPORT
+	//a specialized func for use with Token::IMPORT
 	string importName(string separator_char_str = ".")
 	{
-		if(langTokenType() != LangTokenType::IMPORT)
+		if(langTokenType() != Token::IMPORT)
 		{
 			cout<<"Error: this is not an import. Can't get importName(): "<<toString()<<"\n";
 			return "Not an import.";
@@ -1118,7 +1118,7 @@ public:
 
 		foreach(LangElement* elem, langElements)
 		{
-			if( elem->langTokenType() == LangTokenType::IMPORT_NAME )
+			if( elem->langTokenType() == Token::IMPORT_NAME )
 			{
 				if(not_on_first > 0)
 				{
@@ -1140,32 +1140,32 @@ public:
 	}
 
 
-	public: LangTokenType::e langTokenType() { return m_langTokenType; }
-	public: void langTokenType(LangTokenType::e set) { m_langTokenType = set; }
-	protected: LangTokenType::e m_langTokenType;
+	public: Token::e langTokenType() { return m_langTokenType; }
+	public: void langTokenType(Token::e set) { m_langTokenType = set; }
+	protected: Token::e m_langTokenType;
 
-	public: string langTokenTypeString() { return LangTokenType::toString(m_langTokenType); }
+	public: string langTokenTypeString() { return Token::toString(m_langTokenType); }
 
 	public: string typeTypeString() { return TypeType::toString(m_typeType); }
 	
 	public: bool isDefinition()
 	{
-		if( langTokenType() == LangTokenType::DEFINE_REFERENCE
-			//|| langTokenType() == LangTokenType::DEFINE_REFERENCE_IN_CLASS
-			//|| langTokenType() == LangTokenType::DEFINE_ARRAY
-			//|| langTokenType() == LangTokenType::DEFINE_ARRAY_IN_CLASS
-			//|| langTokenType() == LangTokenType::DEFINE_VECTOR
-			//|| langTokenType() == LangTokenType::DEFINE_VECTOR_IN_CLASS
-			//|| langTokenType() == LangTokenType::DEFINE_BUILT_IN_TYPE
-			//|| langTokenType() == LangTokenType::DEFINE_BUILT_IN_TYPE_IN_CLASS
-			|| langTokenType() == LangTokenType::CLASS
-			|| langTokenType() == LangTokenType::ENUM
-			|| langTokenType() == LangTokenType::FUNC
-			|| langTokenType() == LangTokenType::CONSTRUCTOR
-			|| langTokenType() == LangTokenType::DESTRUCTOR
-			|| langTokenType() == LangTokenType::MAIN
-			|| langTokenType() == LangTokenType::DEFINE_FUNC_ARGUMENT
-			|| langTokenType() == LangTokenType::DEFINE_FUNC_RETURN
+		if( langTokenType() == Token::DEFINE_REFERENCE
+			//|| langTokenType() == Token::DEFINE_REFERENCE_IN_CLASS
+			//|| langTokenType() == Token::DEFINE_ARRAY
+			//|| langTokenType() == Token::DEFINE_ARRAY_IN_CLASS
+			//|| langTokenType() == Token::DEFINE_VECTOR
+			//|| langTokenType() == Token::DEFINE_VECTOR_IN_CLASS
+			//|| langTokenType() == Token::DEFINE_BUILT_IN_TYPE
+			//|| langTokenType() == Token::DEFINE_BUILT_IN_TYPE_IN_CLASS
+			|| langTokenType() == Token::CLASS
+			|| langTokenType() == Token::ENUM
+			|| langTokenType() == Token::FUNC
+			|| langTokenType() == Token::CONSTRUCTOR
+			|| langTokenType() == Token::DESTRUCTOR
+			|| langTokenType() == Token::MAIN
+			|| langTokenType() == Token::DEFINE_FUNC_ARGUMENT
+			|| langTokenType() == Token::DEFINE_FUNC_RETURN
 		)
 		{
 			return true;
@@ -1176,10 +1176,10 @@ public:
 
 	public: bool isFunc()
 	{
-		if( langTokenType() == LangTokenType::FUNC
-			|| langTokenType() == LangTokenType::CONSTRUCTOR
-			|| langTokenType() == LangTokenType::DESTRUCTOR
-			|| langTokenType() == LangTokenType::MAIN
+		if( langTokenType() == Token::FUNC
+			|| langTokenType() == Token::CONSTRUCTOR
+			|| langTokenType() == Token::DESTRUCTOR
+			|| langTokenType() == Token::MAIN
 		)
 		{
 			return true;
@@ -1190,12 +1190,12 @@ public:
 
 	public: bool isUseReference()
 	{
-		if( langTokenType() == LangTokenType::USE_REFERENCE
-			//|| langTokenType() == LangTokenType::USE_ARRAY
-			//|| langTokenType() == LangTokenType::USE_VECTOR
-			//|| langTokenType() == LangTokenType::USE_BUILT_IN_TYPE
-			|| langTokenType() == LangTokenType::USE_MEMBER
-			|| langTokenType() == LangTokenType::FUNC_CALL
+		if( langTokenType() == Token::USE_REFERENCE
+			//|| langTokenType() == Token::USE_ARRAY
+			//|| langTokenType() == Token::USE_VECTOR
+			//|| langTokenType() == Token::USE_BUILT_IN_TYPE
+			|| langTokenType() == Token::USE_MEMBER
+			|| langTokenType() == Token::FUNC_CALL
 		)
 		{
 			return true;
@@ -1204,11 +1204,11 @@ public:
 		return false;
 	}
 
-	public: bool isUserDefinableLangTokenType()
+	public: bool isUserDefinableToken()
 	{
 		//We need to add other user defined types here later...
-		if( langTokenType() == LangTokenType::CLASS
-			|| langTokenType() == LangTokenType::ENUM )
+		if( langTokenType() == Token::CLASS
+			|| langTokenType() == Token::ENUM )
   		{
   			return true;
   		}
@@ -1222,7 +1222,7 @@ public:
 	protected: string m_name;
 	
 	//type is a user defined Class name like Gradient... etc...
-	//You might e.g. have your LangTokenType::DEFINE_FUNC_RETURN or LangTokenType::DEFINE_FUNC_ARGUMENT
+	//You might e.g. have your Token::DEFINE_FUNC_RETURN or Token::DEFINE_FUNC_ARGUMENT
 	//and the type might be some class name.
 	
 	public: bool isBuiltInType()
@@ -1281,18 +1281,18 @@ public:
 
 	public: LangElement* templateSecondType()
 	{
-		return searchFirst(LangTokenType::TEMPLATE_SECOND_TYPE);
+		return searchFirst(Token::TEMPLATE_SECOND_TYPE);
 	}
 
 	public: void createTemplateSecondType(string set_type)
 	{
-		if( searchFirst(LangTokenType::TEMPLATE_SECOND_TYPE) != 0 )
+		if( searchFirst(Token::TEMPLATE_SECOND_TYPE) != 0 )
 		{
 			cout<<"ERROR in createTemplateSecondType() We already had a second type for the template: "<<templateSecondTypeString()<<" new second type: "<<set_type<<"\n";
 		}
 		else
 		{
-			newLangElement(lineNumber(), LangTokenType::TEMPLATE_SECOND_TYPE, TypeType::TEMPLATE/*are you sure this is not confusing...*/, /*string set_name:*/ "undefined", /*string set_type:*/ set_type );
+			newLangElement(lineNumber(), Token::TEMPLATE_SECOND_TYPE, TypeType::TEMPLATE/*are you sure this is not confusing...*/, /*string set_name:*/ "undefined", /*string set_type:*/ set_type );
 		}
 	}
 
@@ -1302,7 +1302,7 @@ public:
 		//if it has one. there should be only one child.
 		foreach(LangElement* set_elem, langElements)
 		{
-			if(set_elem->langTokenType() == LangTokenType::TEMPLATE_SECOND_TYPE)
+			if(set_elem->langTokenType() == Token::TEMPLATE_SECOND_TYPE)
 				return set_elem->type();
 		}
         //else
@@ -1327,7 +1327,7 @@ public:
 		//if it has one. there should be only one child.
 		foreach(LangElement* set_elem, langElements)
 		{
-			if(set_elem->langTokenType() == LangTokenType::TEMPLATE_SECOND_TYPE)
+			if(set_elem->langTokenType() == Token::TEMPLATE_SECOND_TYPE)
 				return set_elem->typeInCpp();
 		}
 		//else
@@ -1398,23 +1398,23 @@ public:
 	protected: LangElement* m_nextElement;
 
 	//And here's some token shortcuts for those elements.
-	public: LangTokenType::e previousToken()
+	public: Token::e previousToken()
 	{
 		if(m_previousElement == 0)
-			return LangTokenType::UNDEFINED;
+			return Token::UNDEFINED;
 		return m_previousElement->langTokenType();
 	}
-	public: LangTokenType::e previous2ndToken()
+	public: Token::e previous2ndToken()
 	{
 		if(m_previousElement && m_previousElement->m_previousElement)
 			return m_previousElement->m_previousElement->langTokenType();
 		//else
-		return LangTokenType::UNDEFINED;
+		return Token::UNDEFINED;
 	}
-	public: LangTokenType::e nextToken()
+	public: Token::e nextToken()
 	{
 		if(m_nextElement == 0)
-			return LangTokenType::UNDEFINED;
+			return Token::UNDEFINED;
 		return m_nextElement->langTokenType();
 	}
 
@@ -1487,8 +1487,8 @@ public:
 			}
 		}
 
-		lang_elem = new LangElement(lineNumber(), LangTokenType::INIT_DATA, TypeType::UNDEFINED, init_string);
-		//lang_elem = new LangElement(lineNumber(), LangTokenType::UNDEFINED, init_string);
+		lang_elem = new LangElement(lineNumber(), Token::INIT_DATA, TypeType::UNDEFINED, init_string);
+		//lang_elem = new LangElement(lineNumber(), Token::UNDEFINED, init_string);
 		initData(lang_elem);
 		
 		return lang_elem;
@@ -1508,7 +1508,7 @@ public:
 
 	bool isInClass()
 	{
-		if(parent() && parent()->langTokenType() == LangTokenType::CLASS)
+		if(parent() && parent()->langTokenType() == Token::CLASS)
 		{
 			return true;
 		}
@@ -1516,12 +1516,12 @@ public:
 		return false;
 	}
 
-	LangTokenType::e parentLangTokenType()
+	Token::e parentToken()
 	{
 		if( m_parent )
 			return m_parent->langTokenType();
 		//else
-		return LangTokenType::UNDEFINED;
+		return Token::UNDEFINED;
 	}
 	LangElement* parent() { return m_parent; }
 	void parent(LangElement* set) { m_parent = set; }
@@ -1531,13 +1531,13 @@ public:
 	//then some strange checking from the parent, the class and func and stuff:
 	LangElement* parentClass()
 	{
-		return searchClosestParentLangTokenType(LangTokenType::CLASS);
+		return searchClosestParentToken(Token::CLASS);
 
 		//return null if not found.
 		/*LangElement* res = parent();
 		while( res )
 		{
-			if( res->langTokenType() == LangTokenType::CLASS )
+			if( res->langTokenType() == Token::CLASS )
 			{
 				return res;
 			}
@@ -1547,7 +1547,7 @@ public:
 		*/
 	}
 
-	LangElement* searchClosestParentLangTokenType(LangTokenType::e set)
+	LangElement* searchClosestParentToken(Token::e set)
 	{
 		//return null if not found.
 		LangElement* res = parent();
@@ -1564,19 +1564,19 @@ public:
 
 	LangElement* parentFunc()
 	{
-		LangElement* res = searchClosestParentLangTokenType(LangTokenType::FUNC);
+		LangElement* res = searchClosestParentToken(Token::FUNC);
 		if(res)
 			return res;
 		//else
-		res = searchClosestParentLangTokenType(LangTokenType::CONSTRUCTOR);
+		res = searchClosestParentToken(Token::CONSTRUCTOR);
 		if(res)
 			return res;
 		//else
-		res = searchClosestParentLangTokenType(LangTokenType::DESTRUCTOR);
+		res = searchClosestParentToken(Token::DESTRUCTOR);
 		if(res)
 			return res;
 		//else
-		res = searchClosestParentLangTokenType(LangTokenType::MAIN);
+		res = searchClosestParentToken(Token::MAIN);
 		//return res anyway, even if it is null.
 		return res;
 	}
@@ -1590,7 +1590,7 @@ public:
 		//return null if not found.
 
 		//first check for reference dot. We have to have that.
-		if( previousToken() != LangTokenType::REFERENCE_DOT )
+		if( previousToken() != Token::REFERENCE_DOT )
 		{
 			return 0;
 		}
@@ -1603,7 +1603,7 @@ public:
 
 		while( res )
 		{
-			if( res->langTokenType() == LangTokenType::SCOPE_BEGIN )
+			if( res->langTokenType() == Token::SCOPE_BEGIN )
 			{
 				//if at any case we would find a scope begin, then we'll just return 0.
 				return 0;
@@ -1612,21 +1612,21 @@ public:
 			if(found_a_bracket <= 0)//Well if this gets negative it's an error... too many brackets... but it could theoretically happen if we're inside two brackets.
 			//so let's just leave it like this, and hope it's correct.
 			{
-				if( res->langTokenType() == LangTokenType::USE_REFERENCE
-					//|| res->langTokenType() == LangTokenType::USE_VECTOR
-					//|| res->langTokenType() == LangTokenType::USE_ARRAY
+				if( res->langTokenType() == Token::USE_REFERENCE
+					//|| res->langTokenType() == Token::USE_VECTOR
+					//|| res->langTokenType() == Token::USE_ARRAY
 				)
 				{
 					return res;
 				}
-				else if( res->langTokenType() == LangTokenType::BRACKET_END || res->langTokenType() == LangTokenType::BRACKET_DEFINE_ARRAY_END )
+				else if( res->langTokenType() == Token::BRACKET_END || res->langTokenType() == Token::BRACKET_DEFINE_ARRAY_END )
 				{
 					found_a_bracket = true;
 				}
 			}
 			else //there's some brackets there...
 			{
-				if( res->langTokenType() == LangTokenType::BRACKET_BEGIN || res->langTokenType() == LangTokenType::BRACKET_DEFINE_ARRAY_BEGIN )
+				if( res->langTokenType() == Token::BRACKET_BEGIN || res->langTokenType() == Token::BRACKET_DEFINE_ARRAY_BEGIN )
 				{
 					found_a_bracket--;
 				}	
@@ -1680,12 +1680,12 @@ public:
 		//Will stop at SCOPE_BEGIN
 		for( uint i = 0; i < langElements.size(); i++ )
 		{
-			if( langElements[i]->langTokenType() == LangTokenType::VISIBILITY )
+			if( langElements[i]->langTokenType() == Token::VISIBILITY )
 			{
 				//return true;
 				return langElements[i];
 			}
-			else if( langElements[i]->langTokenType() == LangTokenType::SCOPE_BEGIN )
+			else if( langElements[i]->langTokenType() == Token::SCOPE_BEGIN )
 			{
 				//return false;
 				return 0;
@@ -1717,13 +1717,13 @@ public:
 
 	void freeOwned()
 	{
-		if( langTokenType() != LangTokenType::CLASS )
+		if( langTokenType() != Token::CLASS )
 		{
 			foreach(LangElement* init_ob, ownedElements)
 			{
 					LangElement* auto_init_elem = init_ob->copy();
 					auto_init_elem->definitionElement(init_ob);//our init_ob can be found through the definitionElement.
-					auto_init_elem->langTokenType(LangTokenType::AUTO_FREE);
+					auto_init_elem->langTokenType(Token::AUTO_FREE);
 					addElement(auto_init_elem);
 					addNewLine();
 			}
@@ -1747,41 +1747,41 @@ public:
 
 		foreach( LangElement* elem, langElements )
 		{
-			if(elem->langTokenType() == LangTokenType::CONSTRUCTOR)
+			if(elem->langTokenType() == Token::CONSTRUCTOR)
 			{	
 			/*		
-				if( init_ob->langTokenType() == LangTokenType::DEFINE_VECTOR_IN_CLASS )
+				if( init_ob->langTokenType() == Token::DEFINE_VECTOR_IN_CLASS )
 				{
-					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), LangTokenType::VECTOR_AUTO_INIT, init_ob->name(), init_ob->type() );
+					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::VECTOR_AUTO_INIT, init_ob->name(), init_ob->type() );
 				}
-				else if( init_ob->langTokenType() == LangTokenType::DEFINE_ARRAY_IN_CLASS )
+				else if( init_ob->langTokenType() == Token::DEFINE_ARRAY_IN_CLASS )
 				{
-					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), LangTokenType::ARRAY_AUTO_INIT, init_ob->name(), init_ob->type() );
+					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::ARRAY_AUTO_INIT, init_ob->name(), init_ob->type() );
 				}
-				else if( init_ob->langTokenType() == LangTokenType::DEFINE_REFERENCE_IN_CLASS )
+				else if( init_ob->langTokenType() == Token::DEFINE_REFERENCE_IN_CLASS )
 				{	
-					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), LangTokenType::OBJECT_AUTO_INIT, init_ob->name(), init_ob->type() );
+					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::OBJECT_AUTO_INIT, init_ob->name(), init_ob->type() );
 				}
 				*/
 				/*if( init_ob->typeType() == TypeType::VECTOR )//TODO maybe get rid of these and just use typeType and AUTO_INIT.
 				{
-					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), LangTokenType::VECTOR_AUTO_INIT, TypeType::VECTOR, init_ob->name(), init_ob->type() );
+					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::VECTOR_AUTO_INIT, TypeType::VECTOR, init_ob->name(), init_ob->type() );
 				}
 				else if( init_ob->typeType() == TypeType::TEMPLATE )
 				{
-					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), LangTokenType::TEMPLATE_AUTO_INIT, TypeType::TEMPLATE, init_ob->name(), init_ob->type() );
+					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::TEMPLATE_AUTO_INIT, TypeType::TEMPLATE, init_ob->name(), init_ob->type() );
 				}
 				else if( init_ob->typeType() == TypeType::ARRAY )
 				{
-					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), LangTokenType::ARRAY_AUTO_INIT, TypeType::ARRAY, init_ob->name(), init_ob->type() );
+					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::ARRAY_AUTO_INIT, TypeType::ARRAY, init_ob->name(), init_ob->type() );
 				}
 				else if( init_ob->typeType() == TypeType::REF )
 				{	
-					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), LangTokenType::OBJECT_AUTO_INIT, TypeType::REF, init_ob->name(), init_ob->type() );
+					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::OBJECT_AUTO_INIT, TypeType::REF, init_ob->name(), init_ob->type() );
 				}
 				else if( init_ob->typeType() == TypeType::BUILT_IN_TYPE )
 				{	
-					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), LangTokenType::BUILT_IN_TYPE_AUTO_INIT, TypeType::BUILT_IN_TYPE, init_ob->name(), init_ob->type() );
+					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::BUILT_IN_TYPE_AUTO_INIT, TypeType::BUILT_IN_TYPE, init_ob->name(), init_ob->type() );
 				}
 				else
 				{
@@ -1789,11 +1789,11 @@ public:
 				}
 				*/
 				
-				//elem->newLangElementToTopWithNewline( init_ob->lineNumber(), LangTokenType::AUTO_INIT, init_ob->typeType(), init_ob->name(), init_ob->type() );				
+				//elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::AUTO_INIT, init_ob->typeType(), init_ob->name(), init_ob->type() );				
 			
 				LangElement* auto_init_elem = init_ob->copy();
 				auto_init_elem->definitionElement(init_ob);//our init_ob can be found through the definitionElement.
-				auto_init_elem->langTokenType(LangTokenType::AUTO_INIT);
+				auto_init_elem->langTokenType(Token::AUTO_INIT);
 				elem->addElementToTopOfFunc(auto_init_elem);
 			}
 		}		
@@ -1808,42 +1808,42 @@ public:
 
 		foreach( LangElement* elem, langElements )
 		{
-			if(elem->langTokenType() == LangTokenType::DESTRUCTOR)
+			if(elem->langTokenType() == Token::DESTRUCTOR)
 			{		
 			/*	
-				if( init_ob->langTokenType() == LangTokenType::DEFINE_VECTOR_IN_CLASS )
+				if( init_ob->langTokenType() == Token::DEFINE_VECTOR_IN_CLASS )
 				{
-					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), LangTokenType::VECTOR_AUTO_FREE, init_ob->name(), init_ob->type() );
+					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::VECTOR_AUTO_FREE, init_ob->name(), init_ob->type() );
 				}
-				else if( init_ob->langTokenType() == LangTokenType::DEFINE_ARRAY_IN_CLASS )
+				else if( init_ob->langTokenType() == Token::DEFINE_ARRAY_IN_CLASS )
 				{
-					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), LangTokenType::ARRAY_AUTO_FREE, init_ob->name(), init_ob->type() );
+					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::ARRAY_AUTO_FREE, init_ob->name(), init_ob->type() );
 				}
-				else if( init_ob->langTokenType() == LangTokenType::DEFINE_REFERENCE_IN_CLASS )
+				else if( init_ob->langTokenType() == Token::DEFINE_REFERENCE_IN_CLASS )
 				{	
-					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), LangTokenType::OBJECT_AUTO_FREE, init_ob->name(), init_ob->type() );
+					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::OBJECT_AUTO_FREE, init_ob->name(), init_ob->type() );
 				}
 				*/
 				/*
 				if( init_ob->typeType() == TypeType::VECTOR )
 				{
-					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), LangTokenType::VECTOR_AUTO_FREE, TypeType::VECTOR, init_ob->name(), init_ob->type() );
+					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::VECTOR_AUTO_FREE, TypeType::VECTOR, init_ob->name(), init_ob->type() );
 				}
 				else if( init_ob->typeType() == TypeType::TEMPLATE )
 				{
-					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), LangTokenType::TEMPLATE_AUTO_FREE, TypeType::TEMPLATE, init_ob->name(), init_ob->type() );
+					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::TEMPLATE_AUTO_FREE, TypeType::TEMPLATE, init_ob->name(), init_ob->type() );
 				}
 				else if( init_ob->typeType() == TypeType::ARRAY )
 				{
-					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), LangTokenType::ARRAY_AUTO_FREE, TypeType::ARRAY, init_ob->name(), init_ob->type() );
+					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::ARRAY_AUTO_FREE, TypeType::ARRAY, init_ob->name(), init_ob->type() );
 				}
 				else if( init_ob->typeType() == TypeType::REF )
 				{	
-					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), LangTokenType::OBJECT_AUTO_FREE, TypeType::REF, init_ob->name(), init_ob->type() );
+					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::OBJECT_AUTO_FREE, TypeType::REF, init_ob->name(), init_ob->type() );
 				}
 				//No need to free built ins: else if( init_ob->typeType() == TypeType::BUILT_IN_TYPE )
 				//{	
-				//	elem->newLangElementToTopWithNewline( init_ob->lineNumber(), LangTokenType::BUILT_IN_TYPE_AUTO_FREE, init_ob->name(), init_ob->type() );
+				//	elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::BUILT_IN_TYPE_AUTO_FREE, init_ob->name(), init_ob->type() );
 				//}
 				else
 				{
@@ -1853,7 +1853,7 @@ public:
 
 				LangElement* auto_init_elem = init_ob->copy();
 				auto_init_elem->definitionElement(init_ob);//our init_ob can be found through the definitionElement.
-				auto_init_elem->langTokenType(LangTokenType::AUTO_FREE);
+				auto_init_elem->langTokenType(Token::AUTO_FREE);
 				elem->addElementToTopOfFunc(auto_init_elem);
 			}
 		}		
@@ -1884,7 +1884,7 @@ public:
 	}
 
 public:	
-	LangElement* newLangElement(LineNumber& set_line_number, LangTokenType::e set_lang_token_type, TypeType::e set_type_type = TypeType::UNDEFINED, string set_name = "", string set_type = "" )
+	LangElement* newLangElement(LineNumber& set_line_number, Token::e set_lang_token_type, TypeType::e set_type_type = TypeType::UNDEFINED, string set_name = "", string set_type = "" )
 	{
 		LangElement* lang_elem = new LangElement(set_line_number, set_lang_token_type, set_type_type, set_name, set_type);
 		//lang_elem->lineNumber( set_line_number );
@@ -1892,28 +1892,28 @@ public:
 		m_currentElement = lang_elem;//Should this be default for addElement too?
 		
 		#ifdef DEBUG_RAE
-			cout<<"this.name: "<<name()<<" LangElement.newLangElement: "<<LangTokenType::toString(set_lang_token_type)<<" name:>"<<set_name<<"< type: "<<set_type<<"\n";
-			//rae::log("this.name: ",name()," LangElement.newLangElement: ",LangTokenType::toString(set_lang_token_type)," name:>",set_name,"< type: ",set_type,"\n");
+			cout<<"this.name: "<<name()<<" LangElement.newLangElement: "<<Token::toString(set_lang_token_type)<<" name:>"<<set_name<<"< type: "<<set_type<<"\n";
+			//rae::log("this.name: ",name()," LangElement.newLangElement: ",Token::toString(set_lang_token_type)," name:>",set_name,"< type: ",set_type,"\n");
 		#endif
 
 		return lang_elem;
 	}
 
-	LangElement* newLangElementToTop( LineNumber& set_line_number, LangTokenType::e set_lang_token_type, TypeType::e set_type_type, string set_name = "", string set_type = "" )
+	LangElement* newLangElementToTop( LineNumber& set_line_number, Token::e set_lang_token_type, TypeType::e set_type_type, string set_name = "", string set_type = "" )
 	{
 		LangElement* lang_elem = new LangElement(set_line_number, set_lang_token_type, set_type_type, set_name, set_type);
 		addElementToTop(lang_elem);
 		m_currentElement = lang_elem;//Should this be default for addElement too?
 		
 		#ifdef DEBUG_RAE
-			cout<<"this.name: "<<name()<<" LangElement.newLangElementToTop: "<<LangTokenType::toString(set_lang_token_type)<<" name:>"<<set_name<<"< type: "<<set_type<<"\n";
-			//rae::log("this.name: ",name()," LangElement.newLangElementToTop: ",LangTokenType::toString(set_lang_token_type)," name:>",set_name,"< type: ",set_type,"\n");
+			cout<<"this.name: "<<name()<<" LangElement.newLangElementToTop: "<<Token::toString(set_lang_token_type)<<" name:>"<<set_name<<"< type: "<<set_type<<"\n";
+			//rae::log("this.name: ",name()," LangElement.newLangElementToTop: ",Token::toString(set_lang_token_type)," name:>",set_name,"< type: ",set_type,"\n");
 		#endif
 
 		return lang_elem;	
 	}
 
-	LangElement* newLangElementToTopAfterNewlineWithNewline( LineNumber& set_line_number, LangTokenType::e set_lang_token_type, TypeType::e set_type_type, string set_name = "", string set_type = "", BuiltInType::e set_built_in_type = BuiltInType::UNDEFINED )
+	LangElement* newLangElementToTopAfterNewlineWithNewline( LineNumber& set_line_number, Token::e set_lang_token_type, TypeType::e set_type_type, string set_name = "", string set_type = "", BuiltInType::e set_built_in_type = BuiltInType::UNDEFINED )
 	{
 		LangElement* lang_elem = new LangElement(set_line_number, set_lang_token_type, set_type_type, set_name, set_type);
 		lang_elem->builtInType(set_built_in_type);
@@ -1921,14 +1921,14 @@ public:
 		m_currentElement = lang_elem;//Should this be default for addElement too?
 		
 		#ifdef DEBUG_RAE
-			cout<<"this.name: "<<name()<<" LangElement.newLangElementToTop: "<<LangTokenType::toString(set_lang_token_type)<<" name:>"<<set_name<<"< type: "<<set_type<<"\n";
-			//rae::log("this.name: ",name()," LangElement.newLangElementToTop: ",LangTokenType::toString(set_lang_token_type)," name:>",set_name,"< type: ",set_type,"\n");
+			cout<<"this.name: "<<name()<<" LangElement.newLangElementToTop: "<<Token::toString(set_lang_token_type)<<" name:>"<<set_name<<"< type: "<<set_type<<"\n";
+			//rae::log("this.name: ",name()," LangElement.newLangElementToTop: ",Token::toString(set_lang_token_type)," name:>",set_name,"< type: ",set_type,"\n");
 		#endif
 
 		return lang_elem;	
 	}
 
-	LangElement* newLangElementToTopOfFunc( LineNumber& set_line_number, LangTokenType::e set_lang_token_type, TypeType::e set_type_type, string set_name = "", string set_type = "", BuiltInType::e set_built_in_type = BuiltInType::UNDEFINED )
+	LangElement* newLangElementToTopOfFunc( LineNumber& set_line_number, Token::e set_lang_token_type, TypeType::e set_type_type, string set_name = "", string set_type = "", BuiltInType::e set_built_in_type = BuiltInType::UNDEFINED )
 	{
 		LangElement* lang_elem = new LangElement(set_line_number, set_lang_token_type, set_type_type, set_name, set_type);
 		lang_elem->builtInType(set_built_in_type);
@@ -1936,14 +1936,14 @@ public:
 		m_currentElement = lang_elem;//Should this be default for addElement too?
 		
 		#ifdef DEBUG_RAE
-			cout<<"this.name: "<<name()<<" LangElement.newLangElementToTopOfFunc: "<<LangTokenType::toString(set_lang_token_type)<<" name:>"<<set_name<<"< type: "<<set_type<<"\n";
-			//rae::log("this.name: ",name()," LangElement.newLangElementToTop: ",LangTokenType::toString(set_lang_token_type)," name:>",set_name,"< type: ",set_type,"\n");
+			cout<<"this.name: "<<name()<<" LangElement.newLangElementToTopOfFunc: "<<Token::toString(set_lang_token_type)<<" name:>"<<set_name<<"< type: "<<set_type<<"\n";
+			//rae::log("this.name: ",name()," LangElement.newLangElementToTop: ",Token::toString(set_lang_token_type)," name:>",set_name,"< type: ",set_type,"\n");
 		#endif
 
 		return lang_elem;	
 	}
 
-	LangElement* newLangElementToTopOfClass( LineNumber& set_line_number, LangTokenType::e set_lang_token_type, TypeType::e set_type_type, string set_name = "", string set_type = "", BuiltInType::e set_built_in_type = BuiltInType::UNDEFINED )
+	LangElement* newLangElementToTopOfClass( LineNumber& set_line_number, Token::e set_lang_token_type, TypeType::e set_type_type, string set_name = "", string set_type = "", BuiltInType::e set_built_in_type = BuiltInType::UNDEFINED )
 	{
 		LangElement* lang_elem = new LangElement(set_line_number, set_lang_token_type, set_type_type, set_name, set_type);
 		lang_elem->builtInType(set_built_in_type);
@@ -1951,8 +1951,8 @@ public:
 		m_currentElement = lang_elem;//Should this be default for addElement too?
 		
 		#ifdef DEBUG_RAE
-			cout<<"this.name: "<<name()<<" LangElement.newLangElementToTopOfClass: "<<LangTokenType::toString(set_lang_token_type)<<" name:>"<<set_name<<"< type: "<<set_type<<"\n";
-			//rae::log("this.name: ",name()," LangElement.newLangElementToTop: ",LangTokenType::toString(set_lang_token_type)," name:>",set_name,"< type: ",set_type,"\n");
+			cout<<"this.name: "<<name()<<" LangElement.newLangElementToTopOfClass: "<<Token::toString(set_lang_token_type)<<" name:>"<<set_name<<"< type: "<<set_type<<"\n";
+			//rae::log("this.name: ",name()," LangElement.newLangElementToTop: ",Token::toString(set_lang_token_type)," name:>",set_name,"< type: ",set_type,"\n");
 		#endif
 
 		return lang_elem;	
@@ -1968,7 +1968,7 @@ public:
 
 	void addNewLine()
 	{
-		LangElement* elem_newline = new LangElement( lineNumber(), LangTokenType::NEWLINE, TypeType::UNDEFINED, "\n" );
+		LangElement* elem_newline = new LangElement( lineNumber(), Token::NEWLINE, TypeType::UNDEFINED, "\n" );
 		langElements.push_back(elem_newline);
 		m_currentElement = elem_newline;
 	}
@@ -1992,7 +1992,7 @@ public:
 
 		for( my_it = langElements.begin(); my_it < langElements.end(); my_it++ )
 		{
-			if( (*my_it) && (*my_it)->langTokenType() == LangTokenType::SCOPE_BEGIN )
+			if( (*my_it) && (*my_it)->langTokenType() == Token::SCOPE_BEGIN )
 			{
 				//do nothing
 			}
@@ -2026,7 +2026,7 @@ public:
 		}*/
 
 		bool to_debug = false;
-		if( langTokenType() == LangTokenType::CLASS )
+		if( langTokenType() == Token::CLASS )
 		{
 			cout<<"CLASS addElementToTopOfFunc: "<<toString()<<"\n";
 			to_debug = true;
@@ -2040,7 +2040,7 @@ public:
 				//rae::log("elem: ",(*my_it)->toString());
 			#endif
 
-			if( (*my_it) && (*my_it)->langTokenType() == LangTokenType::SCOPE_BEGIN )
+			if( (*my_it) && (*my_it)->langTokenType() == Token::SCOPE_BEGIN )
 			{
 				if(to_debug)
 					cout<<"CLASS found Scope begin on class.\n";
@@ -2076,8 +2076,8 @@ public:
 		//rae::log("langElements.size(): ",langElements.size(),"\n");
 		#endif
 
-		//LangElement* elem_newline = newLangElement( set->lineNumber(), LangTokenType::NEWLINE, "\n" );
-		LangElement* elem_newline = new LangElement( set->lineNumber(), LangTokenType::NEWLINE, TypeType::UNDEFINED, "\n" );
+		//LangElement* elem_newline = newLangElement( set->lineNumber(), Token::NEWLINE, "\n" );
+		LangElement* elem_newline = new LangElement( set->lineNumber(), Token::NEWLINE, TypeType::UNDEFINED, "\n" );
 
 		if( langElements.empty() == true )
 		{
@@ -2102,7 +2102,7 @@ public:
 				//rae::log("elem: ",(*my_it)->toString());
 			#endif
 
-			if( (*my_it) && ((*my_it)->langTokenType() == LangTokenType::NEWLINE || (*my_it)->langTokenType() == LangTokenType::NEWLINE_BEFORE_SCOPE_END) )
+			if( (*my_it) && ((*my_it)->langTokenType() == Token::NEWLINE || (*my_it)->langTokenType() == Token::NEWLINE_BEFORE_SCOPE_END) )
 			{	
 				found_newline_after_scope = true;
 				#ifdef DEBUG_RAE2
@@ -2163,8 +2163,8 @@ public:
 		//rae::log("langElements.size(): ",langElements.size(),"\n");
 		#endif
 
-		//LangElement* elem_newline = newLangElement( set->lineNumber(), LangTokenType::NEWLINE, "\n" );
-		LangElement* elem_newline = new LangElement( set->lineNumber(), LangTokenType::NEWLINE, TypeType::UNDEFINED, "\n" );
+		//LangElement* elem_newline = newLangElement( set->lineNumber(), Token::NEWLINE, "\n" );
+		LangElement* elem_newline = new LangElement( set->lineNumber(), Token::NEWLINE, TypeType::UNDEFINED, "\n" );
 
 		if( langElements.empty() == true )
 		{
@@ -2197,7 +2197,7 @@ public:
 
 			if( found_scope_begin == false )
 			{
-				if( (*my_it) && (*my_it)->langTokenType() == LangTokenType::SCOPE_BEGIN )
+				if( (*my_it) && (*my_it)->langTokenType() == Token::SCOPE_BEGIN )
 				{
 					#ifdef DEBUG_RAE2
 					cout<<"found SCOPE_BEGIN.\n";
@@ -2217,7 +2217,7 @@ public:
 			}
 			else
 			{
-				if( (*my_it) && ((*my_it)->langTokenType() == LangTokenType::NEWLINE || (*my_it)->langTokenType() == LangTokenType::NEWLINE_BEFORE_SCOPE_END) )
+				if( (*my_it) && ((*my_it)->langTokenType() == Token::NEWLINE || (*my_it)->langTokenType() == Token::NEWLINE_BEFORE_SCOPE_END) )
 				{	
 					found_newline_after_scope = true;
 					#ifdef DEBUG_RAE2
@@ -2271,7 +2271,7 @@ public:
 	{
 		if(m_currentElement)
 		{
-			/////////cout<<"LangElement.addName: "<<LangTokenType::toString(m_currentElement->langTokenType())<<" name:>"<<set_name<<"\n");
+			/////////cout<<"LangElement.addName: "<<Token::toString(m_currentElement->langTokenType())<<" name:>"<<set_name<<"\n");
 			m_currentElement->name( set_name );
 		}
 		else cout<<"ERROR: LangElement::addNameToCurrentElement() : No m_currentElement.\n";
@@ -2282,7 +2282,7 @@ public:
 	{
 		if(m_currentElement)
 		{
-			//////////cout<<"LangElement.addType: "<<LangTokenType::toString(m_currentElement->langTokenType())<<" type:>"<<set_type<<"\n");
+			//////////cout<<"LangElement.addType: "<<Token::toString(m_currentElement->langTokenType())<<" type:>"<<set_type<<"\n");
 			m_currentElement->type( set_type );
 		}
 		else cout<<"ERROR: LangElement::addTypeToCurrentElement() : No m_currentElement.\n";
@@ -2300,11 +2300,11 @@ public:
 		}
 	}
 	
-	/*LangElement* newLangElementWithType(LangTokenType::e set_lang_token_type, string set_type )
+	/*LangElement* newLangElementWithType(Token::e set_lang_token_type, string set_type )
 	{
 		LangElement* lang_elem = new LangElement(set_lang_token_type, set_name);
 		langElements.push_back( lang_elem );
-		cout<<"LangElement.newLangElement: "<<LangTokenType::toString(set_lang_token_type)<<" name:>"<<set_name<<"<\n");
+		cout<<"LangElement.newLangElement: "<<Token::toString(set_lang_token_type)<<" name:>"<<set_name<<"<\n");
 		return lang_elem;
 	}*/
 	
@@ -2314,11 +2314,11 @@ public:
 		{
 			if( elem->name() == set_name )
 			{	
-				if( elem->langTokenType() == LangTokenType::DEFINE_FUNC_ARGUMENT )
+				if( elem->langTokenType() == Token::DEFINE_FUNC_ARGUMENT )
 				{
 					return elem;
 				}
-				else if( elem->langTokenType() == LangTokenType::DEFINE_FUNC_RETURN )
+				else if( elem->langTokenType() == Token::DEFINE_FUNC_RETURN )
 				{
 					return elem;
 				}
@@ -2357,7 +2357,7 @@ public:
 		return 0;
 	}	
 
-	LangElement* searchFirst(LangTokenType::e set_lang_token_type)
+	LangElement* searchFirst(Token::e set_lang_token_type)
 	{
 		foreach( LangElement* elem, langElements )
 		{
@@ -2370,7 +2370,7 @@ public:
 		return 0;
 	}
 
-	LangElement* searchLast(LangTokenType::e set_lang_token_type)
+	LangElement* searchLast(Token::e set_lang_token_type)
 	{
 		//foreach( LangElement* elem, langElements )
 		for( long i = langElements.size()-1l; i >= 0l; i-- )

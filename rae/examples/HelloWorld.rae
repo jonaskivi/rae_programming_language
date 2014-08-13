@@ -5,7 +5,7 @@ class Tester
 public:
 	func ()logMe()
 	{
-		log_ln("Hello ")
+		log_s("Hello ")
 	}
 	
 	int data = 2
@@ -31,7 +31,8 @@ public:
 		log("World!")
 		
 		log("tester_opt: ")
-		tester_opt?.logMe()		
+		//NOT YET: tester_opt?.logMe()
+		tester_opt.logMe()		
 	}
 	
 	func (int result) count (int param1, ref Tester param2) public
@@ -53,15 +54,17 @@ func
 {
 	val HelloWorld hello; //semicolons are allowed, but not required.
 	
-	link Tester tester_lnk = hello.tester
+	//NOT YET: link Tester tester_lnk = hello.tester
 
 	hello.sayHello()
 	
-	log_ln("5 + 2 = ")
+	log_s("5 + 2 = ")
 	
 	//the following line will not run if tester_lnk is null.
-	log(hello.count(int param1: hello.num, ref Tester param2: tester_lnk?))
+	//NOT YET: log(hello.count(int param1: hello.num, ref Tester param2: tester_lnk?))
 	
+	//NOT_YET: log(hello.count( hello.num, hello.tester ))
+
 	hello.tester.data = 3
 
 	return(0)

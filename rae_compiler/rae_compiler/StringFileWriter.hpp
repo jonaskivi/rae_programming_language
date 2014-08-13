@@ -22,9 +22,9 @@ public:
 		m_previousElement = 0;
 		m_previous2ndElement = 0;
 		m_nextElement = 0;
-		//m_previousToken = LangTokenType::UNDEFINED;
-		//m_nextToken = LangTokenType::UNDEFINED;
-		//m_previousPreviousToken = LangTokenType::UNDEFINED;
+		//m_previousToken = Token::UNDEFINED;
+		//m_nextToken = Token::UNDEFINED;
+		//m_previousPreviousToken = Token::UNDEFINED;
 
 		m_lineNeedsSemicolon = true;
 
@@ -56,37 +56,37 @@ public:
 	public: void nextElement(LangElement* set) { m_nextElement = set; }
 	protected: LangElement* m_nextElement;
 
-	public: LangTokenType::e previousToken()
+	public: Token::e previousToken()
 	{
 		if(m_previousElement == 0)
-			return LangTokenType::UNDEFINED;
+			return Token::UNDEFINED;
 		return m_previousElement->langTokenType();
 	}
-	public: LangTokenType::e previous2ndToken()
+	public: Token::e previous2ndToken()
 	{
 		if(m_previous2ndElement == 0)
-			return LangTokenType::UNDEFINED;
+			return Token::UNDEFINED;
 		return m_previous2ndElement->langTokenType();
 	}
-	public: LangTokenType::e nextToken()
+	public: Token::e nextToken()
 	{
 		if(m_nextElement == 0)
-			return LangTokenType::UNDEFINED;
+			return Token::UNDEFINED;
 		return m_nextElement->langTokenType();
 	}
 
 /*
-	public: LangTokenType::e previousToken() { return m_previousToken; }
-	public: void previousToken(LangTokenType::e set) { m_previousToken = set; }
-	protected: LangTokenType::e m_previousToken;
+	public: Token::e previousToken() { return m_previousToken; }
+	public: void previousToken(Token::e set) { m_previousToken = set; }
+	protected: Token::e m_previousToken;
 
-	public: LangTokenType::e previousPreviousToken() { return m_previousPreviousToken; }
-	public: void previousPreviousToken(LangTokenType::e set) { m_previousPreviousToken = set; }
-	protected: LangTokenType::e m_previousPreviousToken;
+	public: Token::e previousPreviousToken() { return m_previousPreviousToken; }
+	public: void previousPreviousToken(Token::e set) { m_previousPreviousToken = set; }
+	protected: Token::e m_previousPreviousToken;
 	
-	public: LangTokenType::e nextToken() { return m_nextToken; }
-	public: void nextToken(LangTokenType::e set) { m_nextToken = set; }
-	protected: LangTokenType::e m_nextToken;
+	public: Token::e nextToken() { return m_nextToken; }
+	public: void nextToken(Token::e set) { m_nextToken = set; }
+	protected: Token::e m_nextToken;
 */
 	public: bool lineNeedsSemicolon() { return m_lineNeedsSemicolon; }
 	public: void lineNeedsSemicolon(bool set) { m_lineNeedsSemicolon = set; }

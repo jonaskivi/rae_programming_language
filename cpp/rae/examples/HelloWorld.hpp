@@ -26,17 +26,15 @@ public:
 	HelloWorld();//line: 20
 	~HelloWorld();//line: 24
 	public: void sayHello();//line: 29
-	publicint32_t /*possible error, unknown token:*/count(int32_t Tester* );//line: 38
+	public: int32_t count(int32_t param1, Tester* param2);//line: 39
+	int32_t num;//line: 44
+	protected: int64_t anotherNumber;//line: 45
+	public: float afloat;//line: 46
 	
-	int32_t num;//line: 43
-	protected: int64_t anotherNumber;//line: 44
-	public: float afloat;//line: 45
-	
-	Tester tester;//line: 47
+	Tester tester;//line: 48
 	
 	Tester* tester_opt;
 };
 
-int32_t  = main(std::string [/*possible error, unknown token:*/args)
 #endif // _rae_examples_HelloWorld_hpp_
 

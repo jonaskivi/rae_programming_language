@@ -23,8 +23,8 @@ void Tester::logMe()
 
 HelloWorld::HelloWorld()
 {
-	afloat = 248.52;//line: 43
-	anotherNumber = 42;//line: 42
+	afloat = 248.52;//line: 44
+	anotherNumber = 42;//line: 43
 	num = 5;
 }
 
@@ -38,30 +38,31 @@ void HelloWorld::sayHello()
 	std::cout<<"World!"<<"\n";//line: 32
 	
 	std::cout<<"tester_opt: "<<"\n";//line: 34
-	/*possible error, unknown token:*/tester_opt?->/*possible error, unknown token:*/logMe();
+	//NOT YET: tester_opt?.logMe()
+	tester_opt->logMe();
 }
 
-HelloWorld::publicint32_t /*possible error, unknown token:*/count(int32_t Tester* )
+int32_t HelloWorld::count(int32_t param1, Tester* param2)
 {
 	return(param1 + param2->data);
 }
 
-rae.examples.HelloWorld::int32_t  = main(std::string [/*possible error, unknown token:*/args)
+int32_t main(int argc, char* const argv[])
 {
 	HelloWorld hello; //semicolons are allowed, but not required.
 	
-	Tester* tester_lnk = hello.tester;//line: 57
+	//NOT YET: link Tester tester_lnk = hello.tester
 	
-	hello.sayHello();//line: 59
+	hello.sayHello();//line: 60
 	
-	std::cout<<"5 + 2 = ";//line: 61
+	std::cout<<"5 + 2 = ";//line: 62
 	
 	//the following line will not run if tester_lnk is null.
-	std::cout<<hello./*possible error, unknown token:*/count(hello.num, Tester* param2/*possible error, unknown token:*/tester_lnk?)<<"\n";//line: 64
+	//NOT YET: log(hello.count(int param1: hello.num, ref Tester param2: tester_lnk?))
 	
-	hello.tester.data = 3;//line: 66
+	//NOT_YET: log(hello.count( hello.num, hello.tester ))
 	
-	return(0);//line: 68
-	delete tester_lnk;//line: 52
-	delete param2;
+	hello.tester.data = 3;//line: 69
+	
+	return(0);
 }
