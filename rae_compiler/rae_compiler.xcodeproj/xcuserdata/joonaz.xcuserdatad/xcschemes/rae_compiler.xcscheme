@@ -59,7 +59,7 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "/Users/joonaz/Dropbox/jonas/2014/ohjelmointi/rae_programming_language/rae/examples/HelloWorld.rae"
+            argument = "/Users/joonaz/Dropbox/jonas/2014/ohjelmointi/rae_programming_language/rae/examples/OptTester.rae"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>

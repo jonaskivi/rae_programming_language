@@ -25,15 +25,26 @@ public:
 	
 	HelloWorld();//line: 20
 	~HelloWorld();//line: 24
-	public: void sayHello();//line: 29
-	public: int32_t count(int32_t param1, Tester* param2);//line: 39
-	int32_t num;//line: 44
-	protected: int64_t anotherNumber;//line: 45
-	public: float afloat;//line: 46
+	public: void sayHello();//line: 30
+	public: int32_t count(int32_t param1, Tester* param2);//line: 40
+	int32_t num;//line: 45
+	protected: int64_t anotherNumber;//line: 46
+	public: float afloat;//line: 47
 	
-	Tester tester;//line: 48
+	//REMOVE FROM HELLO
 	
-	Tester* tester_opt;
+	Tester testerVal();//line: 51
+	Tester* testerLink();//line: 56
+	/*func (val Tester)testerVal2()
+	{
+		return(tester_opt)
+	}*/
+	
+	//REMOVE
+	
+	Tester tester;//line: 68
+	
+	Tester* tester_opt;//= new Tester 
 };
 
 #endif // _rae_examples_HelloWorld_hpp_

@@ -23,11 +23,13 @@ void Inner::logMe()
 
 Tester::Tester()
 {
-	data = 5;
+	data = 5;//line: 30
+	m_inner = new Inner();
 }
 
 Tester::~Tester()
 {
+	delete m_inner;
 }
 
 void Tester::logMe()
@@ -35,8 +37,7 @@ void Tester::logMe()
 	std::cout<<"Hello ";
 }
 
-//return type name: Inner
-val Tester::inner()
+Inner* Tester::inner()
 {
 	return(m_inner);
 }
@@ -68,19 +69,17 @@ void OptTester::sayHello()
 	tester_ref->logMe();
 }
 
-//return type name: result
 int32_t OptTester::count(int32_t param1, int32_t param2)
 {
 	return(param1 + param2);//or you could just do: result = param1 + param2
 }
 
-//return type name: 
 int32_t main(int argc, char* const argv[])
 {
 	OptTester hello; //semicolons are allowed, but not required.
-	int32_t val = 5;//line: 80
-	int32_t another_zero = 0;//line: 81
-	float i_want_to_be_zero = 0.0f;//line: 82
+	int32_t val;//line: 80
+	int32_t another_zero;//line: 81
+	float i_want_to_be_zero;//line: 82
 	
 	hello.sayHello();//line: 84
 	std::cout<<"5 + 2 = ";//line: 85
@@ -93,7 +92,8 @@ int32_t main(int argc, char* const argv[])
 	std::cout<<"\n"<<"\n";//line: 92
 	
 	hello.tester_opt->data = 3;//line: 94
-	hello.tester_opt->inner()->data = 6;//line: 95
+	//This is an error. Use opt with: tester_opt?.inner.data = 6
+	
 	//hello.tester_opt.inner.inner.inner.data = 7
 	
 	//log(""")

@@ -28,9 +28,8 @@ public:
 	int32_t data;//line: 24
 	
 	
-	//return type name: Inner
-	val inner();//line: 27
-	protected: Inner m_inner;
+	Inner* inner();//line: 27
+	protected: Inner* m_inner;
 };
 
 
@@ -41,8 +40,7 @@ public:
 	OptTester();//line: 39
 	~OptTester();//line: 43
 	public: void sayHello();//line: 48
-	public: //return type name: result
-	int32_t count(int32_t param1, int32_t param2);//line: 56
+	public: int32_t count(int32_t param1, int32_t param2);//line: 56
 	int32_t num;//line: 61
 	uint32_t num25;//line: 62
 	protected: int64_t anotherNumber;//line: 63

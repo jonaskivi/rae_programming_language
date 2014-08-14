@@ -63,8 +63,14 @@ clean:
 #	./rae_tester
 
 raehello:
+	./$(EXECUTABLE) ./rae/examples/HelloWorld.rae
 	g++ -I./cpp/ ./cpp/rae/examples/HelloWorld.cpp -o rae_hello
 	./rae_hello
+
+opttester:
+	./$(EXECUTABLE) ./rae/examples/OptTester.rae
+	g++ -I./cpp/ ./cpp/rae/examples/OptTester.cpp -o opttester
+	./opttester
 
 #all:
 #	g++ -I./rae_compiler/rae_compiler/ 
@@ -72,8 +78,10 @@ raehello:
 #	#g++ -I./cpp/ ./cpp/rae/examples/Simple.cpp -o rae_simple
 #	#g++ -I./cpp/ ./cpp/rae/examples/RaeTester.cpp ./cpp/rae/examples/Tester.cpp -o rae_tester
 #
-run:
-	./$(EXECUTABLE) ./rae/examples/HelloWorld.rae
+
+#run:
+#	./$(EXECUTABLE) ./rae/examples/HelloWorld.rae
+
 #	#./rae_hello
 #	#./rae_simple
 #	./rae_tester

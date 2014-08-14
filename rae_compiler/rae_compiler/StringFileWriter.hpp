@@ -1,4 +1,5 @@
-
+#ifndef RAE_COMPILER_STRINGFILEWRITER_HPP
+#define RAE_COMPILER_STRINGFILEWRITER_HPP
 
 
 namespace TripleOption
@@ -173,5 +174,10 @@ public:
 		fwrite( set, sizeof(char), count, outFile );
 	}
 };
+
+#endif //RAE_COMPILER_STRINGFILEWRITER_HPP
+
+
+
 
 

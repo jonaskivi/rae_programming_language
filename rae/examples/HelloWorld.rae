@@ -22,6 +22,7 @@ public:
 	
 	func ()free()
 	{
+		//free tester_opt
 	}
 	
 	public func
@@ -44,9 +45,28 @@ public:
 	protected long anotherNumber = 42
 	float afloat = 248.52
 
+	//REMOVE FROM HELLO
+
+	func (val Tester)testerVal()
+	{
+		return(tester)
+	}
+
+	func (link Tester)testerLink()
+	{
+		return(tester_opt)
+	}
+
+	/*func (val Tester)testerVal2()
+	{
+		return(tester_opt)
+	}*/
+
+	//REMOVE
+
 	val Tester tester
 
-	opt Tester tester_opt
+	opt Tester tester_opt //= new Tester 
 }
 
 func
@@ -54,7 +74,14 @@ func
 {
 	val HelloWorld hello; //semicolons are allowed, but not required.
 	
-	//NOT YET: link Tester tester_lnk = hello.tester
+	//Rae does not use = for pointing to an object. Instead use -> to point.
+	link Tester tester_lnk2 -> hello.tester_opt
+	link Tester tester_lnk -> hello.tester
+	//Should give us: Tester* tester_lnk = &hello.tester;
+
+	link Tester tester_lnk3 -> hello.testerLink
+	val Tester tester_val4 -> hello.testerVal
+	//val Tester tester_val5 -> hello.testerVal2
 
 	hello.sayHello()
 	

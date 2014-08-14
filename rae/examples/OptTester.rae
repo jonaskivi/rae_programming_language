@@ -5,7 +5,7 @@ class Inner
 public:
 	func ()logMe()
 	{
-		log_ln("Hello ")
+		log_s("Hello ")
 	}
 
 	int data = 5
@@ -17,17 +17,17 @@ class Tester
 public:
 	func ()logMe()
 	{
-		log_ln("Hello ")
+		log_s("Hello ")
 	}
 
 	int data = 5
 
 
-	func (ref Inner)inner()
+	func (link Inner)inner()
 	{
 		return(m_inner)
 	}
-	protected val Inner m_inner
+	protected ref Inner m_inner
 }
 
 
@@ -81,7 +81,7 @@ func
 	float i_want_to_be_zero
 
 	hello.sayHello()
-	log_ln("5 + 2 = ")	
+	log_s("5 + 2 = ")	
 	log(hello.count(int param1: hello.num, int param2:2))
 	
 	log("Test val: ")
@@ -91,7 +91,8 @@ func
 	log("\n")
 
 	hello.tester_opt.data = 3
-	hello.tester_opt.inner.data = 6 //This is an error. Use opt with: tester_opt?.inner.data = 6
+	//hello.tester_opt.inner.data = 6 //This is an error. Use opt with: tester_opt?.inner.data = 6
+	
 	//hello.tester_opt.inner.inner.inner.data = 7
 
 	//log("opt test:")

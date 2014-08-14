@@ -1,4 +1,5 @@
-
+#ifndef RAE_COMPILER_LANGELEMENT_HPP
+#define RAE_COMPILER_LANGELEMENT_HPP
 
 namespace Role
 {
@@ -208,11 +209,15 @@ enum e
 	SEMICOLON,//;
 	PLUS,//+
 	MINUS,//-
-	EQUALS,//=
+	EQUALS,//= //TODO rename to assignment. EQUALS is ==
 	DIVIDE,// /
 	STAR,// *
 	SMALLER_THAN,// <
 	BIGGER_THAN,// >
+
+	POINT_TO,// -> used instead of = to point references to objects etc.
+	//TODO IS_POINT_TO, // is
+	//TODO EQUALS, //== <= etc. now they are just passed through as single chars.
 
 	IF,
 	FOR,
@@ -1215,6 +1220,105 @@ public:
   		//else
   		return false;
   	}
+
+	//The statementRValue. This is important.
+	public: LangElement* statementRValue()
+	{
+		//TODO handle () handle ?. etc.
+
+		if( langTokenType() == Token::FUNC_CALL )
+		{
+			LangElement* ret_type = funcReturnType();
+			if(ret_type)
+			{
+				return ret_type->statementRValue();
+			}
+			else
+			{
+				return 0; //if a func has no return type then there's no statementRValue.
+			}
+		}
+		else if( langTokenType() == Token::USE_REFERENCE
+					|| langTokenType() == Token::USE_MEMBER
+		)
+		{
+			if( nextElement() == 0
+			|| nextElement()->langTokenType() == Token::NEWLINE
+			|| nextElement()->langTokenType() == Token::NEWLINE_BEFORE_SCOPE_END
+			|| nextElement()->langTokenType() == Token::PARENTHESIS_END
+			|| nextElement()->langTokenType() == Token::SEMICOLON
+			)
+			{
+				return this;
+			}
+			else
+			{
+				return nextElement()->statementRValue();
+			}
+		}
+		else if( langTokenType() == Token::REFERENCE_DOT )
+		{
+			if( nextElement() == 0
+			|| nextElement()->langTokenType() == Token::NEWLINE
+			|| nextElement()->langTokenType() == Token::NEWLINE_BEFORE_SCOPE_END
+			|| nextElement()->langTokenType() == Token::PARENTHESIS_END
+			|| nextElement()->langTokenType() == Token::SEMICOLON
+			)
+			{
+				cout<<"Error. No USE_REFERENCE or FUNC_CALL after REFERENCE_DOT. element: "<<toString()<<"\n";
+				return 0;
+			}
+			else
+			{
+				return nextElement()->statementRValue();
+			}	
+		}
+		else
+		{
+			//no statementRValue.
+			return 0;
+		}
+
+		cout<<"shouldn't get here.\n";
+		//assert(0);
+		return 0;
+	}
+
+	LangElement* funcReturnType()
+	{
+		if( langTokenType() != Token::FUNC_CALL )
+		{
+			cout<<"Compiler error: Trying to get funcReturnType, but this is not a FUNC_CALL. This is: "<<toString();
+			assert(0);
+		}
+
+		LangElement* first_return_elem;
+		LangElement* myelem = searchFirst(Token::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES);
+
+		if( myelem != 0 )
+		{
+			if( myelem->langTokenType() == Token::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES )
+			{
+				first_return_elem = myelem->nextElement();
+
+				if(first_return_elem != 0)
+				{
+					if( first_return_elem->langTokenType() == Token::PARENTHESIS_END_FUNC_RETURN_TYPES )
+					{
+						//Nothing between parentheses. void return type. no statementRValue, by the way.
+						return 0;
+					}
+					else
+					{
+						return first_return_elem;
+					}
+				}
+			}
+		}
+
+		//no return type.
+		return 0;
+	}
 
 	//the actual name...
 	public: string& name() { return m_name; }
@@ -2384,4 +2488,8 @@ public:
 		return 0;
 	}
 };
+
+#endif //RAE_COMPILER_LANGELEMENT_HPP
+
+
 
