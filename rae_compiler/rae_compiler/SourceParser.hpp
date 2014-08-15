@@ -6564,6 +6564,7 @@ This never gets called. Look in expecting NAME thing...
 		cleanUpUnknownTokens(unknown_tokens);
 	}
 
+	#include "SourceValidate.hpp"
 
 	#include "SourceWriter.hpp"
 

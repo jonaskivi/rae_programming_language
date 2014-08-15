@@ -316,6 +316,28 @@ public:
 		return true;
 	}
 
+	bool validate()
+	{
+		if(sourceParsers.size() == 0)
+		{
+			cout<<"No parsed sources.\n";
+			return false;
+		}
+
+		bool ret = true;
+
+		foreach(SourceParser* a_parser, sourceParsers)
+		{
+			if( a_parser->validate() == false )
+			{
+				ret = false;
+			}
+			
+		}
+
+		return ret;
+	}
+
 	//Write to default path. Which is workingPath + "/cpp/"
 	bool write()
 	{
@@ -378,6 +400,7 @@ int main (int argc, char * const argv[])
 	}
 
 	langCompiler.parse();
+	langCompiler.validate();
 	langCompiler.write();
 
 	return 0;
