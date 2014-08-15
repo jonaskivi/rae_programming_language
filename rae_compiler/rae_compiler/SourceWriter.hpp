@@ -16,7 +16,7 @@
 				//this LangElement, but maybe that doesn't matter that much,
 				//they'll be members of different things anyway, and might not
 				//be related.
-				//writer.nextToken( langElements[i+1]->langTokenType() );
+				//writer.nextToken( langElements[i+1]->token() );
 				writer.nextElement( set_elem.langElements[i+1] );
 			}
 			//set_elem.langElements[i]->write(writer);
@@ -28,7 +28,13 @@
 	{
 		//int count_elem = 0;
 
-		switch(set_elem.langTokenType())
+		if(set_elem.parseError() == ParseError::SYNTAX_ERROR)
+		{
+			//writer.writeString("/*ERROR*/");
+			writer.writeString(" RAE ERROR ");
+		}
+
+		switch(set_elem.token())
 		{
 			default:
 				//writer.writeIndents();
@@ -48,7 +54,7 @@
 							//this LangElement, but maybe that doesn't matter that much,
 							//they'll be members of different things anyway, and might not
 							//be related.
-							//writer.nextToken( langElements[i+1]->langTokenType() );
+							//writer.nextToken( langElements[i+1]->token() );
 							writer.nextElement( set_elem.langElements[i+1] );
 						}
 						langElements[i]->write(writer);
@@ -450,6 +456,20 @@
 
 						if( got_statementRValue != 0 )
 						{
+							cout<<"GOT rvalue: "<<got_statementRValue->toString()<<"\n";
+
+							//test for link to temp val, which is an error.
+							if(writer.nextElement()->token() == Token::FUNC_CALL)
+							{
+								if( got_statementRValue->typeType() == TypeType::VAL
+								|| got_statementRValue->typeType() == TypeType::BUILT_IN_TYPE )
+								{
+									writer.writeString( "ERROR /*point to temporary object.*/" );
+									reportError("pointing a link to a temporary object returned by function call is not possible.", &set_elem);
+								}
+							}
+
+							//This could be "else", but we'll write it anyway, even though the test is done twice in FUNC_CALL case.
 							if( got_statementRValue->typeType() == TypeType::VAL
 								|| got_statementRValue->typeType() == TypeType::BUILT_IN_TYPE )
 							{
@@ -1102,7 +1122,7 @@
 				{
 					writer.lineNeedsSemicolon(false);
 				}
-				else if( set_elem.parent() && set_elem.parent()->langTokenType() == Token::CLASS )
+				else if( set_elem.parent() && set_elem.parent()->token() == Token::CLASS )
 				//hpp but no main... main needs no public... and so don't global funcs.
 				{
 					writer.lineNeedsSemicolon(true);
@@ -1148,7 +1168,7 @@
 
 
 					//main only in cpp. other func returns in both.
-					if( set_elem.langTokenType() == Token::FUNC || (set_elem.langTokenType() == Token::MAIN && writer.isHeader() == false) )
+					if( set_elem.token() == Token::FUNC || (set_elem.token() == Token::MAIN && writer.isHeader() == false) )
 					{
 						//NOT: reuse myelem //<-- That might be a good keyword for Rae! Not really.
 						//LangElement* myelem = set_elem.langElements.front();
@@ -1160,7 +1180,7 @@
 
 						if( myelem != 0 )
 						{
-							if( myelem->langTokenType() == Token::DEFINE_FUNC_RETURN )
+							if( myelem->token() == Token::DEFINE_FUNC_RETURN )
 							{
 								//These three lines just document the return type name:
 								writer.writeString( "//return type name: " );
@@ -1185,13 +1205,13 @@
 
 						if( myelem != 0 )
 						{
-							if( myelem->langTokenType() == Token::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES )
+							if( myelem->token() == Token::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES )
 							{
 								first_return_elem = myelem->nextElement();
 
 								if(first_return_elem != 0)
 								{
-									if( first_return_elem->langTokenType() == Token::PARENTHESIS_END_FUNC_RETURN_TYPES )
+									if( first_return_elem->token() == Token::PARENTHESIS_END_FUNC_RETURN_TYPES )
 									{
 										//Nothing between parentheses. Mark void return type.
 										////rae::log("No DEFINE_FUNC_RETURN: it was: ", myelem->toString();
@@ -1203,7 +1223,7 @@
 										//we write the first return type here.
 										writeElement(writer, *first_return_elem);
 									}
-									/*else if( first_return_elem->langTokenType() == Token::DEFINE_REFERENCE )
+									/*else if( first_return_elem->token() == Token::DEFINE_REFERENCE )
 									{
 										//These three lines just document the return type name:
 										writer.writeString( "//return type name: " );
@@ -1246,7 +1266,7 @@
 
 						if( writer.isHeader() == false )//cpp
 						{
-							if( set_elem.langTokenType() != Token::MAIN && set_elem.parent() )
+							if( set_elem.token() != Token::MAIN && set_elem.parent() )
 							{
 								//This one writes the class name in cpp func implementations.
 								//Class::funcName(params)
@@ -1257,7 +1277,7 @@
 
 						writer.writeString( set_elem.name() );
 					}//if func
-					else if( set_elem.langTokenType() == Token::CONSTRUCTOR )
+					else if( set_elem.token() == Token::CONSTRUCTOR )
 					{
 						if( set_elem.parent() )
 						{
@@ -1271,7 +1291,7 @@
 							//writer.writeString( "__new" + set_elem.parent()->name() );//for a struct "constructor"
 						}
 					}
-					else if( set_elem.langTokenType() == Token::DESTRUCTOR )
+					else if( set_elem.token() == Token::DESTRUCTOR )
 					{
 						if( set_elem.parent() )
 						{
@@ -1295,21 +1315,21 @@
 
 				if( writer.isHeader() == false )//cpp
 				{
-					if( set_elem.langTokenType() == Token::MAIN )
+					if( set_elem.token() == Token::MAIN )
 					{
 						writer.writeString( "(int argc, char* const argv[])" );
 						/*
 						foreach( LangElement* elem, set_elem.langElements )
 						{
-							if( elem->langTokenType() == Token::DEFINE_FUNC_RETURN )
+							if( elem->token() == Token::DEFINE_FUNC_RETURN )
 							{
 								//do nothing
 							}
-							else if( elem->langTokenType() == Token::VISIBILITY )
+							else if( elem->token() == Token::VISIBILITY )
 							{
 								//do nothing
 							}
-							else if( elem->langTokenType() == Token::DEFINE_FUNC_ARGUMENT )
+							else if( elem->token() == Token::DEFINE_FUNC_ARGUMENT )
 							{
 								//DON'T WANT THESE FOR MAIN, FOR NOW...
 								
@@ -1318,11 +1338,11 @@
 								//writer.writeString( elem->name() );
 								
 							}
-							else if( elem->langTokenType() == Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES )
+							else if( elem->token() == Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES )
 							{
 								//already written for main
 							}
-							else if( elem->langTokenType() == Token::PARENTHESIS_END_FUNC_PARAM_TYPES )
+							else if( elem->token() == Token::PARENTHESIS_END_FUNC_PARAM_TYPES )
 							{
 								//already written for main...
 
@@ -1347,19 +1367,19 @@
 									//this LangElement, but maybe that doesn't matter that much,
 									//they'll be members of different things anyway, and might not
 									//be related.
-									//writer.nextToken( set_elem.langElements[i+1]->langTokenType() );
+									//writer.nextToken( set_elem.langElements[i+1]->token() );
 									writer.nextElement( set_elem.langElements[i+1] );
 								}
 
-								if( set_elem.langElements[i]->langTokenType() == Token::DEFINE_FUNC_RETURN )
+								if( set_elem.langElements[i]->token() == Token::DEFINE_FUNC_RETURN )
 								{
 									//do nothing
 								}
-								else if( set_elem.langElements[i]->langTokenType() == Token::VISIBILITY )
+								else if( set_elem.langElements[i]->token() == Token::VISIBILITY )
 								{
 									//do nothing
 								}
-								else if( set_elem.langElements[i]->langTokenType() == Token::DEFINE_FUNC_ARGUMENT )
+								else if( set_elem.langElements[i]->token() == Token::DEFINE_FUNC_ARGUMENT )
 								{
 									//DON'T WANT THESE FOR MAIN, FOR NOW...
 									
@@ -1368,11 +1388,11 @@
 									//writer.writeString( elem->name() );
 									
 								}
-								else if( set_elem.langElements[i]->langTokenType() == Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES )
+								else if( set_elem.langElements[i]->token() == Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES )
 								{
 									//already written for main
 								}
-								else if( set_elem.langElements[i]->langTokenType() == Token::PARENTHESIS_END_FUNC_PARAM_TYPES )
+								else if( set_elem.langElements[i]->token() == Token::PARENTHESIS_END_FUNC_PARAM_TYPES )
 								{
 									//already written for main...
 
@@ -1380,7 +1400,7 @@
 									//writer.writeChar( ')' );
 									//writer.writeChar( '\n' );
 								}
-								else if(set_elem.langElements[i]->langTokenType() == Token::DEFINE_REFERENCE
+								else if(set_elem.langElements[i]->token() == Token::DEFINE_REFERENCE
 									&& (set_elem.langElements[i]->role() == Role::FUNC_RETURN || set_elem.langElements[i]->role() == Role::FUNC_PARAMETER))
 								{
 									//Don't want these for MAIN for now. Maybe later TODO.
@@ -1397,7 +1417,7 @@
 										cout<<"TODO multiple return types handling.\n";
 									}*/
 								}
-								else if( set_elem.langElements[i]->langTokenType() == Token::SCOPE_BEGIN )
+								else if( set_elem.langElements[i]->token() == Token::SCOPE_BEGIN )
 								{
 									got_first_scope = true;
 									writer.writeChar('\n'); //one extra newline, because we missed it.
@@ -1414,7 +1434,7 @@
 					}
 				}//end isHeader cpp
 				
-					if( set_elem.langTokenType() == Token::MAIN )
+					if( set_elem.token() == Token::MAIN )
 					{
 						//do nothing for main, it's already been written...
 					}
@@ -1423,22 +1443,22 @@
 						/*
 						foreach( LangElement* elem, set_elem.langElements )
 						{
-							if( elem->langTokenType() == Token::DEFINE_FUNC_RETURN )
+							if( elem->token() == Token::DEFINE_FUNC_RETURN )
 							{
 								//do nothing
 							}
-							else if( elem->langTokenType() == Token::VISIBILITY )
+							else if( elem->token() == Token::VISIBILITY )
 							{
 								//do nothing
 							}
-							else if( elem->langTokenType() == Token::DEFINE_FUNC_ARGUMENT )
+							else if( elem->token() == Token::DEFINE_FUNC_ARGUMENT )
 							{
 								writer.writeString( elem->type() );
 								writer.writeChar( ' ' );
 								writer.writeString( elem->name() );
 								
 							}
-							//else if( elem->langTokenType() == Token::PARENTHESIS_END_FUNC_PARAM_TYPES )
+							//else if( elem->token() == Token::PARENTHESIS_END_FUNC_PARAM_TYPES )
 							//{
 								/////////writer.writeChar( ' ' );
 							//	writer.writeChar( ')' );
@@ -1459,19 +1479,19 @@
 									//this LangElement, but maybe that doesn't matter that much,
 									//they'll be members of different things anyway, and might not
 									//be related.
-									//writer.nextToken( set_elem.langElements[i+1]->langTokenType() );
+									//writer.nextToken( set_elem.langElements[i+1]->token() );
 									writer.nextElement( set_elem.langElements[i+1] );
 								}
 
-								if( set_elem.langElements[i]->langTokenType() == Token::DEFINE_FUNC_RETURN )
+								if( set_elem.langElements[i]->token() == Token::DEFINE_FUNC_RETURN )
 								{
 									//do nothing, already written
 								}
-								else if( set_elem.langElements[i]->langTokenType() == Token::VISIBILITY )
+								else if( set_elem.langElements[i]->token() == Token::VISIBILITY )
 								{
 									//do nothing, already written
 								}
-								else if( set_elem.langElements[i]->langTokenType() == Token::DEFINE_FUNC_ARGUMENT )
+								else if( set_elem.langElements[i]->token() == Token::DEFINE_FUNC_ARGUMENT )
 								{
 									cout<<"DEFINE_FUNC_ARGUMENT should be removed now We'll see.\n";
 									assert(0);
@@ -1509,13 +1529,13 @@
 									}
 									
 								}
-								/*else if( set_elem.langElements[i]->langTokenType() == Token::PARENTHESIS_END_FUNC_PARAM_TYPES )
+								/*else if( set_elem.langElements[i]->token() == Token::PARENTHESIS_END_FUNC_PARAM_TYPES )
 								{
 									/////////writer.writeChar( ' ' );
 									writer.writeChar( ')' );
 									///////writer.writeChar( '\n' );
 								}*/
-								else if( set_elem.langElements[i]->langTokenType() == Token::NEWLINE)
+								else if( set_elem.langElements[i]->token() == Token::NEWLINE)
 								{
 									//handle this separately because of isHeader.
 									
@@ -1530,15 +1550,15 @@
 
 								}
 								/*
-								else if( set_elem.langElements[i]->langTokenType() == Token::PARENTHESIS_BEGIN
-									|| set_elem.langElements[i]->langTokenType() == Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES
-									|| set_elem.langElements[i]->langTokenType() == Token::PARENTHESIS_END
-									|| set_elem.langElements[i]->langTokenType() == Token::PARENTHESIS_END_FUNC_PARAM_TYPES)
+								else if( set_elem.langElements[i]->token() == Token::PARENTHESIS_BEGIN
+									|| set_elem.langElements[i]->token() == Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES
+									|| set_elem.langElements[i]->token() == Token::PARENTHESIS_END
+									|| set_elem.langElements[i]->token() == Token::PARENTHESIS_END_FUNC_PARAM_TYPES)
 								{
 									//handle this separately because of isHeader.
 									set_elem.langElements[i]->write(writer);
 								}*/
-								else if(set_elem.langElements[i]->langTokenType() == Token::DEFINE_REFERENCE
+								else if(set_elem.langElements[i]->token() == Token::DEFINE_REFERENCE
 									&& set_elem.langElements[i]->role() == Role::FUNC_RETURN)
 								{
 									//just to check that the first return type doesn't get written twice.
@@ -1557,7 +1577,7 @@
 								{
 									/*
 									debug:
-									if( langTokenType() == Token::CONSTRUCTOR )
+									if( token() == Token::CONSTRUCTOR )
 									{
 										//rae::log("const: elem: ", i, " is ", set_elem.langElements[i]->toString(), "\n");
 
@@ -1589,7 +1609,7 @@
 					if( count_elem == 0)
 					{
 						//the first element
-						if( elem->langTokenType() == Token::RETURN)
+						if( elem->token() == Token::RETURN)
 						{
 							//These three lines just do document the return type name:
 							writer.writeString( "//return type name: " );
@@ -1650,9 +1670,9 @@
 							//OK. This is important:
 							//Only write funcs, destructors and constructors for
 							//cpp. Add an extra newline between.
-							if( set_elem.langElements[i]->langTokenType() == Token::FUNC
-								|| set_elem.langElements[i]->langTokenType() == Token::CONSTRUCTOR
-								|| set_elem.langElements[i]->langTokenType() == Token::DESTRUCTOR
+							if( set_elem.langElements[i]->token() == Token::FUNC
+								|| set_elem.langElements[i]->token() == Token::CONSTRUCTOR
+								|| set_elem.langElements[i]->token() == Token::DESTRUCTOR
 							)
 							{
 								if(i+1 < set_elem.langElements.size())
@@ -1661,7 +1681,7 @@
 									//this LangElement, but maybe that doesn't matter that much,
 									//they'll be members of different things anyway, and might not
 									//be related.
-									//writer.nextToken( set_elem.langElements[i+1]->langTokenType() );
+									//writer.nextToken( set_elem.langElements[i+1]->token() );
 									writer.nextElement( set_elem.langElements[i+1] );
 								}
 								//set_elem.langElements[i]->write(writer);
@@ -1779,7 +1799,7 @@
 					int not_on_first = 0;
 					foreach( LangElement* elem, set_elem.langElements )
 					{
-						if( elem->langTokenType() == Token::IMPORT_NAME )
+						if( elem->token() == Token::IMPORT_NAME )
 						{
 							if(not_on_first > 0)
 							{
@@ -1798,7 +1818,7 @@
 					}
 					writer.writeString( string(".hpp\"") );
 
-					if( set_elem.nextElement() && set_elem.nextElement()->langTokenType() != Token::IMPORT )
+					if( set_elem.nextElement() && set_elem.nextElement()->token() != Token::IMPORT )
 					{
 						writer.writeChar('\n');
 					}
@@ -1828,7 +1848,7 @@
 					writer.writeString( string("#ifndef _") );
 					foreach( LangElement* elem, set_elem.langElements )
 					{
-						if( elem->langTokenType() == Token::MODULE_NAME )
+						if( elem->token() == Token::MODULE_NAME )
 						{
 							writer.writeString( elem->name() );
 							writer.writeChar('_');
@@ -1843,7 +1863,7 @@
 					writer.writeString( string("#define _") );
 					foreach( LangElement* elem, set_elem.langElements )
 					{
-						if( elem->langTokenType() == Token::MODULE_NAME )
+						if( elem->token() == Token::MODULE_NAME )
 						{
 							writer.writeString( elem->name() );
 							writer.writeChar('_');
@@ -1893,7 +1913,7 @@
 					
 					/*foreach( LangElement* elem, set_elem.langElements )
 					{
-						if( elem->langTokenType() == Token::MODULE_NAME )
+						if( elem->token() == Token::MODULE_NAME )
 						{
 							writer.writeString( elem->name() );
 							writer.writeChar('_');
@@ -1901,11 +1921,11 @@
 					}*/
 
 					//our set_elem.parent is the module now:
-					if( set_elem.parent() && set_elem.parent()->langTokenType() == Token::MODULE)
+					if( set_elem.parent() && set_elem.parent()->token() == Token::MODULE)
 					{
 						foreach( LangElement* elem, set_elem.parent()->langElements )
 						{
-							if( elem->langTokenType() == Token::MODULE_NAME )
+							if( elem->token() == Token::MODULE_NAME )
 							{
 								writer.writeString( elem->name() );
 								writer.writeChar('_');
@@ -1931,7 +1951,7 @@
 		}
 		
 		//writer.previousPreviousToken( writer.previousToken() );
-		//writer.previousToken( langTokenType() );
+		//writer.previousToken( token() );
 		writer.previous2ndElement( writer.previousElement() );
 		writer.previousElement( &set_elem );
 	}

@@ -1,6 +1,16 @@
 #ifndef RAE_COMPILER_LANGELEMENT_HPP
 #define RAE_COMPILER_LANGELEMENT_HPP
 
+namespace ParseError
+{
+enum e
+{
+	UNDEFINED,
+	SYNTAX_ERROR
+};	
+}
+
+
 namespace Role
 {
 enum e
@@ -940,10 +950,11 @@ public:
 	
 	LangElement()
 	{
-		m_langTokenType = Token::UNDEFINED;
+		m_token = Token::UNDEFINED;
 		m_typeType = TypeType::UNDEFINED;
 		m_builtInType = BuiltInType::UNDEFINED;
 		m_role = Role::UNDEFINED;
+		m_parseError = ParseError::UNDEFINED;
 		m_currentElement = 0;
 		m_parent = 0;
 		m_initData = 0;
@@ -956,7 +967,7 @@ public:
 	LangElement(LineNumber& set_line_number, Token::e set_lang_token_type, TypeType::e set_type_type, string set_name = "", string set_type = "")
 	{
 		lineNumber(set_line_number);
-		m_langTokenType = set_lang_token_type;
+		m_token = set_lang_token_type;
 		m_currentElement = 0;
 		m_parent = 0;
 		m_initData = 0;
@@ -976,7 +987,7 @@ public:
 	/*
 	LangElement(LangElement& copy_from)
 	{
-		m_langTokenType = copy_from.m_langTokenType;
+		m_token = copy_from.m_token;
 		m_lineNumber.copyFrom( copy_from.m_lineNumber );
 		m_currentElement = copy_from.m_currentElement;
 		m_parent = copy_from.m_parent;
@@ -1009,7 +1020,7 @@ public:
 	{
 		LangElement* res = new LangElement();
 
-		res->m_langTokenType = m_langTokenType;
+		res->m_token = m_token;
 		res->m_lineNumber.copyFrom( m_lineNumber );
 		res->m_currentElement = m_currentElement;
 		res->m_parent = m_parent;
@@ -1026,6 +1037,7 @@ public:
 		res->m_typeType = m_typeType;
 		res->m_role = m_role;
 		res->m_type = m_type; //automatically tests if it is built_in_type.
+		res->m_parseError = m_parseError;
 
 		foreach(LangElement* an_elem, langElements)
 		{
@@ -1077,17 +1089,30 @@ public:
 	
 	string toString()
 	{
-		string ret = langTokenTypeString() + " typetype: " + typeTypeString() + " name: " + name() + " type: " + type() + "<. line: " + numberToString(lineNumber().line);
+		string ret = tokenString() + " typetype: " + typeTypeString() + " name: " + name() + " type: " + type() + "<. line: " + numberToString(lineNumber().line);
 		return ret;
 	}
 
 	//a debugging help:
+
+	void printOutLangElements()
+	{
+		cout<<"printOutLangElements():\n";
+		uint i = 0;
+		foreach( LangElement* elem, langElements )
+		{
+			cout<<i<<": "<<elem->toString()<<"\n";
+			i++;
+		}
+		cout<<"\n";
+	}
+
 	void printOutListOfFunctions()
 	{
 		cout<<"Functions in "<<toString()<<"\n-------------------------\n";
 		foreach(LangElement* elem, langElements)
 		{
-			if( elem->langTokenType() == Token::FUNC )
+			if( elem->token() == Token::FUNC )
 			{
 				cout<<elem->toString()<<"\n";
 			}
@@ -1100,7 +1125,7 @@ public:
 		cout<<"Defined references in "<<toString()<<"\n-------------------------\n";
 		foreach(LangElement* elem, langElements)
 		{
-			if( elem->langTokenType() == Token::DEFINE_REFERENCE )
+			if( elem->token() == Token::DEFINE_REFERENCE )
 			{
 				cout<<elem->toString()<<"\n";
 			}
@@ -1111,7 +1136,7 @@ public:
 	//a specialized func for use with Token::IMPORT
 	string importName(string separator_char_str = ".")
 	{
-		if(langTokenType() != Token::IMPORT)
+		if(token() != Token::IMPORT)
 		{
 			cout<<"Error: this is not an import. Can't get importName(): "<<toString()<<"\n";
 			return "Not an import.";
@@ -1123,7 +1148,7 @@ public:
 
 		foreach(LangElement* elem, langElements)
 		{
-			if( elem->langTokenType() == Token::IMPORT_NAME )
+			if( elem->token() == Token::IMPORT_NAME )
 			{
 				if(not_on_first > 0)
 				{
@@ -1145,32 +1170,32 @@ public:
 	}
 
 
-	public: Token::e langTokenType() { return m_langTokenType; }
-	public: void langTokenType(Token::e set) { m_langTokenType = set; }
-	protected: Token::e m_langTokenType;
+	public: Token::e token() { return m_token; }
+	public: void token(Token::e set) { m_token = set; }
+	protected: Token::e m_token;
 
-	public: string langTokenTypeString() { return Token::toString(m_langTokenType); }
+	public: string tokenString() { return Token::toString(m_token); }
 
 	public: string typeTypeString() { return TypeType::toString(m_typeType); }
 	
 	public: bool isDefinition()
 	{
-		if( langTokenType() == Token::DEFINE_REFERENCE
-			//|| langTokenType() == Token::DEFINE_REFERENCE_IN_CLASS
-			//|| langTokenType() == Token::DEFINE_ARRAY
-			//|| langTokenType() == Token::DEFINE_ARRAY_IN_CLASS
-			//|| langTokenType() == Token::DEFINE_VECTOR
-			//|| langTokenType() == Token::DEFINE_VECTOR_IN_CLASS
-			//|| langTokenType() == Token::DEFINE_BUILT_IN_TYPE
-			//|| langTokenType() == Token::DEFINE_BUILT_IN_TYPE_IN_CLASS
-			|| langTokenType() == Token::CLASS
-			|| langTokenType() == Token::ENUM
-			|| langTokenType() == Token::FUNC
-			|| langTokenType() == Token::CONSTRUCTOR
-			|| langTokenType() == Token::DESTRUCTOR
-			|| langTokenType() == Token::MAIN
-			|| langTokenType() == Token::DEFINE_FUNC_ARGUMENT
-			|| langTokenType() == Token::DEFINE_FUNC_RETURN
+		if( token() == Token::DEFINE_REFERENCE
+			//|| token() == Token::DEFINE_REFERENCE_IN_CLASS
+			//|| token() == Token::DEFINE_ARRAY
+			//|| token() == Token::DEFINE_ARRAY_IN_CLASS
+			//|| token() == Token::DEFINE_VECTOR
+			//|| token() == Token::DEFINE_VECTOR_IN_CLASS
+			//|| token() == Token::DEFINE_BUILT_IN_TYPE
+			//|| token() == Token::DEFINE_BUILT_IN_TYPE_IN_CLASS
+			|| token() == Token::CLASS
+			|| token() == Token::ENUM
+			|| token() == Token::FUNC
+			|| token() == Token::CONSTRUCTOR
+			|| token() == Token::DESTRUCTOR
+			|| token() == Token::MAIN
+			|| token() == Token::DEFINE_FUNC_ARGUMENT
+			|| token() == Token::DEFINE_FUNC_RETURN
 		)
 		{
 			return true;
@@ -1181,10 +1206,10 @@ public:
 
 	public: bool isFunc()
 	{
-		if( langTokenType() == Token::FUNC
-			|| langTokenType() == Token::CONSTRUCTOR
-			|| langTokenType() == Token::DESTRUCTOR
-			|| langTokenType() == Token::MAIN
+		if( token() == Token::FUNC
+			|| token() == Token::CONSTRUCTOR
+			|| token() == Token::DESTRUCTOR
+			|| token() == Token::MAIN
 		)
 		{
 			return true;
@@ -1195,12 +1220,12 @@ public:
 
 	public: bool isUseReference()
 	{
-		if( langTokenType() == Token::USE_REFERENCE
-			//|| langTokenType() == Token::USE_ARRAY
-			//|| langTokenType() == Token::USE_VECTOR
-			//|| langTokenType() == Token::USE_BUILT_IN_TYPE
-			|| langTokenType() == Token::USE_MEMBER
-			|| langTokenType() == Token::FUNC_CALL
+		if( token() == Token::USE_REFERENCE
+			//|| token() == Token::USE_ARRAY
+			//|| token() == Token::USE_VECTOR
+			//|| token() == Token::USE_BUILT_IN_TYPE
+			|| token() == Token::USE_MEMBER
+			|| token() == Token::FUNC_CALL
 		)
 		{
 			return true;
@@ -1212,8 +1237,8 @@ public:
 	public: bool isUserDefinableToken()
 	{
 		//We need to add other user defined types here later...
-		if( langTokenType() == Token::CLASS
-			|| langTokenType() == Token::ENUM )
+		if( token() == Token::CLASS
+			|| token() == Token::ENUM )
   		{
   			return true;
   		}
@@ -1224,29 +1249,44 @@ public:
 	//The statementRValue. This is important.
 	public: LangElement* statementRValue()
 	{
+		#ifdef DEBUG_RAE_RVALUE
+		cout<<"LangElement::statementRValue() START.\n";
+		#endif
+
 		//TODO handle () handle ?. etc.
 
-		if( langTokenType() == Token::FUNC_CALL )
+		if( token() == Token::FUNC_CALL )
 		{
+			#ifdef DEBUG_RAE_RVALUE
+			cout<<"LangElement::statementRValue() it is a FUNC_CALL.\n";
+			#endif
+
 			LangElement* ret_type = funcReturnType();
 			if(ret_type)
 			{
-				return ret_type->statementRValue();
+				#ifdef DEBUG_RAE_RVALUE
+				cout<<"LangElement::statementRValue() and it has a funcReturnType().\n";
+				#endif
+				//return ret_type->statementRValue();
+				return ret_type;
 			}
 			else
 			{
+				#ifdef DEBUG_RAE_RVALUE
+				cout<<"LangElement::statementRValue() bohoo. no funcReturnType() while it is a FUNC_CALL. Strange. Odd. Probably an error: "<<toString()<<"\n";
+				#endif
 				return 0; //if a func has no return type then there's no statementRValue.
 			}
 		}
-		else if( langTokenType() == Token::USE_REFERENCE
-					|| langTokenType() == Token::USE_MEMBER
+		else if( token() == Token::USE_REFERENCE
+					|| token() == Token::USE_MEMBER
 		)
 		{
 			if( nextElement() == 0
-			|| nextElement()->langTokenType() == Token::NEWLINE
-			|| nextElement()->langTokenType() == Token::NEWLINE_BEFORE_SCOPE_END
-			|| nextElement()->langTokenType() == Token::PARENTHESIS_END
-			|| nextElement()->langTokenType() == Token::SEMICOLON
+			|| nextElement()->token() == Token::NEWLINE
+			|| nextElement()->token() == Token::NEWLINE_BEFORE_SCOPE_END
+			|| nextElement()->token() == Token::PARENTHESIS_END
+			|| nextElement()->token() == Token::SEMICOLON
 			)
 			{
 				return this;
@@ -1256,13 +1296,13 @@ public:
 				return nextElement()->statementRValue();
 			}
 		}
-		else if( langTokenType() == Token::REFERENCE_DOT )
+		else if( token() == Token::REFERENCE_DOT )
 		{
 			if( nextElement() == 0
-			|| nextElement()->langTokenType() == Token::NEWLINE
-			|| nextElement()->langTokenType() == Token::NEWLINE_BEFORE_SCOPE_END
-			|| nextElement()->langTokenType() == Token::PARENTHESIS_END
-			|| nextElement()->langTokenType() == Token::SEMICOLON
+			|| nextElement()->token() == Token::NEWLINE
+			|| nextElement()->token() == Token::NEWLINE_BEFORE_SCOPE_END
+			|| nextElement()->token() == Token::PARENTHESIS_END
+			|| nextElement()->token() == Token::SEMICOLON
 			)
 			{
 				cout<<"Error. No USE_REFERENCE or FUNC_CALL after REFERENCE_DOT. element: "<<toString()<<"\n";
@@ -1286,35 +1326,82 @@ public:
 
 	LangElement* funcReturnType()
 	{
-		if( langTokenType() != Token::FUNC_CALL )
+		if( token() != Token::FUNC && token() != Token::FUNC_CALL )
 		{
-			cout<<"Compiler error: Trying to get funcReturnType, but this is not a FUNC_CALL. This is: "<<toString();
+			cout<<"Compiler error: Trying to get funcReturnType, but this is not a FUNC or a FUNC_CALL. This is: "<<toString();
 			assert(0);
 		}
 
+		if( token() == Token::FUNC_CALL )
+		{
+			if(definitionElement() != 0)
+			{
+				return definitionElement()->funcReturnType();
+			}
+			else
+			{
+				cout<<"Couldn't get funcReturnType for FUNC_CALL, because it's definition is not (yet) found."<<toString()<<"\n";
+				assert(0);
+			}
+		}
+		//else it's a FUNC:
+				
 		LangElement* first_return_elem;
 		LangElement* myelem = searchFirst(Token::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES);
 
 		if( myelem != 0 )
 		{
-			if( myelem->langTokenType() == Token::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES )
+			#ifdef DEBUG_RAE_RVALUE
+			cout<<"LangElement::funcReturnType() found PARENTHESIS_BEGIN_FUNC_RETURN_TYPES. ok.\n";
+			#endif
+
+			if( myelem->token() == Token::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES )
 			{
 				first_return_elem = myelem->nextElement();
 
 				if(first_return_elem != 0)
 				{
-					if( first_return_elem->langTokenType() == Token::PARENTHESIS_END_FUNC_RETURN_TYPES )
+					if( first_return_elem->token() == Token::PARENTHESIS_END_FUNC_RETURN_TYPES )
 					{
+						#ifdef DEBUG_RAE_RVALUE
+						cout<<"LangElement::funcReturnType() nothing between parentheses. void return type.\n";
+						#endif
 						//Nothing between parentheses. void return type. no statementRValue, by the way.
 						return 0;
 					}
 					else
 					{
+						#ifdef DEBUG_RAE_RVALUE
+						cout<<"LangElement::funcReturnType() first return element is: "<<first_return_elem->toString()<<"\n";
+						#endif
 						return first_return_elem;
 					}
 				}
 			}
 		}
+
+		#ifdef DEBUG_RAE_RVALUE
+		cout<<"LangElement::funcReturnType() couldn't find PARENTHESIS_BEGIN_FUNC_RETURN_TYPES from func. Error."<<toString()<<"\n";
+		
+		myelem = searchFirst(Token::PARENTHESIS_BEGIN);
+
+		if( myelem != 0 )
+		{
+			cout<<"but found PARENTHESIS_BEGIN.\n";
+			first_return_elem = myelem->nextElement();
+			if(first_return_elem != 0)
+			{
+				cout<<"Followed by: "<<first_return_elem->toString()<<"\n";
+			}
+		}
+		else
+		{
+			printOutLangElements();
+		}
+
+		#endif
+
+
 
 		//no return type.
 		return 0;
@@ -1406,7 +1493,7 @@ public:
 		//if it has one. there should be only one child.
 		foreach(LangElement* set_elem, langElements)
 		{
-			if(set_elem->langTokenType() == Token::TEMPLATE_SECOND_TYPE)
+			if(set_elem->token() == Token::TEMPLATE_SECOND_TYPE)
 				return set_elem->type();
 		}
         //else
@@ -1431,7 +1518,7 @@ public:
 		//if it has one. there should be only one child.
 		foreach(LangElement* set_elem, langElements)
 		{
-			if(set_elem->langTokenType() == Token::TEMPLATE_SECOND_TYPE)
+			if(set_elem->token() == Token::TEMPLATE_SECOND_TYPE)
 				return set_elem->typeInCpp();
 		}
 		//else
@@ -1454,6 +1541,10 @@ public:
 	public: Role::e role() { return m_role; }
 	public: void role(Role::e set) { m_role = set; }
 	protected: Role::e m_role;
+
+	public: ParseError::e parseError() { return m_parseError; }
+	public: void parseError(ParseError::e set) { m_parseError = set; }
+	protected: ParseError::e m_parseError;
 
 	//the type is here, if it's a built_in_type, NOW:
 	//The reason for this separate builtIntype thing is that
@@ -1506,12 +1597,12 @@ public:
 	{
 		if(m_previousElement == 0)
 			return Token::UNDEFINED;
-		return m_previousElement->langTokenType();
+		return m_previousElement->token();
 	}
 	public: Token::e previous2ndToken()
 	{
 		if(m_previousElement && m_previousElement->m_previousElement)
-			return m_previousElement->m_previousElement->langTokenType();
+			return m_previousElement->m_previousElement->token();
 		//else
 		return Token::UNDEFINED;
 	}
@@ -1519,7 +1610,7 @@ public:
 	{
 		if(m_nextElement == 0)
 			return Token::UNDEFINED;
-		return m_nextElement->langTokenType();
+		return m_nextElement->token();
 	}
 
 	//
@@ -1612,7 +1703,7 @@ public:
 
 	bool isInClass()
 	{
-		if(parent() && parent()->langTokenType() == Token::CLASS)
+		if(parent() && parent()->token() == Token::CLASS)
 		{
 			return true;
 		}
@@ -1623,7 +1714,7 @@ public:
 	Token::e parentToken()
 	{
 		if( m_parent )
-			return m_parent->langTokenType();
+			return m_parent->token();
 		//else
 		return Token::UNDEFINED;
 	}
@@ -1641,7 +1732,7 @@ public:
 		/*LangElement* res = parent();
 		while( res )
 		{
-			if( res->langTokenType() == Token::CLASS )
+			if( res->token() == Token::CLASS )
 			{
 				return res;
 			}
@@ -1657,7 +1748,7 @@ public:
 		LangElement* res = parent();
 		while( res )
 		{
-			if( res->langTokenType() == set )
+			if( res->token() == set )
 			{
 				return res;
 			}
@@ -1707,7 +1798,7 @@ public:
 
 		while( res )
 		{
-			if( res->langTokenType() == Token::SCOPE_BEGIN )
+			if( res->token() == Token::SCOPE_BEGIN )
 			{
 				//if at any case we would find a scope begin, then we'll just return 0.
 				return 0;
@@ -1716,21 +1807,21 @@ public:
 			if(found_a_bracket <= 0)//Well if this gets negative it's an error... too many brackets... but it could theoretically happen if we're inside two brackets.
 			//so let's just leave it like this, and hope it's correct.
 			{
-				if( res->langTokenType() == Token::USE_REFERENCE
-					//|| res->langTokenType() == Token::USE_VECTOR
-					//|| res->langTokenType() == Token::USE_ARRAY
+				if( res->token() == Token::USE_REFERENCE
+					//|| res->token() == Token::USE_VECTOR
+					//|| res->token() == Token::USE_ARRAY
 				)
 				{
 					return res;
 				}
-				else if( res->langTokenType() == Token::BRACKET_END || res->langTokenType() == Token::BRACKET_DEFINE_ARRAY_END )
+				else if( res->token() == Token::BRACKET_END || res->token() == Token::BRACKET_DEFINE_ARRAY_END )
 				{
 					found_a_bracket = true;
 				}
 			}
 			else //there's some brackets there...
 			{
-				if( res->langTokenType() == Token::BRACKET_BEGIN || res->langTokenType() == Token::BRACKET_DEFINE_ARRAY_BEGIN )
+				if( res->token() == Token::BRACKET_BEGIN || res->token() == Token::BRACKET_DEFINE_ARRAY_BEGIN )
 				{
 					found_a_bracket--;
 				}	
@@ -1784,12 +1875,12 @@ public:
 		//Will stop at SCOPE_BEGIN
 		for( uint i = 0; i < langElements.size(); i++ )
 		{
-			if( langElements[i]->langTokenType() == Token::VISIBILITY )
+			if( langElements[i]->token() == Token::VISIBILITY )
 			{
 				//return true;
 				return langElements[i];
 			}
-			else if( langElements[i]->langTokenType() == Token::SCOPE_BEGIN )
+			else if( langElements[i]->token() == Token::SCOPE_BEGIN )
 			{
 				//return false;
 				return 0;
@@ -1821,13 +1912,13 @@ public:
 
 	void freeOwned()
 	{
-		if( langTokenType() != Token::CLASS )
+		if( token() != Token::CLASS )
 		{
 			foreach(LangElement* init_ob, ownedElements)
 			{
 					LangElement* auto_init_elem = init_ob->copy();
 					auto_init_elem->definitionElement(init_ob);//our init_ob can be found through the definitionElement.
-					auto_init_elem->langTokenType(Token::AUTO_FREE);
+					auto_init_elem->token(Token::AUTO_FREE);
 					addElement(auto_init_elem);
 					addNewLine();
 			}
@@ -1851,18 +1942,18 @@ public:
 
 		foreach( LangElement* elem, langElements )
 		{
-			if(elem->langTokenType() == Token::CONSTRUCTOR)
+			if(elem->token() == Token::CONSTRUCTOR)
 			{	
 			/*		
-				if( init_ob->langTokenType() == Token::DEFINE_VECTOR_IN_CLASS )
+				if( init_ob->token() == Token::DEFINE_VECTOR_IN_CLASS )
 				{
 					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::VECTOR_AUTO_INIT, init_ob->name(), init_ob->type() );
 				}
-				else if( init_ob->langTokenType() == Token::DEFINE_ARRAY_IN_CLASS )
+				else if( init_ob->token() == Token::DEFINE_ARRAY_IN_CLASS )
 				{
 					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::ARRAY_AUTO_INIT, init_ob->name(), init_ob->type() );
 				}
-				else if( init_ob->langTokenType() == Token::DEFINE_REFERENCE_IN_CLASS )
+				else if( init_ob->token() == Token::DEFINE_REFERENCE_IN_CLASS )
 				{	
 					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::OBJECT_AUTO_INIT, init_ob->name(), init_ob->type() );
 				}
@@ -1897,7 +1988,7 @@ public:
 			
 				LangElement* auto_init_elem = init_ob->copy();
 				auto_init_elem->definitionElement(init_ob);//our init_ob can be found through the definitionElement.
-				auto_init_elem->langTokenType(Token::AUTO_INIT);
+				auto_init_elem->token(Token::AUTO_INIT);
 				elem->addElementToTopOfFunc(auto_init_elem);
 			}
 		}		
@@ -1912,18 +2003,18 @@ public:
 
 		foreach( LangElement* elem, langElements )
 		{
-			if(elem->langTokenType() == Token::DESTRUCTOR)
+			if(elem->token() == Token::DESTRUCTOR)
 			{		
 			/*	
-				if( init_ob->langTokenType() == Token::DEFINE_VECTOR_IN_CLASS )
+				if( init_ob->token() == Token::DEFINE_VECTOR_IN_CLASS )
 				{
 					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::VECTOR_AUTO_FREE, init_ob->name(), init_ob->type() );
 				}
-				else if( init_ob->langTokenType() == Token::DEFINE_ARRAY_IN_CLASS )
+				else if( init_ob->token() == Token::DEFINE_ARRAY_IN_CLASS )
 				{
 					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::ARRAY_AUTO_FREE, init_ob->name(), init_ob->type() );
 				}
-				else if( init_ob->langTokenType() == Token::DEFINE_REFERENCE_IN_CLASS )
+				else if( init_ob->token() == Token::DEFINE_REFERENCE_IN_CLASS )
 				{	
 					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::OBJECT_AUTO_FREE, init_ob->name(), init_ob->type() );
 				}
@@ -1957,7 +2048,7 @@ public:
 
 				LangElement* auto_init_elem = init_ob->copy();
 				auto_init_elem->definitionElement(init_ob);//our init_ob can be found through the definitionElement.
-				auto_init_elem->langTokenType(Token::AUTO_FREE);
+				auto_init_elem->token(Token::AUTO_FREE);
 				elem->addElementToTopOfFunc(auto_init_elem);
 			}
 		}		
@@ -2096,7 +2187,7 @@ public:
 
 		for( my_it = langElements.begin(); my_it < langElements.end(); my_it++ )
 		{
-			if( (*my_it) && (*my_it)->langTokenType() == Token::SCOPE_BEGIN )
+			if( (*my_it) && (*my_it)->token() == Token::SCOPE_BEGIN )
 			{
 				//do nothing
 			}
@@ -2130,7 +2221,7 @@ public:
 		}*/
 
 		bool to_debug = false;
-		if( langTokenType() == Token::CLASS )
+		if( token() == Token::CLASS )
 		{
 			cout<<"CLASS addElementToTopOfFunc: "<<toString()<<"\n";
 			to_debug = true;
@@ -2144,7 +2235,7 @@ public:
 				//rae::log("elem: ",(*my_it)->toString());
 			#endif
 
-			if( (*my_it) && (*my_it)->langTokenType() == Token::SCOPE_BEGIN )
+			if( (*my_it) && (*my_it)->token() == Token::SCOPE_BEGIN )
 			{
 				if(to_debug)
 					cout<<"CLASS found Scope begin on class.\n";
@@ -2206,7 +2297,7 @@ public:
 				//rae::log("elem: ",(*my_it)->toString());
 			#endif
 
-			if( (*my_it) && ((*my_it)->langTokenType() == Token::NEWLINE || (*my_it)->langTokenType() == Token::NEWLINE_BEFORE_SCOPE_END) )
+			if( (*my_it) && ((*my_it)->token() == Token::NEWLINE || (*my_it)->token() == Token::NEWLINE_BEFORE_SCOPE_END) )
 			{	
 				found_newline_after_scope = true;
 				#ifdef DEBUG_RAE2
@@ -2301,7 +2392,7 @@ public:
 
 			if( found_scope_begin == false )
 			{
-				if( (*my_it) && (*my_it)->langTokenType() == Token::SCOPE_BEGIN )
+				if( (*my_it) && (*my_it)->token() == Token::SCOPE_BEGIN )
 				{
 					#ifdef DEBUG_RAE2
 					cout<<"found SCOPE_BEGIN.\n";
@@ -2321,7 +2412,7 @@ public:
 			}
 			else
 			{
-				if( (*my_it) && ((*my_it)->langTokenType() == Token::NEWLINE || (*my_it)->langTokenType() == Token::NEWLINE_BEFORE_SCOPE_END) )
+				if( (*my_it) && ((*my_it)->token() == Token::NEWLINE || (*my_it)->token() == Token::NEWLINE_BEFORE_SCOPE_END) )
 				{	
 					found_newline_after_scope = true;
 					#ifdef DEBUG_RAE2
@@ -2375,7 +2466,7 @@ public:
 	{
 		if(m_currentElement)
 		{
-			/////////cout<<"LangElement.addName: "<<Token::toString(m_currentElement->langTokenType())<<" name:>"<<set_name<<"\n");
+			/////////cout<<"LangElement.addName: "<<Token::toString(m_currentElement->token())<<" name:>"<<set_name<<"\n");
 			m_currentElement->name( set_name );
 		}
 		else cout<<"ERROR: LangElement::addNameToCurrentElement() : No m_currentElement.\n";
@@ -2386,7 +2477,7 @@ public:
 	{
 		if(m_currentElement)
 		{
-			//////////cout<<"LangElement.addType: "<<Token::toString(m_currentElement->langTokenType())<<" type:>"<<set_type<<"\n");
+			//////////cout<<"LangElement.addType: "<<Token::toString(m_currentElement->token())<<" type:>"<<set_type<<"\n");
 			m_currentElement->type( set_type );
 		}
 		else cout<<"ERROR: LangElement::addTypeToCurrentElement() : No m_currentElement.\n";
@@ -2418,11 +2509,11 @@ public:
 		{
 			if( elem->name() == set_name )
 			{	
-				if( elem->langTokenType() == Token::DEFINE_FUNC_ARGUMENT )
+				if( elem->token() == Token::DEFINE_FUNC_ARGUMENT )
 				{
 					return elem;
 				}
-				else if( elem->langTokenType() == Token::DEFINE_FUNC_RETURN )
+				else if( elem->token() == Token::DEFINE_FUNC_RETURN )
 				{
 					return elem;
 				}
@@ -2465,7 +2556,7 @@ public:
 	{
 		foreach( LangElement* elem, langElements )
 		{
-			if( elem->langTokenType() == set_lang_token_type )
+			if( elem->token() == set_lang_token_type )
 			{
 				return elem;
 			}
@@ -2479,7 +2570,7 @@ public:
 		//foreach( LangElement* elem, langElements )
 		for( long i = langElements.size()-1l; i >= 0l; i-- )
 		{
-			if( langElements[i]->langTokenType() == set_lang_token_type )
+			if( langElements[i]->token() == set_lang_token_type )
 			{
 				return langElements[i];
 			}

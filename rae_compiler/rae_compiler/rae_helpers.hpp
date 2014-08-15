@@ -27,11 +27,12 @@ typedef unsigned int uint;
 
 //#include "rae_log.hpp"
 
-#define DEBUG_RAE_HUMAN
+//#define DEBUG_RAE_HUMAN
 //#define DEBUG_RAE_PARSER
 //#define DEBUG_RAE
 //#define DEBUG_RAE2
 //#define DEBUG_RAE_DESTRUCTORS
+#define DEBUG_RAE_RVALUE
 
 template <typename T>
   string numberToString ( T number )

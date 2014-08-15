@@ -80,7 +80,13 @@ func
 	//Should give us: Tester* tester_lnk = &hello.tester;
 
 	link Tester tester_lnk3 -> hello.testerLink
-	val Tester tester_val4 -> hello.testerVal
+	//ERROR: can't point to with a value type: val Tester tester_val4 -> hello.testerVal
+	val Tester tester_val4 = hello.testerVal
+	//How about a link to a return value:
+	link Tester tester_lnk5 -> hello.testerVal
+	log_s("link to a return value: tester_lnk5: ")
+	tester_lnk5.sayHello
+
 	//val Tester tester_val5 -> hello.testerVal2
 
 	hello.sayHello()

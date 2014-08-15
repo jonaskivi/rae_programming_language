@@ -61,19 +61,19 @@ public:
 	{
 		if(m_previousElement == 0)
 			return Token::UNDEFINED;
-		return m_previousElement->langTokenType();
+		return m_previousElement->token();
 	}
 	public: Token::e previous2ndToken()
 	{
 		if(m_previous2ndElement == 0)
 			return Token::UNDEFINED;
-		return m_previous2ndElement->langTokenType();
+		return m_previous2ndElement->token();
 	}
 	public: Token::e nextToken()
 	{
 		if(m_nextElement == 0)
 			return Token::UNDEFINED;
-		return m_nextElement->langTokenType();
+		return m_nextElement->token();
 	}
 
 /*

@@ -297,7 +297,9 @@ public:
 	public: Token::e expectingToken(){ return m_expectingToken; }
 	public: void expectingToken(Token::e set)
 	{
-		cout<<"set expectingToken to: "<<Token::toString(set)<<"\n";
+		#ifdef DEBUG_RAE_PARSER
+			cout<<"set expectingToken to: "<<Token::toString(set)<<"\n";
+		#endif
 		m_expectingToken = set;
 	}
 	protected: Token::e m_expectingToken;// = EDLTokenType::TITLE;
@@ -425,7 +427,7 @@ public:
 		/*if( currentParentElement() )
 		{
 			currentParentElement()->newLangElement(Token::SCOPE_BEGIN, "{");
-			cout<<"Begin scope for: "<<Token::toString( currentParentElement()->langTokenType() );
+			cout<<"Begin scope for: "<<Token::toString( currentParentElement()->token() );
 		}
 		else
 		{
@@ -455,10 +457,10 @@ public:
 		//If we're already inside a func. Then we create a so called limiting scope, which will act as parent for
 		//it's insides.
 		//This only works if the parent is a func. Otherwise it wouldn't make any sense, or would it?
-		//if( currentParentElement() && currentParentElement()->langTokenType() == Token::FUNC )
+		//if( currentParentElement() && currentParentElement()->token() == Token::FUNC )
 		if( scopeElementStack.empty() == false )
 		{
-			//if( scopeElementStack.back()->langTokenType() == Token::FUNC )
+			//if( scopeElementStack.back()->token() == Token::FUNC )
 			//{
 				currentParentElement(our_scope_elem);
 			//}
@@ -479,12 +481,12 @@ public:
 			//newLine();
 		}
 
-		if( currentParentElement() && currentParentElement()->currentElement() && currentParentElement()->currentElement()->langTokenType() == Token::NEWLINE )
+		if( currentParentElement() && currentParentElement()->currentElement() && currentParentElement()->currentElement()->token() == Token::NEWLINE )
 		{
 			//REVIEW: This code (currentParentElement()->currentElement()) looks very strange. I wonder why it works!
 
 			//we had a newline. mark it.
-			currentParentElement()->currentElement()->langTokenType(Token::NEWLINE_BEFORE_SCOPE_END);
+			currentParentElement()->currentElement()->token(Token::NEWLINE_BEFORE_SCOPE_END);
 		}
 		
 		if( scope_elem )
@@ -497,7 +499,7 @@ public:
 				previousElement()->nextElement(new_lang_elem);
 			}
 
-			if( scope_elem->langTokenType() == Token::CLASS )
+			if( scope_elem->token() == Token::CLASS )
 			{
 				#ifdef DEBUG_RAE_HUMAN
 				cout<<"end of class.\n\n";
@@ -554,11 +556,11 @@ public:
 								if( init_ob )
 								{
 									/*
-									if( init_ob->langTokenType() == Token::DEFINE_VECTOR_IN_CLASS )
+									if( init_ob->token() == Token::DEFINE_VECTOR_IN_CLASS )
 									{
 										elem->newLangElementToTopWithNewline( elem->lineNumber(), Token::VECTOR_AUTO_INIT, init_ob->name(), init_ob->type() );
 									}
-									else if( init_ob->langTokenType() == Token::DEFINE_ARRAY_IN_CLASS )
+									else if( init_ob->token() == Token::DEFINE_ARRAY_IN_CLASS )
 									{
 										elem->newLangElementToTopWithNewline( elem->lineNumber(), Token::C_ARRAY_AUTO_INIT, init_ob->name(), init_ob->type() );
 									}
@@ -581,7 +583,7 @@ public:
 										elem->newLangElementToTopWithNewline( elem->lineNumber(), Token::OBJECT_AUTO_INIT, TypeType::REF, init_ob->name(), init_ob->type() );
 									}*/
 									LangElement* auto_init_elem = init_ob->copy();
-									auto_init_elem->langTokenType(Token::AUTO_INIT);
+									auto_init_elem->token(Token::AUTO_INIT);
 									elem->addElementToTopOfFunc(auto_init_elem);
 								}
 							}
@@ -597,7 +599,7 @@ public:
 								//LangElement* bui_le = elem->newLangElementToTopWithNewline( elem->lineNumber(), Token::BUILT_IN_TYPE_AUTO_INIT, TypeType::BUILT_IN_TYPE, init_ob->name(), init_ob->type(), init_ob->builtInType() );//TODO value...
 								
 								LangElement* auto_init_elem = init_ob->copy();
-								auto_init_elem->langTokenType(Token::AUTO_INIT);
+								auto_init_elem->token(Token::AUTO_INIT);
 								elem->addElementToTopOfFunc(auto_init_elem);
 								auto_init_elem->initData( init_ob->initData() );//Copy initdata!!
 								
@@ -619,11 +621,11 @@ public:
 								if( init_ob )
 								{
 									/*
-									if( init_ob->langTokenType() == Token::DEFINE_VECTOR_IN_CLASS )
+									if( init_ob->token() == Token::DEFINE_VECTOR_IN_CLASS )
 									{
 										elem->newLangElementToTopWithNewline( elem->lineNumber(), Token::VECTOR_AUTO_FREE, init_ob->name(), init_ob->type() );
 									}
-									else if( init_ob->langTokenType() == Token::DEFINE_ARRAY_IN_CLASS )
+									else if( init_ob->token() == Token::DEFINE_ARRAY_IN_CLASS )
 									{
 										elem->newLangElementToTopWithNewline( elem->lineNumber(), Token::C_ARRAY_AUTO_FREE, init_ob->name(), init_ob->type() );
 									}
@@ -646,7 +648,7 @@ public:
 										elem->newLangElementToTopWithNewline( elem->lineNumber(), Token::OBJECT_AUTO_FREE, TypeType::REF, init_ob->name(), init_ob->type() );
 									}*/
 									LangElement* auto_init_elem = init_ob->copy();
-									auto_init_elem->langTokenType(Token::AUTO_FREE);
+									auto_init_elem->token(Token::AUTO_FREE);
 									elem->addElementToTopOfFunc(auto_init_elem);
 								}
 							}
@@ -664,21 +666,21 @@ public:
 				//Ok, but we might have classes inside classes so we check later when we pop, if it's another class...
 				currentClass = 0;
 			}
-			else if( scope_elem->langTokenType() == Token::FUNC )
+			else if( scope_elem->token() == Token::FUNC )
 			{
 				#ifdef DEBUG_RAE_HUMAN
 				cout<<"end of function.\n\n";
 				#endif
 				currentFunc = 0;
 			}
-			else if( scope_elem->langTokenType() == Token::ENUM )
+			else if( scope_elem->token() == Token::ENUM )
 			{
 				currentEnum = 0;
 			}
 
 			#ifdef DEBUG_RAE
-			cout<<"End scope for: "<<Token::toString( scope_elem->langTokenType() );
-			//rae::log("End scope for: ",Token::toString( scope_elem->langTokenType() ));
+			cout<<"End scope for: "<<Token::toString( scope_elem->token() );
+			//rae::log("End scope for: ",Token::toString( scope_elem->token() ));
 			#endif
 		}
 		else
@@ -692,16 +694,16 @@ public:
 			currentParentElement( scopeElementStack.back() );
 			if( currentParentElement() )
 			{
-				if( currentParentElement()->langTokenType() == Token::CLASS )
+				if( currentParentElement()->token() == Token::CLASS )
 				{
 					//...so if the current scope is another class, we mark it again.
 					currentClass = currentParentElement();
 				}
-				else if( currentParentElement()->langTokenType() == Token::FUNC )
+				else if( currentParentElement()->token() == Token::FUNC )
 				{
 					currentFunc = currentParentElement();
 				}
-				else if( currentParentElement()->langTokenType() == Token::ENUM )
+				else if( currentParentElement()->token() == Token::ENUM )
 				{
 					currentEnum = currentParentElement();
 				}
@@ -738,7 +740,7 @@ public:
 
 		if(stack_elem)
 		{
-			return stack_elem->langTokenType();
+			return stack_elem->token();
 		}
 		//else
 		return Token::UNDEFINED;
@@ -754,17 +756,17 @@ public:
 		{
 			//We just do matching: is it good enough:
 
-			lang_elem = newLangElement(Token::matchParenthesisEnd(stack_elem->langTokenType()), TypeType::UNDEFINED, set_token);
+			lang_elem = newLangElement(Token::matchParenthesisEnd(stack_elem->token()), TypeType::UNDEFINED, set_token);
 
 			#ifdef DEBUG_RAE
-			/*cout<<"MATCH parenthesis: from: "<<Token::toString(stack_elem->langTokenType())
-				<<" to: "<<Token::toString(Token::matchParenthesisEnd(stack_elem->langTokenType()))
+			/*cout<<"MATCH parenthesis: from: "<<Token::toString(stack_elem->token())
+				<<" to: "<<Token::toString(Token::matchParenthesisEnd(stack_elem->token()))
 				<<" caller: "<<Token::toString(set_lang_token_type)<<"\n");*/
 			//rae::log("match parenthesis...\n");
 			#endif
 
 			/*
-			if( stack_elem->langTokenType() == Token::PARENTHESIS_BEGIN_LOG )
+			if( stack_elem->token() == Token::PARENTHESIS_BEGIN_LOG )
 			{
 				stack_elem->newLangElement(lineNumber, set_lang_token_type, set_token );
 			}
@@ -774,7 +776,7 @@ public:
 			}
 			*/
 			
-			//cout<<"End parenthesis for: "<<Token::toString( scope_elem->langTokenType() );
+			//cout<<"End parenthesis for: "<<Token::toString( scope_elem->token() );
 		}
 		else
 		{
@@ -817,20 +819,20 @@ public:
 			//cout<<"we has stack_elem in newBracketEnd.\n");
 			//We just do matching: is it good enough:
 
-			lang_elem = newLangElement(Token::matchBracketEnd(stack_elem->langTokenType()), TypeType::UNDEFINED, set_token);
+			lang_elem = newLangElement(Token::matchBracketEnd(stack_elem->token()), TypeType::UNDEFINED, set_token);
 
 			//cout<<"I bet we've crashed.\n");
 
 
 			#ifdef DEBUG_RAE
-			cout<<"MATCH bracket: from: "<<Token::toString(stack_elem->langTokenType())
-				<<" to: "<<Token::toString(Token::matchBracketEnd(stack_elem->langTokenType()))
+			cout<<"MATCH bracket: from: "<<Token::toString(stack_elem->token())
+				<<" to: "<<Token::toString(Token::matchBracketEnd(stack_elem->token()))
 				<<" caller: "<<Token::toString(set_lang_token_type)<<"\n";
 			//rae::log("match bracket.\n");
 			#endif
 
 			/*
-			if( stack_elem->langTokenType() == Token::bracket_BEGIN_LOG )
+			if( stack_elem->token() == Token::bracket_BEGIN_LOG )
 			{
 				stack_elem->newLangElement(lineNumber, set_lang_token_type, set_token );
 			}
@@ -840,7 +842,7 @@ public:
 			}
 			*/
 			
-			//cout<<"End bracket for: "<<Token::toString( scope_elem->langTokenType() );
+			//cout<<"End bracket for: "<<Token::toString( scope_elem->token() );
 		}
 		else
 		{
@@ -1135,7 +1137,7 @@ public:
 		/*if( currentParentElement() )
 		{
 			currentParentElement()->newLangElement(Token::NEWLINE, "\n");
-			//cout<<"Begin scope for: "<<Token::toString( currentParentElement()->langTokenType() );
+			//cout<<"Begin scope for: "<<Token::toString( currentParentElement()->token() );
 		}
 		else
 		{
@@ -1144,7 +1146,7 @@ public:
 		}*/
 		
 		//if()
-		if(currentParentElement() && currentParentElement()->langTokenType() != Token::MODULE )
+		if(currentParentElement() && currentParentElement()->token() != Token::MODULE )
 		{
 			newLangElement(Token::NEWLINE, TypeType::UNDEFINED, "\n");
 		}
@@ -1169,8 +1171,8 @@ public:
 		if( lang_elem->parentToken() == Token::CLASS )
 		{
 			//we are inside a class definition, not a func:
-			//lang_elem->langTokenType( Token::matchBuiltIntTypesToInClass(set_lang_token_type) );
-			/////lang_elem->langTokenType( Token::DEFINE_BUILT_IN_TYPE_IN_CLASS );
+			//lang_elem->token( Token::matchBuiltIntTypesToInClass(set_lang_token_type) );
+			/////lang_elem->token( Token::DEFINE_BUILT_IN_TYPE_IN_CLASS );
 
 			listOfBuiltInTypesInit.push_back(lang_elem);			
 		}
@@ -1232,7 +1234,7 @@ public:
 		if( lang_elem->parentToken() == Token::CLASS )
 		{
 			//we are inside a class definition, not a func:
-			///////lang_elem->langTokenType(Token::DEFINE_VECTOR_IN_CLASS);
+			///////lang_elem->token(Token::DEFINE_VECTOR_IN_CLASS);
 
 			listOfAutoInitObjects.push_back(lang_elem);
 		}
@@ -1344,7 +1346,7 @@ public:
 		if( lang_elem->parentToken() == Token::CLASS )
 		{
 			//we are inside a class definition, not a func:
-			/////////lang_elem->langTokenType(Token::DEFINE_REFERENCE_IN_CLASS);
+			/////////lang_elem->token(Token::DEFINE_REFERENCE_IN_CLASS);
 
 			if( set_type_type == TypeType::REF )
 			{
@@ -1570,12 +1572,12 @@ public:
 	{
 		if(m_previousElement == 0)
 			return Token::UNDEFINED;
-		return m_previousElement->langTokenType();
+		return m_previousElement->token();
 	}
 	public: Token::e previous2ndToken()
 	{
 		if(m_previousElement && m_previousElement->previousElement())
-			return m_previousElement->previousElement()->langTokenType();
+			return m_previousElement->previousElement()->token();
 		//else
 		return Token::UNDEFINED;
 	}
@@ -1633,7 +1635,7 @@ public:
 
 		foreach(LangElement* elem, currentModule->langElements)
 		{
-			if( elem->langTokenType() == Token::MODULE_NAME )
+			if( elem->token() == Token::MODULE_NAME )
 			{
 				if(not_on_first > 0)
 				{
@@ -1925,11 +1927,11 @@ public:
 
 		foreach( LangElement* module_elem, langElements )
 		{
-			if( module_elem->langTokenType() != Token::MODULE )
+			if( module_elem->token() != Token::MODULE )
 			{
 				#ifdef DEBUG_RAE_HUMAN
-				cout<<"Interesting: we have something in top hierarchy: "<<module_elem->langTokenTypeString()<<"\n";
-				//rae::log("Interesting: we have something in top hierarchy: ", module_elem->langTokenTypeString(), "\n");
+				cout<<"Interesting: we have something in top hierarchy: "<<module_elem->tokenString()<<"\n";
+				//rae::log("Interesting: we have something in top hierarchy: ", module_elem->tokenString(), "\n");
 				#endif
 				continue; //skip it
 			}
@@ -1941,7 +1943,7 @@ public:
 
 			foreach( LangElement* elem, module_elem->langElements )
 			{
-				if( elem->langTokenType() == Token::MODULE_NAME )
+				if( elem->token() == Token::MODULE_NAME )
 				{
 					module_name += elem->name();
 					module_name += "/"; //a directory separator
@@ -2826,6 +2828,7 @@ public:
 	{
 		if(set_elem)
 		{
+			set_elem->parseError(ParseError::SYNTAX_ERROR);
 			cout<<"ERROR: "<<set<<" / line: "<<set_elem->lineNumber().line<<" / Module: "<<moduleName()<<"\n";
 			//rae::log("ERROR: ", lineNumber.line, " ", set, "\n");	
 		}
@@ -3194,7 +3197,10 @@ public:
 			{
 				if(expectingRole() == Role::FUNC_RETURN )
 				{
+					#ifdef DEBUG_RAE_PARSER
 					cout<<"Got ending ) for FUNC_RETURNs (in INIT_DATA). Going back to FUNC_DEFINITION.\n";
+					#endif
+
 					expectingRole(Role::UNDEFINED);//could also be Role::FUNC_DEFINITION, but we don't need that, so.
 					//TODO: check parenthesisStack:
 					newParenthesisEnd(Token::PARENTHESIS_END_FUNC_RETURN_TYPES, ")");
@@ -3202,7 +3208,10 @@ public:
 				}
 				else if( expectingRole() == Role::FUNC_PARAMETER )
 				{
+					#ifdef DEBUG_RAE_PARSER
 					cout<<"Got ending ) for FUNC_PARAMETERs in INIT_DATA. Going back to UNDEFINED.\n";
+					#endif
+
 					expectingRole(Role::UNDEFINED);//could also be Role::FUNC_DEFINITION, but we don't need that, so.
 					//TODO: check parenthesisStack:
 					newParenthesisEnd(Token::PARENTHESIS_END_FUNC_PARAM_TYPES, ")");
@@ -3259,7 +3268,7 @@ public:
 				//INFO_FUNC_PARAM, which will not be printed.
 				if( currentReference )
 				{
-					currentReference->langTokenType(Token::INFO_FUNC_PARAM);
+					currentReference->token(Token::INFO_FUNC_PARAM);
 				}
 				//expectingToken = Token::UNDEFINED;
 				doReturnToExpectToken();
@@ -3283,7 +3292,7 @@ public:
 					expectingToken = Token::UNDEFINED;
 				}*/
 				//if( isNumericChar(set_token[0]) &&
-				if( currentReference && previousElement()->langTokenType() != Token::QUOTE )
+				if( currentReference && previousElement()->token() != Token::QUOTE )
 				{
 					//LangElement* in_dat = newLangElement(Token::NUMBER, TypeType::UNDEFINED, set_token);
 					LangElement* in_dat = newLangElement(Token::INIT_DATA, TypeType::UNDEFINED, set_token);
@@ -3301,13 +3310,13 @@ public:
 				}
 				/*
 				//This didn't work. see newQuote above for the new version.
-				else if( currentReference && previousElement()->langTokenType() == Token::QUOTE )
+				else if( currentReference && previousElement()->token() == Token::QUOTE )
 				{
 					//special handling for quote i.e. string initData.
 					LangElement* in_dat = previousElement()->copy();
-					in_dat->langTokenType(Token::INIT_DATA);
+					in_dat->token(Token::INIT_DATA);
 					currentReference->initData( in_dat );//copy the quote to initData.
-					previousElement()->langTokenType(Token::EMPTY);//hide the quote.
+					previousElement()->token(Token::EMPTY);//hide the quote.
 				}
 				*/
 				else
@@ -3345,7 +3354,7 @@ public:
 
 					foreach(LangElement* elem, currentTempElement->langElements)
 					{
-						if( elem->langTokenType() == Token::IMPORT_NAME )
+						if( elem->token() == Token::IMPORT_NAME )
 						{
 							if(not_on_first > 0)
 							{
@@ -3529,7 +3538,7 @@ public:
 			{
 				if( previousElement() &&
 					previousElement()->typeType() == TypeType::C_ARRAY
-					//|| previousElement()->langTokenType() == TypeType::DEFINE_ARRAY_IN_CLASS)
+					//|| previousElement()->token() == TypeType::DEFINE_ARRAY_IN_CLASS)
 				)
 				{
 					#ifdef DEBUG_RAE_PARSER
@@ -3559,7 +3568,7 @@ public:
 			{
 				if(previousElement())
 				{
-					if( previousElement()->langTokenType() == Token::DEFINE_REFERENCE )
+					if( previousElement()->token() == Token::DEFINE_REFERENCE )
 					{
 						#ifdef DEBUG_RAE_PARSER
 						cout<<"making the previous DEFINE_REFERENCE_IN_CLASS an array.\n";
@@ -3804,7 +3813,7 @@ public:
 				if( stack_elem )
 				{
 					//We just do matching: is it good enough:
-					parenthesis_type = Token::matchParenthesisEnd(stack_elem->langTokenType());
+					parenthesis_type = Token::matchParenthesisEnd(stack_elem->token());
 				}
 				*/
 				
@@ -3955,7 +3964,10 @@ public:
 			{
 				if( expectingRole() == Role::FUNC_RETURN )
 				{
+					#ifdef DEBUG_RAE_PARSER
 					cout<<"Got ending ) for FUNC_RETURNs in UNDEFINED. Going back to FUNC_DEFINITION.\n";
+					#endif				
+	
 					expectingRole(Role::UNDEFINED);//could also be Role::FUNC_DEFINITION, but we don't need that, so.
 					//TODO: check parenthesisStack:
 					newParenthesisEnd(Token::PARENTHESIS_END_FUNC_RETURN_TYPES, ")");
@@ -3963,7 +3975,10 @@ public:
 				}
 				else if( expectingRole() == Role::FUNC_PARAMETER )
 				{
+					#ifdef DEBUG_RAE_PARSER
 					cout<<"Got ending ) for FUNC_PARAMETERs in UNDEFINED. Going back to UNDEFINED.\n";
+					#endif
+
 					expectingRole(Role::UNDEFINED);//could also be Role::FUNC_DEFINITION, but we don't need that, so.
 					//TODO: check parenthesisStack:
 					newParenthesisEnd(Token::PARENTHESIS_END_FUNC_PARAM_TYPES, ")");
@@ -3984,7 +3999,7 @@ public:
 
 				if(previousElement())
 				{
-					if( previousElement()->langTokenType() == Token::DEFINE_REFERENCE )
+					if( previousElement()->token() == Token::DEFINE_REFERENCE )
 					{
 						/*
 !!!!!!!!!!!!!!!!!!!OK
@@ -4024,12 +4039,12 @@ This never gets called. Look in expecting NAME thing...
 			}
 			else if( set_token == "]" )
 			{
-				/*if( previousElement() && previousElement()->langTokenType() == Token::BRACKET_BEGIN )
+				/*if( previousElement() && previousElement()->token() == Token::BRACKET_BEGIN )
 				{
-					//previousElement()->langTokenType(Token::BRACKET_DEFINE_ARRAY_BEGIN);
+					//previousElement()->token(Token::BRACKET_DEFINE_ARRAY_BEGIN);
 					newBracketEnd(Token::BRACKET_END, set_token);
 				}
-				else if( previousElement() && previousElement()->langTokenType() == Token::DEFINE_ARRAY )
+				else if( previousElement() && previousElement()->token() == Token::DEFINE_ARRAY )
 				{
 
 				}
@@ -4156,10 +4171,10 @@ This never gets called. Look in expecting NAME thing...
 			{
 				if( previousElement() )
 				{
-					if( previousElement()->langTokenType() == Token::VISIBILITY )
+					if( previousElement()->token() == Token::VISIBILITY )
 					{
 						//change it.
-						previousElement()->langTokenType(Token::VISIBILITY_DEFAULT);
+						previousElement()->token(Token::VISIBILITY_DEFAULT);
 						////Now we don't add, as we already added before.
 						//add :
 						//previousElement()->name( previousElement->name() + ":" );
@@ -4174,7 +4189,7 @@ This never gets called. Look in expecting NAME thing...
 				{
 					cout<<"Got previousElement:"<< previousElement()->toString()<<"\n";
 					//TODO maybe we really need to check this:
-					//if( previousElement()->langTokenType() == Token::DEFINE_REFERENCE )
+					//if( previousElement()->token() == Token::DEFINE_REFERENCE )
 					//{
 					
 						//change the typetype.
@@ -4207,17 +4222,17 @@ This never gets called. Look in expecting NAME thing...
 				//newFunc();
 				if( previousElement() )
 				{
-					if( previousElement()->langTokenType() == Token::REFERENCE_DOT )
+					if( previousElement()->token() == Token::REFERENCE_DOT )
 					{
-						if( previous2ndElement() && (previous2ndElement()->langTokenType() == Token::USE_REFERENCE )
-							//|| previous2ndElement->langTokenType() == Token::UNKNOWN_USE_REFERENCE)
+						if( previous2ndElement() && (previous2ndElement()->token() == Token::USE_REFERENCE )
+							//|| previous2ndElement->token() == Token::UNKNOWN_USE_REFERENCE)
 						   )
 						{
 							//hide the REFERENCE_DOT from something.free
-							previousElement()->langTokenType(Token::UNDEFINED);
+							previousElement()->token(Token::UNDEFINED);
 							previousElement()->name( "" );
 
-							previous2ndElement()->langTokenType(Token::FREE);
+							previous2ndElement()->token(Token::FREE);
 
 							//expectingToken(Token::UNDEFINED);
 							doReturnToExpectToken();
@@ -4412,7 +4427,10 @@ This never gets called. Look in expecting NAME thing...
 			{
 				if(expectingRole() == Role::FUNC_RETURN )
 				{
+					#ifdef DEBUG_RAE_PARSER
 					cout<<"Got ending ) for FUNC_RETURNs in DEFINE_BUILT_IN_TYPE_NAME. Going back to FUNC_DEFINITION.\n";
+					#endif
+
 					expectingRole(Role::UNDEFINED);//could also be Role::FUNC_DEFINITION, but we don't need that, so.
 					//TODO: check parenthesisStack:
 					newParenthesisEnd(Token::PARENTHESIS_END_FUNC_RETURN_TYPES, ")");
@@ -4461,7 +4479,10 @@ This never gets called. Look in expecting NAME thing...
 			{
 				if(expectingRole() == Role::FUNC_RETURN )
 				{
+					#ifdef DEBUG_RAE_PARSER
 					cout<<"Got ending ) for FUNC_RETURNs in DEFINE_REFERENCE_NAME. Going back to FUNC_DEFINITION.\n";
+					#endif
+
 					expectingRole(Role::UNDEFINED);//could also be Role::FUNC_DEFINITION, but we don't need that, so.
 					//TODO: check parenthesisStack:
 					newParenthesisEnd(Token::PARENTHESIS_END_FUNC_RETURN_TYPES, ")");
@@ -4480,7 +4501,7 @@ This never gets called. Look in expecting NAME thing...
 
 				if(previousElement())
 				{
-					if( previousElement()->langTokenType() == Token::DEFINE_REFERENCE )
+					if( previousElement()->token() == Token::DEFINE_REFERENCE )
 					{
 						expectingToken(Token::ARRAY_VECTOR_STUFF);
 					}
@@ -4514,7 +4535,7 @@ This never gets called. Look in expecting NAME thing...
 				{
 					cout<<"Got previousElement:"<< previousElement()->toString()<<"\n";
 					//TODO maybe we really need to check this:
-					//if( previousElement()->langTokenType() == Token::DEFINE_REFERENCE )
+					//if( previousElement()->token() == Token::DEFINE_REFERENCE )
 					//{
 					
 						//change the typetype.
@@ -4599,11 +4620,11 @@ This never gets called. Look in expecting NAME thing...
 					
 					/*if( set_token == "this" )
 					{
-						currentFunc->langTokenType( Token::CONSTRUCTOR );
+						currentFunc->token( Token::CONSTRUCTOR );
 					}
 					else if( set_token == "~this" )
 					{
-						currentFunc->langTokenType( Token::DESTRUCTOR );
+						currentFunc->token( Token::DESTRUCTOR );
 					}*/
 
 					//if a funcs name is new, then it is a constructor.
@@ -4612,7 +4633,7 @@ This never gets called. Look in expecting NAME thing...
 						#ifdef DEBUG_RAE
 						//rae::log("Got new. It's a CONSTRUCTOR.\n");
 						#endif
-						currentFunc->langTokenType( Token::CONSTRUCTOR );
+						currentFunc->token( Token::CONSTRUCTOR );
 						listOfConstructors.push_back(currentFunc);
 					}
 					else if( set_token == "free" )
@@ -4620,7 +4641,7 @@ This never gets called. Look in expecting NAME thing...
 						#ifdef DEBUG_RAE
 						//rae::log("Got free. It's a DESTRUCTOR.\n");
 						#endif
-						currentFunc->langTokenType( Token::DESTRUCTOR );
+						currentFunc->token( Token::DESTRUCTOR );
 						listOfDestructors.push_back(currentFunc);
 					}
 					else if( set_token == "delete" )
@@ -4629,7 +4650,7 @@ This never gets called. Look in expecting NAME thing...
 						reportError("\"delete\" keyword is not used in the Rae programming language. Please use \"free\" instead.");
 						//rae::log("delete is deprecated. please use free instead.\n");
 						//#endif
-						currentFunc->langTokenType( Token::DESTRUCTOR );
+						currentFunc->token( Token::DESTRUCTOR );
 						listOfDestructors.push_back(currentFunc);
 					}
 					else if( set_token == "main" )
@@ -4637,7 +4658,7 @@ This never gets called. Look in expecting NAME thing...
 						#ifdef DEBUG_RAE_HUMAN
 						cout<<("Got main. It's a MAIN.\n");
 						#endif
-						currentFunc->langTokenType( Token::MAIN );
+						currentFunc->token( Token::MAIN );
 					}
 				}
 				//expectingToken(Token::FUNC_ARGUMENT_TYPE);
@@ -4994,7 +5015,7 @@ This never gets called. Look in expecting NAME thing...
 		cout<<"unknown_tokens.size before remove: "<<unknown_tokens.size()<<"\n";
 		#endif
 		//remove unknown tokens that are now known:
-		//boost::remove_if( unknownDefinitions, bind(&LangElement::langTokenType, _1) != Token::UNKNOWN_DEFINITION );
+		//boost::remove_if( unknownDefinitions, bind(&LangElement::token, _1) != Token::UNKNOWN_DEFINITION );
 		//boost::remove_if( unknownDefinitions, bind(&LangElement::isUnknownType, _1) != true );
 
 		unknown_tokens.erase(std::remove_if(unknown_tokens.begin(),
@@ -5013,7 +5034,7 @@ This never gets called. Look in expecting NAME thing...
 		cout<<"unknownDefinitions.size before remove: "<<unknownDefinitions.size()<<"\n";
 		#endif
 		//remove unknown tokens that are now known:
-		//boost::remove_if( unknownDefinitions, bind(&LangElement::langTokenType, _1) != Token::UNKNOWN_DEFINITION );
+		//boost::remove_if( unknownDefinitions, bind(&LangElement::token, _1) != Token::UNKNOWN_DEFINITION );
 		//boost::remove_if( unknownDefinitions, bind(&LangElement::isUnknownType, _1) != true );
 
 		unknownDefinitions.erase(std::remove_if(unknownDefinitions.begin(),
@@ -5032,7 +5053,7 @@ This never gets called. Look in expecting NAME thing...
 		cout<<"unknownUseReferences.size before remove: "<<unknownUseReferences.size()<<"\n";
 		#endif
 		//remove unknown tokens that are now known:
-		//boost::remove_if( unknownUseReferences, bind(&LangElement::langTokenType, _1) != Token::UNKNOWN_USE_REFERENCE );
+		//boost::remove_if( unknownUseReferences, bind(&LangElement::token, _1) != Token::UNKNOWN_USE_REFERENCE );
 		//boost::remove_if( unknownUseReferences, bind(&LangElement::isUnknownType, _1) != true );
 
 		unknownUseReferences.erase(std::remove_if(unknownUseReferences.begin(),
@@ -5051,7 +5072,7 @@ This never gets called. Look in expecting NAME thing...
 		cout<<"unknownUseMembers.size before remove: "<<unknownUseMembers.size()<<"\n";
 		#endif
 		//remove unknown tokens that are now known:
-		//boost::remove_if( unknownUseMembers, bind(&LangElement::langTokenType, _1) != Token::UNKNOWN_USE_MEMBER );
+		//boost::remove_if( unknownUseMembers, bind(&LangElement::token, _1) != Token::UNKNOWN_USE_MEMBER );
 		//boost::remove_if( unknownUseMembers, bind(&LangElement::isUnknownType, _1) != true );
 
 		unknownUseMembers.erase(std::remove_if(unknownUseMembers.begin(),
@@ -5120,7 +5141,7 @@ This never gets called. Look in expecting NAME thing...
 				#ifdef DEBUG_RAE_PARSER
 				cout<<"found name of class.\n";
 				#endif
-				if(elem->langTokenType() == Token::CLASS)
+				if(elem->token() == Token::CLASS)
 				{
 					#ifdef DEBUG_RAE_PARSER
 					cout<<"it is of type class.\n";
@@ -5185,8 +5206,8 @@ This never gets called. Look in expecting NAME thing...
 
 			//If it's a definition. Then we are only interested in classes.
 
-			//if( (set_elem->langTokenType() == Token::DEFINE_REFERENCE || set_elem->langTokenType() == Token::DEFINE_ARRAY)
-			if( set_elem->isDefinition() && elem->langTokenType() == Token::CLASS )
+			//if( (set_elem->token() == Token::DEFINE_REFERENCE || set_elem->token() == Token::DEFINE_ARRAY)
+			if( set_elem->isDefinition() && elem->token() == Token::CLASS )
 			{
 				if( elem->type() == set_elem->type() )
 				{
@@ -5409,18 +5430,18 @@ This never gets called. Look in expecting NAME thing...
 		//Then search in current module.
 		foreach(LangElement* elem, userDefinedTokens)
 		{
-			//if( elem->langTokenType() == Token::DEFINE_REFERENCE || elem->langTokenType() == Token::DEFINE_REFERENCE_IN_CLASS )
-			//if( set_elem->langTokenType() == Token::UNKNOWN_DEFINITION && elem->langTokenType() == Token::CLASS )
-			//if( (set_elem->langTokenType() == Token::DEFINE_REFERENCE || set_elem->langTokenType() == Token::DEFINE_ARRAY)
+			//if( elem->token() == Token::DEFINE_REFERENCE || elem->token() == Token::DEFINE_REFERENCE_IN_CLASS )
+			//if( set_elem->token() == Token::UNKNOWN_DEFINITION && elem->token() == Token::CLASS )
+			//if( (set_elem->token() == Token::DEFINE_REFERENCE || set_elem->token() == Token::DEFINE_ARRAY)
 				//&& set_elem->isUnknownType() == true //how is this needed? Who says we can't check on stuff that we already now?
-			//	&& elem->langTokenType() == Token::CLASS )
+			//	&& elem->token() == Token::CLASS )
 			
 			if(set_elem == elem)
 			{
 				continue;
 			}
 
-			if( set_elem->isDefinition() && elem->langTokenType() == Token::CLASS )
+			if( set_elem->isDefinition() && elem->token() == Token::CLASS )
 			{
 				if( elem->type() == set_elem->type() )
 				{
@@ -5589,14 +5610,14 @@ This never gets called. Look in expecting NAME thing...
 		if( current_context_use && found_definition )
 		{
 			//if it's a definition, then it's valid.
-			/*if(current_context_use->langTokenType() == Token::DEFINE_REFERENCE
-				|| current_context_use->langTokenType() == Token::DEFINE_REFERENCE_IN_CLASS
-				|| current_context_use->langTokenType() == Token::DEFINE_BUILT_IN_TYPE
-				|| current_context_use->langTokenType() == Token::DEFINE_BUILT_IN_TYPE_IN_CLASS
-				|| current_context_use->langTokenType() == Token::DEFINE_ARRAY
-				|| current_context_use->langTokenType() == Token::DEFINE_ARRAY_IN_CLASS
-				|| current_context_use->langTokenType() == Token::DEFINE_VECTOR
-				|| current_context_use->langTokenType() == Token::DEFINE_VECTOR_IN_CLASS
+			/*if(current_context_use->token() == Token::DEFINE_REFERENCE
+				|| current_context_use->token() == Token::DEFINE_REFERENCE_IN_CLASS
+				|| current_context_use->token() == Token::DEFINE_BUILT_IN_TYPE
+				|| current_context_use->token() == Token::DEFINE_BUILT_IN_TYPE_IN_CLASS
+				|| current_context_use->token() == Token::DEFINE_ARRAY
+				|| current_context_use->token() == Token::DEFINE_ARRAY_IN_CLASS
+				|| current_context_use->token() == Token::DEFINE_VECTOR
+				|| current_context_use->token() == Token::DEFINE_VECTOR_IN_CLASS
 				)
 				*/
 			if( current_context_use->isDefinition() )
@@ -6008,8 +6029,8 @@ This never gets called. Look in expecting NAME thing...
 			//so set_token should be unknown too.
 
 			//use members: tester.useMember()
-			//if(previousElement()->langTokenType() == Token::REFERENCE_DOT && previous2ndElement()->langTokenType() == Token::UNKNOWN_USE_REFERENCE)
-			if(previousElement()->langTokenType() == Token::REFERENCE_DOT && previous2ndElement()->langTokenType() == Token::USE_REFERENCE && previous2ndElement()->isUnknownType() == true )
+			//if(previousElement()->token() == Token::REFERENCE_DOT && previous2ndElement()->token() == Token::UNKNOWN_USE_REFERENCE)
+			if(previousElement()->token() == Token::REFERENCE_DOT && previous2ndElement()->token() == Token::USE_REFERENCE && previous2ndElement()->isUnknownType() == true )
 			{
 				#ifdef DEBUG_RAE_HUMAN
 					cout<<"because previousElement was unknown and there was a REFERENCE_DOT we set this to UNKNOWN_USE_MEMBER: "<<set_token<<"\n";
@@ -6019,10 +6040,10 @@ This never gets called. Look in expecting NAME thing...
 				return;
 			}
 			//definitions: Tester tester <-- both are definitions... NO! We'll fix the first one and set the second token to be empty.
-			//else if(previousElement()->langTokenType() == Token::UNKNOWN_USE_REFERENCE && previous2ndElement()->langTokenType() != Token::UNKNOWN_USE_REFERENCE)
-			else if(previousElement()->langTokenType() == Token::USE_REFERENCE
+			//else if(previousElement()->token() == Token::UNKNOWN_USE_REFERENCE && previous2ndElement()->token() != Token::UNKNOWN_USE_REFERENCE)
+			else if(previousElement()->token() == Token::USE_REFERENCE
 				&& previousElement()->isUnknownType() == true
-				//&& previous2ndElement()->langTokenType() != Token::USE_REFERENCE
+				//&& previous2ndElement()->token() != Token::USE_REFERENCE
 				&& previous2ndElement()->isUnknownType() == false //The previous2nd element has to be something else. Something known.
 				)
 			{
@@ -6036,8 +6057,8 @@ This never gets called. Look in expecting NAME thing...
 				#endif
 				//newUnknownUseMember(set_token);
 				//Hahaaa, we don't even have to create it!
-				//previousElement()->langTokenType(Token::UNKNOWN_DEFINITION);
-				previousElement()->langTokenType(Token::DEFINE_REFERENCE);
+				//previousElement()->token(Token::UNKNOWN_DEFINITION);
+				previousElement()->token(Token::DEFINE_REFERENCE);
 				previousElement()->type( previousElement()->name() ); //Your name is now your type: Tester
 				previousElement()->name(set_token); //your name is now set_token: tester
 
@@ -6054,9 +6075,9 @@ This never gets called. Look in expecting NAME thing...
 				return;
 			}
 			//an array definition:
-			else if(previousElement()->langTokenType() == Token::BRACKET_END
-				&& previous2ndElement()->langTokenType() == Token::BRACKET_BEGIN
-				//&& previous2ndElement()->langTokenType() != Token::USE_REFERENCE
+			else if(previousElement()->token() == Token::BRACKET_END
+				&& previous2ndElement()->token() == Token::BRACKET_BEGIN
+				//&& previous2ndElement()->token() != Token::USE_REFERENCE
 				&& previous2ndElement()->previousElement()->isUnknownType() == true
 				)
 			{
@@ -6068,16 +6089,16 @@ This never gets called. Look in expecting NAME thing...
 				#endif
 				//newUnknownUseMember(set_token);
 				//Hahaaa, we don't even have to create it!
-				//previousElement()->langTokenType(Token::UNKNOWN_DEFINITION);
+				//previousElement()->token(Token::UNKNOWN_DEFINITION);
 				
 				//Ignore _IN_CLASS untill handleUnknownDefinitions.
-				/*if( our_array_definition->parent()->langTokenType() == Token::CLASS )
+				/*if( our_array_definition->parent()->token() == Token::CLASS )
 				{
-					our_array_definition->langTokenType(Token::DEFINE_ARRAY_IN_CLASS);
+					our_array_definition->token(Token::DEFINE_ARRAY_IN_CLASS);
 				}
 				else
 				{*/
-					//our_array_definition->langTokenType(Token::DEFINE_ARRAY);
+					//our_array_definition->token(Token::DEFINE_ARRAY);
 				
 				cout<<"Got a bracket end. TODO something with it. VECTOR\n";
 				assert(0);
@@ -6115,7 +6136,7 @@ This never gets called. Look in expecting NAME thing...
 			//Check if it is a valid token in this context: //check already in searchToken now...
 			//if( checkIfTokenIsValidInCurrentContext(currentParentElement(), found_elem) == true )
 			//{
-				switch(found_elem->langTokenType())
+				switch(found_elem->token())
 				{
 					default:
 					break;
@@ -6233,7 +6254,7 @@ This never gets called. Look in expecting NAME thing...
 			else
 			{
 				//set it "back" to unknown... will be handled later again.
- 				//our_new_element->langTokenType(Token::UNKNOWN_USE_REFERENCE);
+ 				//our_new_element->token(Token::UNKNOWN_USE_REFERENCE);
  				our_new_element->isUnknownType(true);
  				addToUnknowns(our_new_element);
 			}
@@ -6306,8 +6327,8 @@ This never gets called. Look in expecting NAME thing...
 
 		foreach( LangElement* lang_elem, unknown_tokens )
 		{
-			//if(lang_elem->langTokenType() != Token::UNKNOWN_DEFINITION)
-			//if(lang_elem->langTokenType() != Token::DEFINE_REFERENCE && 
+			//if(lang_elem->token() != Token::UNKNOWN_DEFINITION)
+			//if(lang_elem->token() != Token::DEFINE_REFERENCE && 
 			if( lang_elem->isUnknownType() == false )
 			{
 				#ifdef DEBUG_RAE_HUMAN
@@ -6331,15 +6352,15 @@ This never gets called. Look in expecting NAME thing...
 				//rae::log("and the lang elem was: ", lang_elem->toString(), "\n");
 				#endif
 
-				switch(found_elem->langTokenType())
+				switch(found_elem->token())
 				{
 					default:
 						reportError("handleUnknownTokens found this: " + found_elem->toString(), lang_elem);
 					break;
 					case Token::CLASS:
 						
-						if(lang_elem->langTokenType() == Token::DEFINE_FUNC_ARGUMENT
-							|| lang_elem->langTokenType() == Token::DEFINE_FUNC_RETURN
+						if(lang_elem->token() == Token::DEFINE_FUNC_ARGUMENT
+							|| lang_elem->token() == Token::DEFINE_FUNC_RETURN
 							)
 						{
 							lang_elem->isUnknownType(false);
@@ -6350,19 +6371,19 @@ This never gets called. Look in expecting NAME thing...
 							}
 							addToUserDefinedTokens(lang_elem);
 						}
-						else if(lang_elem->langTokenType() == Token::DEFINE_REFERENCE )
+						else if(lang_elem->token() == Token::DEFINE_REFERENCE )
 						{	/*
-							if(lang_elem->typeType() == TypeType::C_ARRAY )//|| lang_elem->langTokenType() == Token::DEFINE_ARRAY_IN_CLASS)
+							if(lang_elem->typeType() == TypeType::C_ARRAY )//|| lang_elem->token() == Token::DEFINE_ARRAY_IN_CLASS)
 							{
-								if(lang_elem->parent() && lang_elem->parent()->langTokenType() == Token::CLASS)
+								if(lang_elem->parent() && lang_elem->parent()->token() == Token::CLASS)
 								{
-									/////lang_elem->langTokenType(Token::DEFINE_ARRAY_IN_CLASS);
+									/////lang_elem->token(Token::DEFINE_ARRAY_IN_CLASS);
 									lang_elem->parent()->createObjectAutoInitAndFree(lang_elem);
 									//listOfAutoInitObjects.push_back(lang_elem);	
 								}
 								else
 								{
-									////lang_elem->langTokenType(Token::DEFINE_ARRAY);	
+									////lang_elem->token(Token::DEFINE_ARRAY);	
 								}
 								lang_elem->isUnknownType(false);
 								addToUserDefinedTokens(lang_elem);
@@ -6385,15 +6406,15 @@ This never gets called. Look in expecting NAME thing...
 								}
 
 								//if we are inside a class, we need to create auto_inits and auto_free to constructors and destructors.
-								if(lang_elem->parent() && lang_elem->parent()->langTokenType() == Token::CLASS)
+								if(lang_elem->parent() && lang_elem->parent()->token() == Token::CLASS)
 								{
-									////////////////////lang_elem->langTokenType(Token::DEFINE_REFERENCE_IN_CLASS);
+									////////////////////lang_elem->token(Token::DEFINE_REFERENCE_IN_CLASS);
 									lang_elem->parent()->createObjectAutoInitAndFree(lang_elem);
 									//listOfAutoInitObjects.push_back(lang_elem);	
 								}
 								else
 								{
-									//lang_elem->langTokenType(Token::DEFINE_REFERENCE);	
+									//lang_elem->token(Token::DEFINE_REFERENCE);	
 								}
 								lang_elem->isUnknownType(false);
 								addToUserDefinedTokens(lang_elem);
@@ -6409,7 +6430,7 @@ This never gets called. Look in expecting NAME thing...
 						//#endif
 						assert(0);
 
-						lang_elem->langTokenType(Token::FUNC_CALL);
+						lang_elem->token(Token::FUNC_CALL);
 						lang_elem->isUnknownType(false);
 					break;
 					/*	
@@ -6420,7 +6441,7 @@ This never gets called. Look in expecting NAME thing...
 						#endif
 
 						//newUseVector(found_elem);
-						lang_elem->langTokenType(Token::USE_VECTOR);
+						lang_elem->token(Token::USE_VECTOR);
 						lang_elem->isUnknownType(false);
 					break;
 					case Token::DEFINE_ARRAY:
@@ -6430,7 +6451,7 @@ This never gets called. Look in expecting NAME thing...
 						#endif
 
 						//newUseArray(found_elem);
-						lang_elem->langTokenType(Token::USE_ARRAY);
+						lang_elem->token(Token::USE_ARRAY);
 						lang_elem->isUnknownType(false);
 					break;
 					*/
@@ -6446,7 +6467,7 @@ This never gets called. Look in expecting NAME thing...
 
 						//newUseReference(found_elem);
 					//We don't create a nu element, instead we modify the existing unknown element.
-						lang_elem->langTokenType(Token::USE_REFERENCE);
+						lang_elem->token(Token::USE_REFERENCE);
 						lang_elem->type( found_elem->type() );//copy the class type etc.
 						lang_elem->typeType( found_elem->typeType() );//copy the typetype. ref, built_in, array, vector etc.
 						lang_elem->isUnknownType(false);
@@ -6466,7 +6487,7 @@ This never gets called. Look in expecting NAME thing...
 
 						//And here's the optimization I was talking about: check for following FUNC_CALL and USE_REFERENCE.
 						//If we already know the class we are dealing with, which is found in lang_elem->definitionElement()->definitionElement()
-						if(lang_elem->nextElement() && lang_elem->nextElement()->langTokenType() == Token::REFERENCE_DOT
+						if(lang_elem->nextElement() && lang_elem->nextElement()->token() == Token::REFERENCE_DOT
 							&& lang_elem->definitionElement()->definitionElement() )
 						{
 							#ifdef DEBUG_RAE_HUMAN
@@ -6483,26 +6504,25 @@ This never gets called. Look in expecting NAME thing...
 								#ifdef DEBUG_RAE_HUMAN
 								cout<<"looking for name: "<<lang_elem->nextElement()->nextElement()->name()<<"\n";
 								cout<<"from: "<<lang_elem->definitionElement()->definitionElement()->toString()<<"\n";
-								#endif
-
 								lang_elem->definitionElement()->definitionElement()->printOutListOfFunctions();
 								lang_elem->definitionElement()->definitionElement()->printOutListOfReferences();
+								#endif
 
 								if( maybe_member )
 								{
-									if( maybe_member->langTokenType() == Token::FUNC )
+									if( maybe_member->token() == Token::FUNC )
 									{
 										#ifdef DEBUG_RAE_HUMAN
 										cout<<"NEWWAY found a FUNC definition "<<maybe_member->toString()<<" while looking for "<<lang_elem->nextElement()->nextElement()->toString()<<"\n";
 										#endif
-										lang_elem->nextElement()->nextElement()->langTokenType(Token::FUNC_CALL);
+										lang_elem->nextElement()->nextElement()->token(Token::FUNC_CALL);
 									}
-									else if( maybe_member->langTokenType() == Token::DEFINE_REFERENCE )
+									else if( maybe_member->token() == Token::DEFINE_REFERENCE )
 									{
 										#ifdef DEBUG_RAE_HUMAN
 										cout<<"NEWWAY found a DEFINE_REFERENCE "<<maybe_member->toString()<<" while looking for "<<lang_elem->nextElement()->nextElement()->toString()<<"\n";
 										#endif
-										lang_elem->nextElement()->nextElement()->langTokenType(Token::USE_REFERENCE);
+										lang_elem->nextElement()->nextElement()->token(Token::USE_REFERENCE);
 										lang_elem->nextElement()->nextElement()->typeType( maybe_member->typeType() );//Umm, could it be a vector?
 									}
 									else

@@ -68,22 +68,29 @@ int32_t main(int argc, char* const argv[])
 	//Should give us: Tester** tester_lnk = &hello.tester;
 	
 	Tester* tester_lnk3 = hello.testerLink();//line: 83
-	Tester tester_val4 = hello.testerVal();//line: 84
+	//ERROR: can't point to with a value type: val Tester tester_val4 -> hello.testerVal
+	Tester tester_val4 = hello.testerVal();//line: 85
+	//How about a link to a return value:
+	Tester* tester_lnk5 = &hello.testerVal();//line: 87
+	std::cout<<"link to a return value: tester_lnk5: ";//line: 88
+	tester_lnk5->/*possible error, unknown token:*/sayHello;//line: 89
+	
 	//val Tester tester_val5 -> hello.testerVal2
 	
-	hello.sayHello();//line: 87
+	hello.sayHello();//line: 93
 	
-	std::cout<<"5 + 2 = ";//line: 89
+	std::cout<<"5 + 2 = ";//line: 95
 	
 	//the following line will not run if tester_lnk is null.
 	//NOT YET: log(hello.count(int param1: hello.num, ref Tester param2: tester_lnk?))
 	
 	//NOT_YET: log(hello.count( hello.num, hello.tester ))
 	
-	hello.tester.data = 3;//line: 96
+	hello.tester.data = 3;//line: 102
 	
-	return(0);//line: 98
+	return(0);//line: 104
 	delete tester_lnk2;//line: 73
 	delete tester_lnk;//line: 73
-	delete tester_lnk3;
+	delete tester_lnk3;//line: 73
+	delete tester_lnk5;
 }
