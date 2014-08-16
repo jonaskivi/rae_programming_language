@@ -456,10 +456,14 @@
 
 						if( got_statementRValue != 0 )
 						{
+							#ifdef DEBUG_RAE_RVALUE
 							cout<<"GOT rvalue: "<<got_statementRValue->toString()<<"\n";
+							#endif
+
+							//This error test was moved to validate.
 
 							//test for link to temp val, which is an error.
-							if(writer.nextElement()->token() == Token::FUNC_CALL)
+							if(got_statementRValue->role() == Role::FUNC_RETURN)
 							{
 								if( got_statementRValue->typeType() == TypeType::VAL
 								|| got_statementRValue->typeType() == TypeType::BUILT_IN_TYPE )
@@ -468,7 +472,7 @@
 									reportError("pointing a link to a temporary object returned by function call is not possible.", &set_elem);
 								}
 							}
-
+							
 							//This could be "else", but we'll write it anyway, even though the test is done twice in FUNC_CALL case.
 							if( got_statementRValue->typeType() == TypeType::VAL
 								|| got_statementRValue->typeType() == TypeType::BUILT_IN_TYPE )

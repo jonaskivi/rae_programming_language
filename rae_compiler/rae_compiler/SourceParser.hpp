@@ -1858,7 +1858,11 @@ public:
 	void parse()
 	{
 		//rae::log("SourceParser::parse START.", currentFilenamePath.string(), "\n" );
-		cout<<"\nParsing: "<<currentFilenamePath.string()<<"\n";
+		cout<<"\n";
+		rlutil::setColor(rlutil::BROWN);
+		cout<<"Parsing: ";
+		rlutil::setColor(rlutil::WHITE);
+		cout<<currentFilenamePath.string()<<"\n";
 
 		if(currentFilenamePath.string() == "")
 			return;
@@ -1891,12 +1895,6 @@ public:
 				
 			}			
 		}
-
-		if( countWarnings > 0)
-		cout<<"\nNumber of warnings: "<<countWarnings<<"\n\n";
-
-		if( countErrors > 0)
-			cout<<"\nNumber of errors: "<<countErrors<<"\n\n";
 	}
 	
 	void write(string folder_path_to_write_to)
@@ -1980,7 +1978,10 @@ public:
 			
 			//#ifdef DEBUG_RAE_HUMAN
 			//cout<<"\n\nWriting C++:\n\n";
-			cout<<"Writing C++: "<<module_filename.string()<<" .hpp and .cpp\n";
+			rlutil::setColor(rlutil::BROWN);
+			cout<<"Writing C++: ";
+			rlutil::setColor(rlutil::WHITE);
+			cout<<module_filename.string()<<" .hpp and .cpp\n";
 			//cout<<"outputHeaderPath: "<<outputHeaderPath.string()<<"\n";
 			//cout<<"outputFilePath: "<<outputFilePath.string()<<"\n";
 			//#endif
@@ -2058,6 +2059,25 @@ public:
 			//cout<<"file: "<<outputFilePath<<"\n";
 			//rae::log("\n\nheader: ", outputHeaderPath, "\n");
 			//rae::log("file: ", outputFilePath, "\n");
+
+			if( countWarnings > 0)
+			{
+				cout<<"\nNumber of ";
+				rlutil::setColor(rlutil::CYAN);
+				cout<<"warnings: ";
+				rlutil::setColor(rlutil::WHITE);
+				cout<<countWarnings<<"\n\n";
+			}
+
+			if( countErrors > 0)
+			{
+				cout<<"\nNumber of ";
+				rlutil::setColor(rlutil::BLUE);
+				cout<<"errors: ";
+				rlutil::setColor(rlutil::WHITE);
+				cout<<countErrors<<"\n\n";
+			}
+
 		}//end foreach modules langElements...
 	}
 
@@ -2819,7 +2839,10 @@ public:
 
 	void reportError(string set)
 	{
-		cout<<"ERROR: "<<set<<" / line: "<<lineNumber.line<<" / Module: "<<moduleName()<<"\n";
+		rlutil::setColor(rlutil::RED);
+		cout<<"ERROR: ";
+		rlutil::setColor(rlutil::WHITE);
+		cout<<set<<" / line: "<<lineNumber.line<<" / Module: "<<moduleName()<<"\n";
 		//rae::log("ERROR: ", lineNumber.line, " ", set, "\n");
 		countErrors++;
 	}
@@ -2829,7 +2852,10 @@ public:
 		if(set_elem)
 		{
 			set_elem->parseError(ParseError::SYNTAX_ERROR);
-			cout<<"ERROR: "<<set<<" / line: "<<set_elem->lineNumber().line<<" / Module: "<<moduleName()<<"\n";
+			rlutil::setColor(rlutil::RED);
+			cout<<"ERROR: ";
+			rlutil::setColor(rlutil::WHITE);
+			cout<<set<<" / line: "<<set_elem->lineNumber().line<<" / Module: "<<moduleName()<<"\n";
 			//rae::log("ERROR: ", lineNumber.line, " ", set, "\n");	
 		}
 		else
@@ -6571,7 +6597,7 @@ This never gets called. Look in expecting NAME thing...
 			}
 			else
 			{
-				reportError("Didn't find definition: " + lang_elem->toString() );
+				reportError("Didn't find definition:\n" + lang_elem->toString() );
 
 				#ifdef DEBUG_RAE_HUMAN
 				cout<<"Didn't find: "<<lang_elem->toString()<<" it remains unknown DEFINITION.\n";

@@ -380,12 +380,16 @@ public:
 
 int main (int argc, char * const argv[])
 {
+	rlutil::setColor(rlutil::GREEN);
 	cout<<"Rae Compiler version 0.0.1\n";
     //rae::log("Rae Compiler version 0.0.1\n");
+	rlutil::setColor(rlutil::WHITE);
 
 	if(argc <= 1)
 	{
+		rlutil::setColor(rlutil::RED);
 		cout<<"No source files added.\n";
+		rlutil::setColor(rlutil::WHITE);
 		return -1;
 	}
 
@@ -402,6 +406,10 @@ int main (int argc, char * const argv[])
 	langCompiler.parse();
 	langCompiler.validate();
 	langCompiler.write();
+
+	rlutil::setColor(rlutil::GREEN);
+	cout<<"Rae Finished.\n";
+  rlutil::setColor(rlutil::WHITE);	
 
 	return 0;
 }

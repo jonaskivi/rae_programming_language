@@ -1,4 +1,5 @@
 #include <iostream>
+#include "rlutil.h"//for colours in console output
 #include <sstream> //for ostringstream
 #include <string>
 #include <vector>
@@ -32,7 +33,7 @@ typedef unsigned int uint;
 //#define DEBUG_RAE
 //#define DEBUG_RAE2
 //#define DEBUG_RAE_DESTRUCTORS
-#define DEBUG_RAE_RVALUE
+//#define DEBUG_RAE_RVALUE
 
 template <typename T>
   string numberToString ( T number )

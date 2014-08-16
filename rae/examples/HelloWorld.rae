@@ -82,10 +82,10 @@ func
 	link Tester tester_lnk3 -> hello.testerLink
 	//ERROR: can't point to with a value type: val Tester tester_val4 -> hello.testerVal
 	val Tester tester_val4 = hello.testerVal
-	//How about a link to a return value:
-	link Tester tester_lnk5 -> hello.testerVal
-	log_s("link to a return value: tester_lnk5: ")
-	tester_lnk5.sayHello
+	//A link to a return value is not allowed, because val as return type is temporary:
+	//link Tester tester_lnk5 -> hello.testerVal
+	log_s("link to a return value: tester_val4: ")
+	tester_val4.logMe
 
 	//val Tester tester_val5 -> hello.testerVal2
 

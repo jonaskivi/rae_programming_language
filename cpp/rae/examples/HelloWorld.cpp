@@ -70,10 +70,10 @@ int32_t main(int argc, char* const argv[])
 	Tester* tester_lnk3 = hello.testerLink();//line: 83
 	//ERROR: can't point to with a value type: val Tester tester_val4 -> hello.testerVal
 	Tester tester_val4 = hello.testerVal();//line: 85
-	//How about a link to a return value:
-	Tester* tester_lnk5 = &hello.testerVal();//line: 87
-	std::cout<<"link to a return value: tester_lnk5: ";//line: 88
-	tester_lnk5->/*possible error, unknown token:*/sayHello;//line: 89
+	//A link to a return value is not allowed, because val as return type is temporary:
+	//link Tester tester_lnk5 -> hello.testerVal
+	std::cout<<"link to a return value: tester_val4: ";//line: 88
+	tester_val4.logMe();//line: 89
 	
 	//val Tester tester_val5 -> hello.testerVal2
 	
@@ -91,6 +91,5 @@ int32_t main(int argc, char* const argv[])
 	return(0);//line: 104
 	delete tester_lnk2;//line: 73
 	delete tester_lnk;//line: 73
-	delete tester_lnk3;//line: 73
-	delete tester_lnk5;
+	delete tester_lnk3;
 }

@@ -1089,7 +1089,13 @@ public:
 	
 	string toString()
 	{
-		string ret = tokenString() + " typetype: " + typeTypeString() + " name: " + name() + " type: " + type() + "<. line: " + numberToString(lineNumber().line);
+		string ret = "\tname: " + name() + "\n\t" + tokenString() + "\n\t" + "typetype: " + typeTypeString() + "\n\t" + "type: " + type() + "\n\t" + "line: " + numberToString(lineNumber().line) + "\n";
+		return ret;
+	}
+
+	string toStringNoLines()
+	{
+		string ret = " name: " + name() + tokenString() + " typetype: " + typeTypeString() + " type: " + type() + "<. line: " + numberToString(lineNumber().line);
 		return ret;
 	}
 
@@ -1305,6 +1311,7 @@ public:
 			|| nextElement()->token() == Token::SEMICOLON
 			)
 			{
+				//TODO errors in langElement with reportError?
 				cout<<"Error. No USE_REFERENCE or FUNC_CALL after REFERENCE_DOT. element: "<<toString()<<"\n";
 				return 0;
 			}
