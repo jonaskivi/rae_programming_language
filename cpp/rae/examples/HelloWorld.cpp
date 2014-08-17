@@ -1,5 +1,5 @@
 //this file is automatically created from Rae programming language module:
-///Users/joonaz/Dropbox/jonas/2014/ohjelmointi/rae_programming_language/cpp/rae/examples/HelloWorld
+///home/joonaz/Dropbox/jonas/2014/ohjelmointi/rae_programming_language/cpp/rae/examples/HelloWorld
 #include "HelloWorld.hpp"
 
 //class Tester
@@ -23,8 +23,8 @@ void Tester::logMe()
 
 HelloWorld::HelloWorld()
 {
-	afloat = 248.52;//line: 45
-	anotherNumber = 42;//line: 44
+	afloat = 248.52;//line: 44
+	anotherNumber = 42;//line: 43
 	num = 5;
 }
 
@@ -37,8 +37,7 @@ void HelloWorld::sayHello()
 {
 	tester.logMe();//line: 32
 	std::cout<<"World!"<<"\n";//line: 33
-	
-	std::cout<<"tester_opt: "<<"\n";//line: 35
+	std::cout<<"tester_opt: "<<"\n";//line: 34
 	//NOT YET: tester_opt?.logMe()
 	tester_opt->logMe();
 }
@@ -63,33 +62,33 @@ int32_t main(int argc, char* const argv[])
 	HelloWorld hello; //semicolons are allowed, but not required.
 	
 	//Rae does not use = for pointing to an object. Instead use -> to point.
-	Tester* tester_lnk2 = hello.tester_opt;//line: 79
-	Tester* tester_lnk = &hello.tester;//line: 80
+	Tester* tester_lnk2 = hello.tester_opt;//line: 78
+	Tester* tester_lnk = &hello.tester;//line: 79
 	//Should give us: Tester** tester_lnk = &hello.tester;
 	
-	Tester* tester_lnk3 = hello.testerLink();//line: 83
+	Tester* tester_lnk3 = hello.testerLink();//line: 82
 	//ERROR: can't point to with a value type: val Tester tester_val4 -> hello.testerVal
-	Tester tester_val4 = hello.testerVal();//line: 85
+	Tester tester_val4 = hello.testerVal();//line: 84
 	//A link to a return value is not allowed, because val as return type is temporary:
 	//link Tester tester_lnk5 -> hello.testerVal
-	std::cout<<"link to a return value: tester_val4: ";//line: 88
-	tester_val4.logMe();//line: 89
+	std::cout<<"link to a return value: tester_val4: ";//line: 87
+	tester_val4.logMe();//line: 88
 	
 	//val Tester tester_val5 -> hello.testerVal2
 	
-	hello.sayHello();//line: 93
+	hello.sayHello();//line: 92
 	
-	std::cout<<"5 + 2 = ";//line: 95
+	std::cout<<"5 + 2 = ";//line: 94
 	
 	//the following line will not run if tester_lnk is null.
 	//NOT YET: log(hello.count(int param1: hello.num, ref Tester param2: tester_lnk?))
 	
 	//NOT_YET: log(hello.count( hello.num, hello.tester ))
 	
-	hello.tester.data = 3;//line: 102
+	hello.tester.data = 3;//line: 101
 	
-	return(0);//line: 104
-	delete tester_lnk2;//line: 73
-	delete tester_lnk;//line: 73
+	return(0);//line: 103
+	delete tester_lnk2;//line: 72
+	delete tester_lnk;//line: 72
 	delete tester_lnk3;
 }

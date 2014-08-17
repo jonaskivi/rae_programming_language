@@ -30,7 +30,6 @@ public:
 	{
 		tester.logMe
 		log("World!")
-		
 		log("tester_opt: ")
 		//NOT YET: tester_opt?.logMe()
 		tester_opt.logMe()		

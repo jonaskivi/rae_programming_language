@@ -1,5 +1,5 @@
 //this file is automatically created from Rae programming language module:
-///Users/joonaz/Dropbox/jonas/2014/ohjelmointi/rae_programming_language/cpp/rae/examples/HelloWorld
+///home/joonaz/Dropbox/jonas/2014/ohjelmointi/rae_programming_language/cpp/rae/examples/HelloWorld
 #ifndef _rae_examples_HelloWorld_hpp_
 #define _rae_examples_HelloWorld_hpp_
 
@@ -26,15 +26,15 @@ public:
 	HelloWorld();//line: 20
 	~HelloWorld();//line: 24
 	public: void sayHello();//line: 30
-	public: int32_t count(int32_t param1, Tester* param2);//line: 40
-	int32_t num;//line: 45
-	protected: int64_t anotherNumber;//line: 46
-	public: float afloat;//line: 47
+	public: int32_t count(int32_t param1, Tester* param2);//line: 39
+	int32_t num;//line: 44
+	protected: int64_t anotherNumber;//line: 45
+	public: float afloat;//line: 46
 	
 	//REMOVE FROM HELLO
 	
-	Tester testerVal();//line: 51
-	Tester* testerLink();//line: 56
+	Tester testerVal();//line: 50
+	Tester* testerLink();//line: 55
 	/*func (val Tester)testerVal2()
 	{
 		return(tester_opt)
@@ -42,7 +42,7 @@ public:
 	
 	//REMOVE
 	
-	Tester tester;//line: 68
+	Tester tester;//line: 67
 	
 	Tester* tester_opt;//= new Tester 
 };
