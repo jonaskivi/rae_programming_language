@@ -61,6 +61,17 @@ public:
 		return(tester_opt)
 	}*/
 
+	//The possible vector and array syntax proposals:
+	vec val Tester testers	
+
+	vec[val Tester] testers
+	
+	[val Tester] testers
+	
+	val Tester[] testers
+
+	protected vec val Tester testers
+
 	//REMOVE
 
 	val Tester tester
