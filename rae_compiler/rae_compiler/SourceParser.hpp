@@ -130,6 +130,65 @@ and by using a method called classHasFunctionOrValue()
 
 */
 
+
+class ReportError
+{
+public:
+	/*static void reportWarning(string set, LineNumber lineNumber)
+	{
+		cout<<"Warning: "<<set<<" / line: "<<lineNumber.line<<" / Module: "<<moduleName()<<"\n";
+		//rae::log("Warning: ", lineNumber.line, " ", set, "\n");
+		m_countWarnings++;
+	}
+
+	static void reportError(string set, LineNumber lineNumber)
+	{
+		rlutil::setColor(rlutil::RED);
+		cout<<"ERROR: ";
+		rlutil::setColor(rlutil::WHITE);
+		cout<<set<<" / line: "<<lineNumber.line<<" / Module: "<<moduleName()<<"\n";
+		//rae::log("ERROR: ", lineNumber.line, " ", set, "\n");
+		m_countErrors++;
+	}
+	*/
+	
+	static void reportWarning(string set, LangElement& set_elem, string moduleName)
+	{
+		//set_elem->parseError(ParseError::SYNTAX_ERROR);
+		rlutil::setColor(rlutil::YELLOW);
+		cout<<"WARNING: ";
+		rlutil::setColor(rlutil::WHITE);
+		cout<<set<<" / line: "<<set_elem.lineNumber().line<<" / Module: "<<moduleName<<"\n";
+		//rae::log("ERROR: ", lineNumber.line, " ", set, "\n");	
+		
+		m_countErrors++;		
+	}
+
+	static void reportError(string set, LangElement& set_elem, string moduleName)
+	{
+		set_elem.parseError(ParseError::SYNTAX_ERROR);
+		rlutil::setColor(rlutil::RED);
+		cout<<"ERROR: ";
+		rlutil::setColor(rlutil::WHITE);
+		cout<<set<<" / line: "<<set_elem.lineNumber().line<<" / Module: "<<moduleName<<"\n";
+		//rae::log("ERROR: ", lineNumber.line, " ", set, "\n");	
+		
+		m_countErrors++;		
+	}
+
+	public: int countWarnings()
+	{
+		return m_countWarnings;
+	}
+	protected: static int m_countWarnings;
+	
+	public: int countErrors()
+	{
+		return m_countErrors;
+	}
+	protected: static int m_countErrors;
+};
+
 class SourceParser
 {
 public:
@@ -394,7 +453,7 @@ public:
 		}
 		else
 		{
-			reportError("newLangElement() No current parent element found. Do you have a module? Compilers fault. Something went wrong.");
+			ReportError::reportError("newLangElement() No current parent element found. Do you have a module? Compilers fault. Something went wrong.");
 			cout<<"tried to create:"<<Token::toString(set_lang_token_type)<<" name: "<<set_name<<" type: "<<set_type<<"\n";
 		}
 
@@ -809,7 +868,7 @@ public:
 		{
 			stack_elem = 0;//null
 
-			reportError("No matching starting [ for ]. Missing bracket.");
+			ReportError::reportError("No matching starting [ for ]. Missing bracket.");
 		}
 
 		LangElement* lang_elem;
@@ -881,7 +940,7 @@ public:
 		}
 		else 
 		{
-			reportError("newImport() No current module found. Compilers fault. Something went wrong.");
+			ReportError::reportError("newImport() No current module found. Compilers fault. Something went wrong.");
 		}
 
 		return lang_elem;
@@ -1006,7 +1065,7 @@ public:
 		{
 			//lang_elem = newLangElement(Token::CLASS, set_name);
 			//currentFunc = lang_elem;
-			reportError("newClass() No current module found. Compilers fault. Something went wrong.");
+			ReportError::reportError("newClass() No current module found. Compilers fault. Something went wrong.");
 		}
 
 		return lang_elem;
@@ -1469,7 +1528,7 @@ public:
 
 		lang_elem->definitionElement(set_elem);
 		
-		reportError("Don't use C_ARRAYs with this syntax at the moment.");
+		ReportError::reportError("Don't use C_ARRAYs with this syntax at the moment.");
 
 		#ifdef DEBUG_RAE_HUMAN
 			cout<<"DON'T use at the moment. newUseArray: "<<set_elem->toString()<<"\n";
@@ -1904,7 +1963,7 @@ public:
 		if( sourceFiles.empty() )
 		{
 			//cout<<
-			reportError("write() None of the source files were parsed correctly. Can't write anything.");
+			ReportError::reportError("write() None of the source files were parsed correctly. Can't write anything.");
 			return;
 		}
 		
@@ -2827,43 +2886,7 @@ public:
 		//}
 	}
 
-	int countWarnings;
-	int countErrors;
-
-	void reportWarning(string set)
-	{
-		cout<<"Warning: "<<set<<" / line: "<<lineNumber.line<<" / Module: "<<moduleName()<<"\n";
-		//rae::log("Warning: ", lineNumber.line, " ", set, "\n");
-		countWarnings++;
-	}
-
-	void reportError(string set)
-	{
-		rlutil::setColor(rlutil::RED);
-		cout<<"ERROR: ";
-		rlutil::setColor(rlutil::WHITE);
-		cout<<set<<" / line: "<<lineNumber.line<<" / Module: "<<moduleName()<<"\n";
-		//rae::log("ERROR: ", lineNumber.line, " ", set, "\n");
-		countErrors++;
-	}
-
-	void reportError(string set, LangElement* set_elem)
-	{
-		if(set_elem)
-		{
-			set_elem->parseError(ParseError::SYNTAX_ERROR);
-			rlutil::setColor(rlutil::RED);
-			cout<<"ERROR: ";
-			rlutil::setColor(rlutil::WHITE);
-			cout<<set<<" / line: "<<set_elem->lineNumber().line<<" / Module: "<<moduleName()<<"\n";
-			//rae::log("ERROR: ", lineNumber.line, " ", set, "\n");	
-		}
-		else
-		{
-			cout<<"Error reporting failed. Oh no. This isn't supposed to happen. Email the developer of the compiler.";
-		}
-		countErrors++;		
-	}
+	
 
 	void parseIdle()
 	{				
@@ -3245,7 +3268,7 @@ public:
 				}
 				else
 				{
-					reportError(") parenthesis_end - can't be initdata for built in type.\n");
+					ReportError::reportError(") parenthesis_end - can't be initdata for built in type.\n");
 				}
 			}
 			else if( set_token == "," )
@@ -3257,7 +3280,7 @@ public:
 				}
 				else
 				{
-					reportError("unexpected , COMMA while waiting for initdata for built in type.\n");	
+					ReportError::reportError("unexpected , COMMA while waiting for initdata for built in type.\n");	
 				}
 			}
 			else if( set_token == "\n" )
@@ -3348,7 +3371,7 @@ public:
 				else
 				{
 					//cout<<"ERROR: "<<lineNumber.line<<" was expecting an INIT_DATA. It should be a number or new.\n";
-					reportError("expecting an INIT_DATA. It should be a number or new.");
+					ReportError::reportError("expecting an INIT_DATA. It should be a number or new.");
 				}
 				//expectingToken = Token::UNDEFINED;
 				doReturnToExpectToken();
@@ -3505,7 +3528,7 @@ public:
 				//cout<<" calling log(). No parenthesis after log.";
 				//rae::log(" calling log(). No parenthesis after log.");
 
-				reportError("calling log(). No parenthesis after log.");
+				ReportError::reportError("calling log(). No parenthesis after log.");
 			}
 
 			//expectingToken = Token::UNDEFINED;
@@ -3524,7 +3547,7 @@ public:
 				//lineNumber.printOut();
 				//cout<<" calling log_ln(). No parenthesis after log_ln.";
 				
-				reportError(" calling log_ln(). No parenthesis after log_ln.");
+				ReportError::reportError(" calling log_ln(). No parenthesis after log_ln.");
 			}
 
 			//expectingToken = Token::UNDEFINED;
@@ -3543,7 +3566,7 @@ public:
 				else
 				{
 					//cout<<"ERROR: "<<lineNumber.line<<" float number messed up, after dot.";
-					reportError(" float number messed up, after dot.");
+					ReportError::reportError(" float number messed up, after dot.");
 				}
 			}
 		}
@@ -3587,7 +3610,7 @@ public:
 			if( set_token == "[" )
 			{
 				//Shouldn't happen.
-				reportError("Duplicate [. Compiler TODO.");
+				ReportError::reportError("Duplicate [. Compiler TODO.");
 				//expectingToken(Token::VECTOR_STUFF);
 			}
 			else if( set_token == "]" )
@@ -3613,14 +3636,14 @@ public:
 					}
 					else
 					{
-						reportError("An ending array bracket ] in a strange place. The element before is not a type. It is: " + previousElement()->toString() );
+						ReportError::reportError("An ending array bracket ] in a strange place. The element before is not a type. It is: " + previousElement()->toString() );
 					}
 				}
 			}
 			else
 			{
 				//A static array. TODO.
-				reportError("Maybe a static array. TODO.");
+				ReportError::reportError("Maybe a static array. TODO.");
 			}
 		}
 		else if( expectingToken() == Token::VECTOR_STUFF )
@@ -4060,7 +4083,7 @@ This never gets called. Look in expecting NAME thing...
 						newBracketBegin(Token::BRACKET_BEGIN, set_token);
 					}
 				}
-				else reportError("a bracket, but no previousElement. This is a compiler error. We'll need to fix it.");
+				else ReportError::reportError("a bracket, but no previousElement. This is a compiler error. We'll need to fix it.");
 				
 			}
 			else if( set_token == "]" )
@@ -4464,7 +4487,7 @@ This never gets called. Look in expecting NAME thing...
 				}
 				else
 				{
-					reportError(") parenthesis_end - can't be a name for built in type.\n");
+					ReportError::reportError(") parenthesis_end - can't be a name for built in type.\n");
 				}
 			}
 			else if( currentReference )
@@ -4477,7 +4500,7 @@ This never gets called. Look in expecting NAME thing...
 				}
 				else
 				{
-					reportError("redefinition of name: " + set_token);
+					ReportError::reportError("redefinition of name: " + set_token);
 				}*/
 			
 				//And now we'll see what to do next:
@@ -4516,7 +4539,7 @@ This never gets called. Look in expecting NAME thing...
 				}
 				else
 				{
-					reportError(") parenthesis_end - can't be a name for a reference.\n");
+					ReportError::reportError(") parenthesis_end - can't be a name for a reference.\n");
 				}
 			}
 			else if( set_token == "[")
@@ -4533,7 +4556,7 @@ This never gets called. Look in expecting NAME thing...
 					}
 					else
 					{
-						reportError("A starting array bracket [ in a strange place. The element before is not a type. It is: " + previousElement()->toString() );
+						ReportError::reportError("A starting array bracket [ in a strange place. The element before is not a type. It is: " + previousElement()->toString() );
 					}
 				}
 			}
@@ -4544,13 +4567,13 @@ This never gets called. Look in expecting NAME thing...
 			else if( set_token == "*" )
 			{
 				//TODO pointer type...
-				reportError("TODO pointer type.");
+				ReportError::reportError("TODO pointer type.");
 				newLangElement(Token::STAR, TypeType::UNDEFINED, set_token);
 			}
 			else if( set_token == "?" )
 			{
 				//A huge TODO.
-				reportError("Huge todo on line 4535. handle null pointers: ????.");
+				ReportError::reportError("Huge todo on line 4535. handle null pointers: ????.");
 				//newLangElement(Token::STAR, set_token);
 			}
 			else if( set_token == "!" )
@@ -4673,7 +4696,7 @@ This never gets called. Look in expecting NAME thing...
 					else if( set_token == "delete" )
 					{
 						//#ifdef DEBUG_RAE
-						reportError("\"delete\" keyword is not used in the Rae programming language. Please use \"free\" instead.");
+						ReportError::reportError("\"delete\" keyword is not used in the Rae programming language. Please use \"free\" instead.");
 						//rae::log("delete is deprecated. please use free instead.\n");
 						//#endif
 						currentFunc->token( Token::DESTRUCTOR );
@@ -4927,7 +4950,7 @@ This never gets called. Look in expecting NAME thing...
 				//rae::log("Got comma between param types.>", set_token, "< Waiting rest FUNC_ARGUMENT_TYPE.\n");
 				#endif
 				//ignore
-				reportError("An ending array bracket ] in a strange place. Element before: " + previousElement()->toString() );
+				ReportError::reportError("An ending array bracket ] in a strange place. Element before: " + previousElement()->toString() );
 			}
 			else if( set_token[0] == '=' )//ooh, we are getting init_data...
 			{
@@ -5316,8 +5339,8 @@ This never gets called. Look in expecting NAME thing...
 				//if( previousElement() )
 				//	cout<<"PREVIOUSTOKEN WAS: "<<previousElement()->toString();
 
-				reportError("redefinition of name: " + set_token + "\nUse \"override\" to use the same name again." );
-				reportError("previous definition is here: " + prev_def->toString() );
+				ReportError::reportError("redefinition of name: " + set_token + "\nUse \"override\" to use the same name again." );
+				ReportError::reportError("previous definition is here: " + prev_def->toString() );
 			}
 			
 			//elem_to_set->name(set_token);
@@ -5348,8 +5371,8 @@ This never gets called. Look in expecting NAME thing...
 				//if( previousElement() )
 				//	cout<<"PREVIOUSTOKEN WAS: "<<previousElement()->toString();
 
-				reportError("redefinition of name: " + set_elem->toString() + "\nUse \"override\" to use the same name again." );
-				reportError("previous definition is here: " + prev_def->toString() );
+				ReportError::reportError("redefinition of name: " + set_elem->toString() + "\nUse \"override\" to use the same name again." );
+				ReportError::reportError("previous definition is here: " + prev_def->toString() );
 			}
 			
 			//elem_to_set->name(set_token);
@@ -5371,7 +5394,7 @@ This never gets called. Look in expecting NAME thing...
 	{
 		if(elem_to_set == 0)
 		{
-			reportError("Compiler error. setNameAndCheckForPreviousDefinitions. elem_to_set is null.");
+			ReportError::reportError("Compiler error. setNameAndCheckForPreviousDefinitions. elem_to_set is null.");
 			return;
 		}
 
@@ -5385,8 +5408,8 @@ This never gets called. Look in expecting NAME thing...
 			}
 			else
 			{
-				reportError("redefinition of name: " + set_token );
-				reportError("previous definition is here: " + prev_def->toString() );
+				ReportError::reportError("redefinition of name: " + set_token );
+				ReportError::reportError("previous definition is here: " + prev_def->toString() );
 			}
 			
 			elem_to_set->name(set_token);
@@ -5814,7 +5837,7 @@ This never gets called. Look in expecting NAME thing...
 			}
 			else
 			{
-				reportError("checkIfTokenIsValidInCurrentContext() current_context_use doesn't have a previousElement. Compiler error.");
+				ReportError::reportError("checkIfTokenIsValidInCurrentContext() current_context_use doesn't have a previousElement. Compiler error.");
 			}
 
 			//In the same class or func, or global:
@@ -6174,7 +6197,7 @@ This never gets called. Look in expecting NAME thing...
 
 							if(expectingTypeType() == TypeType::UNDEFINED)
 							{
-								reportError("handleUserDefinedToken. expectingTypeType was UNDEFINED, when we found a class. Compiler error.");
+								ReportError::reportError("handleUserDefinedToken. expectingTypeType was UNDEFINED, when we found a class. Compiler error.");
 							}
 							
 							//expectingRole can be undefined for now. If it's set it's most likely
@@ -6238,14 +6261,14 @@ This never gets called. Look in expecting NAME thing...
 
 					break;/*
 					case Token::USE_VECTOR:
-						reportError("handleUserDefinedToken. Found USE_VECTOR. And we're not supposed to find those.");
+						ReportError::reportError("handleUserDefinedToken. Found USE_VECTOR. And we're not supposed to find those.");
 					break;
 					case Token::USE_ARRAY:
-						reportError("handleUserDefinedToken. Found USE_ARRAY. And we're not supposed to find those.");
+						ReportError::reportError("handleUserDefinedToken. Found USE_ARRAY. And we're not supposed to find those.");
 					break;
 					*/
 					case Token::USE_REFERENCE:
-						reportError("handleUserDefinedToken. Found USE_REFERENCE. And we're not supposed to find those.");
+						ReportError::reportError("handleUserDefinedToken. Found USE_REFERENCE. And we're not supposed to find those.");
 					break;
 				}
 			/*}
@@ -6253,7 +6276,7 @@ This never gets called. Look in expecting NAME thing...
 			{
 				//TODO this is not really an error yet. We just need some debugging cout here...
 				//The error will come if it's still not found after unknownrefs are checked.
-				reportError("Maybe not an error... Token is not valid in this context: " + Token::toString(set_token) );
+				ReportError::reportError("Maybe not an error... Token is not valid in this context: " + Token::toString(set_token) );
 				newUnknownUseReference(set_token);
 			}*/
 		}
@@ -6381,7 +6404,7 @@ This never gets called. Look in expecting NAME thing...
 				switch(found_elem->token())
 				{
 					default:
-						reportError("handleUnknownTokens found this: " + found_elem->toString(), lang_elem);
+						ReportError::reportError("handleUnknownTokens found this: " + found_elem->toString(), lang_elem);
 					break;
 					case Token::CLASS:
 						
@@ -6421,7 +6444,7 @@ This never gets called. Look in expecting NAME thing...
 								//mark that we found the definition for future use:
 								if( lang_elem->definitionElement() )
 								{
-									reportError("Found a definition for the second time. Compiler bug. earlier definition: " + lang_elem->definitionElement()->toString() + " later definition: " + found_elem->toString(), lang_elem );
+									ReportError::reportError("Found a definition for the second time. Compiler bug. earlier definition: " + lang_elem->definitionElement()->toString() + " later definition: " + found_elem->toString(), lang_elem );
 								}
 								else
 								{
@@ -6501,7 +6524,7 @@ This never gets called. Look in expecting NAME thing...
 						//mark that we found the definition for future use:
 						if( lang_elem->definitionElement() )
 						{
-							reportError("Found a definition for the second time. Compiler bug. earlier definition: " + lang_elem->definitionElement()->toString() + " later definition: " + found_elem->toString(), lang_elem );
+							ReportError::reportError("Found a definition for the second time. Compiler bug. earlier definition: " + lang_elem->definitionElement()->toString() + " later definition: " + found_elem->toString(), lang_elem );
 						}
 						else
 						{
@@ -6553,7 +6576,7 @@ This never gets called. Look in expecting NAME thing...
 									}
 									else
 									{
-										reportError("Found a member func or reference, but it wasn't either. Compiler is confused. maybe_member: " + maybe_member->toString(), lang_elem );
+										ReportError::reportError("Found a member func or reference, but it wasn't either. Compiler is confused. maybe_member: " + maybe_member->toString(), lang_elem );
 									}
 
 									lang_elem->nextElement()->nextElement()->isUnknownType(false);
@@ -6579,14 +6602,14 @@ This never gets called. Look in expecting NAME thing...
 						#endif
 					break;
 					/*case Token::USE_VECTOR:
-						reportError("handleUnknownDefinitions. Found USE_VECTOR. And we're not supposed to find those.");
+						ReportError::reportError("handleUnknownDefinitions. Found USE_VECTOR. And we're not supposed to find those.");
 					break;
 					case Token::USE_ARRAY:
-						reportError("handleUnknownDefinitions. Found USE_ARRAY. And we're not supposed to find those.");
+						ReportError::reportError("handleUnknownDefinitions. Found USE_ARRAY. And we're not supposed to find those.");
 					break;
 					*/
 					case Token::USE_REFERENCE:
-						reportError("handleUnknownDefinitions. Found USE_REFERENCE. And we're not supposed to find those.");
+						ReportError::reportError("handleUnknownDefinitions. Found USE_REFERENCE. And we're not supposed to find those.");
 					break;
 				}
 
@@ -6597,7 +6620,7 @@ This never gets called. Look in expecting NAME thing...
 			}
 			else
 			{
-				reportError("Didn't find definition:\n" + lang_elem->toString() );
+				ReportError::reportError("Didn't find definition:\n" + lang_elem->toString() );
 
 				#ifdef DEBUG_RAE_HUMAN
 				cout<<"Didn't find: "<<lang_elem->toString()<<" it remains unknown DEFINITION.\n";
