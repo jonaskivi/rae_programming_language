@@ -272,7 +272,7 @@
 					}
 					else //this should never happen. because initData is set every time a built in type is created.
 					{
-						reportError("writeElement: built_in_type auto_init had no initData.");
+						ReportError::reportError("writeElement: built_in_type auto_init had no initData.", &set_elem);
 						writer.writeString(" = 0");
 					}
 				}
@@ -337,7 +337,7 @@
 				}*/
 				else
 				{
-					reportError("writeElement: AUTO_INIT failed because typeType was invalid.");
+					ReportError::reportError("writeElement: AUTO_INIT failed because typeType was invalid.", &set_elem);
 				}
 			break;
 			case Token::FREE:
@@ -469,7 +469,7 @@
 								|| got_statementRValue->typeType() == TypeType::BUILT_IN_TYPE )
 								{
 									writer.writeString( "ERROR /*point to temporary object.*/" );
-									reportError("pointing a link to a temporary object returned by function call is not possible.", &set_elem);
+									ReportError::reportError("pointing a link to a temporary object returned by function call is not possible.", &set_elem);
 								}
 							}
 							
@@ -491,7 +491,7 @@
 							}
 							else
 							{
-								reportError("TODO Compiler error. We should implement other kind of statementRValues in ", &set_elem );
+								ReportError::reportError("TODO Compiler error. We should implement other kind of statementRValues in ", &set_elem );
 							}
 						}
 					}
@@ -624,7 +624,7 @@
 			break;
 			case Token::LOG_SEPARATOR:
 			case Token::PARENTHESIS_BEGIN_LOG:
-			case Token::PARENTHESIS_BEGIN_LOG_LN:
+			case Token::PARENTHESIS_BEGIN_LOG_S:
 				writer.writeChar( '<' );
 				writer.writeChar( '<' );
 			break;
@@ -632,7 +632,7 @@
 				writer.writeString("<<\"\\n\"");//That's a little funky looking line, but it's supposed to look just like that. Hope your syntax highlighting can handle it.
 				//it's just , "\n"
 			break;
-			case Token::PARENTHESIS_END_LOG_LN:
+			case Token::PARENTHESIS_END_LOG_S:
 				/////writer.writeChar( ';' );
 				
 			break;
@@ -1079,7 +1079,7 @@
 			case Token::LOG:
 				writer.writeString("std::cout");
 			break;
-			case Token::LOG_LN:
+			case Token::LOG_S:
 				writer.writeString("std::cout");
 			break;
 
@@ -1259,12 +1259,12 @@
 								}
 								else
 								{
-									reportError("Compiler error in func return type: ", &set_elem);		
+									ReportError::reportError("Compiler error in func return type: ", &set_elem);		
 								}
 							}
 							else
 							{
-								reportError("No return_type parenthesis in func: ", &set_elem);
+								ReportError::reportError("No return_type parenthesis in func: ", &set_elem);
 							}
 						}
 

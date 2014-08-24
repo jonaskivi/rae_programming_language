@@ -6,6 +6,8 @@
 
 #include "SourceParser.hpp"
 
+#include "ReportError.hpp"
+
 //test code:
 /*
 void task(string msg)
@@ -36,6 +38,7 @@ protected:
     std::thread _th;
 };
 */
+
 class LangCompiler
 {
 public:
@@ -380,6 +383,9 @@ public:
 
 int main (int argc, char * const argv[])
 {
+	ReportError::countWarnings(0);
+	ReportError::countErrors(0);
+
 	rlutil::setColor(rlutil::GREEN);
 	cout<<"Rae Compiler version 0.0.1\n";
     //rae::log("Rae Compiler version 0.0.1\n");

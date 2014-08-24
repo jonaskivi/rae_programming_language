@@ -55,7 +55,7 @@
 					if( set_elem.previousElement()->typeType() == TypeType::VAL
 						|| set_elem.previousElement()->typeType() == TypeType::BUILT_IN_TYPE )
 					{
-						reportError("Using value types (val and built in types) with -> point to operator is not possible.", &set_elem );
+						ReportError::reportError("Using value types (val and built in types) with -> point to operator is not possible.", &set_elem );
 					}
 					else if( set_elem.previousElement()->typeType() == TypeType::OPT
 						|| set_elem.previousElement()->typeType() == TypeType::REF
@@ -67,7 +67,7 @@
 					}
 					else
 					{
-						reportError("Point to operator -> after strange element: ", set_elem.previousElement() );
+						ReportError::reportError("Point to operator -> after strange element: ", set_elem.previousElement() );
 					}
 				}
 				/*

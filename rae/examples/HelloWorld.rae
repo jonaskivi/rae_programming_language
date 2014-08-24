@@ -62,36 +62,12 @@ public:
 	}*/
 
 	//
-	vector<Tester> testers //C++
-	vector<Tester*> testers //C++
-	vector!(Tester) testers //D
-	Tester[] testers //D
-	Tester testers[]
+/*
 	[Tester] testers //Swift
 
 	//A related note: template syntax with brackets?
 	vector[Tester] testers
 	signal[void, int, float] mouseClicked
-
-	//The possible vector and array syntax proposals:
-	array val Tester testers
-
-	arr val Tester testers
-
-	vec val Tester testers	
-
-	vec[val Tester] testers
-
-	vec(val Tester) testers
-	
-	[val Tester] testers
-	
-	val Tester[] testers
-
-	protected vec val Tester testers
-
-	//monster
-	protected opt vec val Tester testers
 
 	link [val Tester] linkToArray
 
@@ -101,7 +77,7 @@ public:
 	//Am I wrong if I think that signals can be used in all cases where you'd use a deledate?
 	//They work differently, but a signal is just more flexible.
 	delegate (bool result, int other)mouseClicked(ref Tester a_tester, int a_value)
-
+*/
 
 	//REMOVE
 

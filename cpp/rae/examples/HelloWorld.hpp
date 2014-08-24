@@ -1,5 +1,5 @@
 //this file is automatically created from Rae programming language module:
-///home/joonaz/Dropbox/jonas/2014/ohjelmointi/rae_programming_language/cpp/rae/examples/HelloWorld
+///Users/joonaz/Dropbox/jonas/2014/ohjelmointi/rae_programming_language/cpp/rae/examples/HelloWorld
 #ifndef _rae_examples_HelloWorld_hpp_
 #define _rae_examples_HelloWorld_hpp_
 
@@ -40,9 +40,27 @@ public:
 		return(tester_opt)
 	}*/
 	
+	//
+	/*
+	[Tester] testers //Swift
+
+	//A related note: template syntax with brackets?
+	vector[Tester] testers
+	signal[void, int, float] mouseClicked
+
+	link [val Tester] linkToArray
+
+	//Signals syntax uses the func syntax:
+	signal (bool result, int other)mouseClicked(ref Tester a_tester, int a_value)
+
+	//Am I wrong if I think that signals can be used in all cases where you'd use a deledate?
+	//They work differently, but a signal is just more flexible.
+	delegate (bool result, int other)mouseClicked(ref Tester a_tester, int a_value)
+*/
+	
 	//REMOVE
 	
-	Tester tester;//line: 67
+	Tester tester;//line: 85
 	
 	Tester* tester_opt;//= new Tester 
 };
