@@ -210,6 +210,8 @@ enum e
 	BIGGER_THAN,// >
 
 	POINT_TO,// -> used instead of = to point references to objects etc.
+	POINT_TO_END_PARENTHESIS, //we use the link<Object> a_link(arguments); to create links, so we need the closing parenthesis in C++.
+	//these are injected in SourceParser::newPointToElement() and SourceParser::newLine().
 	//TODO IS_POINT_TO, // is
 	//TODO EQUALS, //== <= etc. now they are just passed through as single chars.
 
@@ -610,7 +612,7 @@ public:
 	public: LangElement* statementRValue()
 	{
 		#ifdef DEBUG_RAE_RVALUE
-		cout<<"LangElement::statementRValue() START.\n";
+		cout<<"LangElement::statementRValue() START. "<<toString()<<"\n";
 		#endif
 
 		//TODO handle () handle ?. etc.
@@ -642,10 +644,15 @@ public:
 					|| token() == Token::USE_MEMBER
 		)
 		{
+			#ifdef DEBUG_RAE_RVALUE
+			cout<<"LangElement::statementRValue() it is a USE_REFERENCE or USE_MEMBER.\n";
+			#endif
+
 			if( nextElement() == 0
 			|| nextElement()->token() == Token::NEWLINE
 			|| nextElement()->token() == Token::NEWLINE_BEFORE_SCOPE_END
 			|| nextElement()->token() == Token::PARENTHESIS_END
+			|| nextElement()->token() == Token::POINT_TO_END_PARENTHESIS
 			|| nextElement()->token() == Token::SEMICOLON
 			)
 			{
@@ -658,10 +665,15 @@ public:
 		}
 		else if( token() == Token::REFERENCE_DOT )
 		{
+			#ifdef DEBUG_RAE_RVALUE
+			cout<<"LangElement::statementRValue() got a REFERENCE_DOT.\n";
+			#endif
+
 			if( nextElement() == 0
 			|| nextElement()->token() == Token::NEWLINE
 			|| nextElement()->token() == Token::NEWLINE_BEFORE_SCOPE_END
 			|| nextElement()->token() == Token::PARENTHESIS_END
+			|| nextElement()->token() == Token::POINT_TO_END_PARENTHESIS
 			|| nextElement()->token() == Token::SEMICOLON
 			)
 			{
@@ -676,6 +688,9 @@ public:
 		}
 		else
 		{
+			#ifdef DEBUG_RAE_RVALUE
+			cout<<"LangElement::statementRValue() no statementRValue.\n";
+			#endif
 			//no statementRValue.
 			return 0;
 		}

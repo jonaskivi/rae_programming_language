@@ -32,9 +32,18 @@ public:
 	public: float afloat;//line: 46
 	
 	//REMOVE FROM HELLO
-	
-	Tester testerVal();//line: 50
-	Tester* testerLink();//line: 55
+	/*
+RETURN THIS RIGHT AFTER IT COMPILES:
+	func (val Tester)testerVal()
+	{
+		return(tester)
+	}
+
+	func (link Tester)testerLink()
+	{
+		return(tester_opt)
+	}
+*/
 	/*func (val Tester)testerVal2()
 	{
 		return(tester_opt)
@@ -60,9 +69,11 @@ public:
 	
 	//REMOVE
 	
-	Tester tester;//line: 85
+	Tester tester;//line: 86
 	
-	Tester* tester_opt;//= new Tester 
+	Tester* tester_opt;//= new Tester
+	
+	rae::link<Tester> tester_link;
 };
 
 #endif // _rae_examples_HelloWorld_hpp_

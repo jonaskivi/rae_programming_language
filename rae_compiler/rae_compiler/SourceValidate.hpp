@@ -45,6 +45,7 @@
 
 	bool validateElement(LangElement& set_elem)
 	{
+
 		switch(set_elem.token())
 		{
 			default:

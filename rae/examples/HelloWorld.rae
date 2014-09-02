@@ -45,7 +45,8 @@ public:
 	float afloat = 248.52
 
 	//REMOVE FROM HELLO
-
+/*
+RETURN THIS RIGHT AFTER IT COMPILES:
 	func (val Tester)testerVal()
 	{
 		return(tester)
@@ -55,7 +56,7 @@ public:
 	{
 		return(tester_opt)
 	}
-
+*/
 	/*func (val Tester)testerVal2()
 	{
 		return(tester_opt)
@@ -83,7 +84,9 @@ public:
 
 	val Tester tester
 
-	opt Tester tester_opt //= new Tester 
+	opt Tester tester_opt //= new Tester
+
+	link Tester tester_link
 }
 
 func
@@ -93,16 +96,18 @@ func
 	
 	//Rae does not use = for pointing to an object. Instead use -> to point.
 	link Tester tester_lnk2 -> hello.tester_opt
-	link Tester tester_lnk -> hello.tester
-	//Should give us: Tester* tester_lnk = &hello.tester;
+	//DOES NOT WORK ATM: 
+	link Tester tester_lnk
+	tester_lnk -> hello.tester
+	//Should give us: tester_lnk.linkTo(&hello.tester);
 
-	link Tester tester_lnk3 -> hello.testerLink
+	////////////////////////////////////link Tester tester_lnk3 -> hello.testerLink
 	//ERROR: can't point to with a value type: val Tester tester_val4 -> hello.testerVal
-	val Tester tester_val4 = hello.testerVal
+	///////////////////////////val Tester tester_val4 = hello.testerVal
 	//A link to a return value is not allowed, because val as return type is temporary:
 	//link Tester tester_lnk5 -> hello.testerVal
-	log_s("link to a return value: tester_val4: ")
-	tester_val4.logMe
+	//log_s("link to a return value: tester_val4: ")
+	//////////////////////////////tester_val4.logMe
 
 	//val Tester tester_val5 -> hello.testerVal2
 

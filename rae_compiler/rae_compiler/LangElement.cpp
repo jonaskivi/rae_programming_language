@@ -276,6 +276,11 @@ string toString(Token::e set)
 			return "Token::SMALLER_THAN";
 			case Token::BIGGER_THAN:
 			return "Token::BIGGER_THAN";
+
+			case Token::POINT_TO:
+			return "Token::POINT_TO";
+			case Token::POINT_TO_END_PARENTHESIS:
+			return "Token::POINT_TO_END_PARENTHESIS";
 			
 			case Token::IF:
 			return "Token::IF";

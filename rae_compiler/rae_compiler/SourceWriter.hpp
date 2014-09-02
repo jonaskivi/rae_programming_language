@@ -356,8 +356,10 @@
 					}
 					else
 					{*/
-						writer.writeString("delete ");
-						writer.writeString(set_elem.name());
+						ReportError::reportError("TODO FREE and AUTO_FREE is deprecated currently.", &set_elem);
+						//These two lines are the ones to use: but we've disabled them for now because we mostly use values and links.
+						//////////writer.writeString("delete ");
+						//////////writer.writeString(set_elem.name());
 					//}
 
 			break;
@@ -443,15 +445,33 @@
 				//}
 			break;
 			case Token::POINT_TO: //Umm. Point to in C++ is = and maybe = &.
-				writer.writeChar( ' ' );
-				writer.writeChar( '=' );
-				writer.writeChar( ' ' );
+			//but now we're using link, so it is usually a function call.
+				
+				if( set_elem.previousToken() == Token::DEFINE_REFERENCE )
+				{
+					writer.writeChar( '(' );
+					//writer.writeChar( ' ' );	
+				}
+				else if( set_elem.previousToken() == Token::USE_REFERENCE )
+				{
+					writer.writeString(".linkTo(");
+				}
+				else
+				{
+					ReportError::reportError("Using a POINT_TO token with something that is not a DEFINE_REFERENCE or USE_REFERENCE.", set_elem.previousElement() );
+				}
+
+				//COUT
+				///////ReportError::reportError("WE have a point to.", &set_elem);
 
 				//if( writer.nextToken() == Token::USE_REFERENCE && writer.nextElement()->typeType() == TypeType::VAL )
 				{
 					LangElement* got_statementRValue = 0;
 					if( writer.nextElement() != 0)
 					{
+						//COUT
+						////////ReportError::reportError("WE HAVE NEXT ELEMTN.", &set_elem);
+
 						got_statementRValue = writer.nextElement()->statementRValue();
 
 						if( got_statementRValue != 0 )
@@ -477,6 +497,9 @@
 							if( got_statementRValue->typeType() == TypeType::VAL
 								|| got_statementRValue->typeType() == TypeType::BUILT_IN_TYPE )
 							{
+								//COUT
+								////////ReportError::reportError("SHOULD_WRITE &", &set_elem);
+
 								writer.writeChar( '&' );//TODO make this better...
 								//.statementRValue()
 								//if( evaluate. == use_ref and writer.nextElement()->evaluateStatementReturnValue()->typeType() == ...;
@@ -488,12 +511,20 @@
 							)
 							{
 								//ok.
+								//COUT
+								////////ReportError::reportError("SHOULD_NOT_WRITE &", &set_elem);
 							}
 							else
 							{
 								ReportError::reportError("TODO Compiler error. We should implement other kind of statementRValues in ", &set_elem );
 							}
 						}
+						#ifdef DEBUG_RAE_RVALUE
+						else
+						{	
+							ReportError::reportError("Never got rvalue for", set_elem.nextElement() );
+						}
+						#endif
 					}
 				}
 			break;
@@ -711,9 +742,7 @@
 						}
 					}
 				}
-				else if( set_elem.typeType() == TypeType::REF
-					|| set_elem.typeType() == TypeType::OPT
-					|| set_elem.typeType() == TypeType::LINK )
+				else if( set_elem.typeType() == TypeType::REF || set_elem.typeType() == TypeType::OPT )
 				{
 					if( set_elem.isInClass() )
 					{
@@ -747,7 +776,7 @@
 								writer.writeString("()");
 							}
 						}
-						else //opt or link
+						else //opt differs from ref in that it can be initialized to null with = null.
 						{
 							if(set_elem.nextToken() == Token::EQUALS )
 							{
@@ -776,6 +805,103 @@
 						}
 					}
 				}
+				else if( set_elem.typeType() == TypeType::LINK )
+				{
+					if( set_elem.isInClass() )
+					{
+						#ifdef DEBUG_RAE_HUMAN
+						cout<<"it is inClass and a link.\n";
+						#endif
+
+						writeVisibilityForElement(writer, set_elem);
+
+						writer.writeString("rae::link<");
+						writer.writeString(set_elem.typeInCpp());
+						writer.writeString("> ");
+						if(set_elem.role() != Role::FUNC_RETURN )
+						{
+							writer.writeString(set_elem.name());
+						}
+					}
+					else
+					{	
+						if(set_elem.nextToken() == Token::EQUALS )
+						{
+							writer.writeString("rae::link<");
+							writer.writeString(set_elem.typeInCpp());
+							writer.writeString("> ");
+							if(set_elem.role() != Role::FUNC_RETURN)
+							{
+								writer.writeString(set_elem.name());		
+							}
+						}
+						else
+						{
+							writer.writeString("rae::link<");
+							writer.writeString(set_elem.typeInCpp());
+							writer.writeString("> ");
+							if(set_elem.role() != Role::FUNC_RETURN)
+							{
+								writer.writeString(set_elem.name());
+							}
+						}
+					}
+				}
+				//IF WE EVER NEED TO USE SHARED_PTR AGAIN:
+				/*
+				else if( set_elem.typeType() == TypeType::OPT
+					|| set_elem.typeType() == TypeType::LINK )
+				{
+					if( set_elem.isInClass() )
+					{
+						#ifdef DEBUG_RAE_HUMAN
+						cout<<"it is inClass and an optional.\n";
+						#endif
+
+						writeVisibilityForElement(writer, set_elem);
+
+
+						writer.writeString("std::shared_ptr<");
+						writer.writeString(set_elem.typeInCpp());
+						writer.writeString("> ");
+						if(set_elem.role() != Role::FUNC_RETURN )
+						{
+							writer.writeString(set_elem.name());
+						}
+					}
+					else
+					{	
+						if(set_elem.nextToken() == Token::EQUALS )
+						{
+							writer.writeString("std::shared_ptr<");
+							writer.writeString(set_elem.typeInCpp());
+							writer.writeString("> ");
+							if(set_elem.role() != Role::FUNC_RETURN)
+							{
+								writer.writeString(set_elem.name());		
+							}
+						}
+						else
+						{
+							writer.writeString("std::shared_ptr<");
+							writer.writeString(set_elem.typeInCpp());
+							writer.writeString("> ");
+							if(set_elem.role() != Role::FUNC_RETURN)
+							{
+								writer.writeString(set_elem.name());
+							}
+							else if(set_elem.role() != Role::FUNC_RETURN && set_elem.role() != Role::FUNC_PARAMETER)
+							{
+								writer.writeString(" = new ");
+								writer.writeString("std::shared_ptr<");
+								writer.writeString(set_elem.typeInCpp());
+								writer.writeString(">()");
+							}
+						}
+						
+					}
+				}
+				*/
 				else if( set_elem.typeType() == TypeType::TEMPLATE )
 				{
 					if( set_elem.isInClass() )

@@ -315,6 +315,8 @@ public:
 
 		//isInsideLogStatement = false;
 
+		injectPointToEndParenthesis = false;
+
 		isQuoteReady = false;
 		isWaitingForQuoteEnd = false;
 		
@@ -392,7 +394,8 @@ public:
 	int expectingChar;// = 'T';
 	Token::e foundToken;// = EDLTokenType::UNDEFINED;
 	
-	bool isSingleLineComment;// = false;
+	bool isSingleLineComment;// = false; //TODO rename to isWaitingForSingleLineComment for concistency.
+	string currentComment;
 	
 	//for handling quotes.
 	bool isQuoteReady;
@@ -696,35 +699,11 @@ public:
 								if( init_ob )
 								{
 									/*
-									if( init_ob->token() == Token::DEFINE_VECTOR_IN_CLASS )
-									{
-										elem->newLangElementToTopWithNewline( elem->lineNumber(), Token::VECTOR_AUTO_FREE, init_ob->name(), init_ob->type() );
-									}
-									else if( init_ob->token() == Token::DEFINE_ARRAY_IN_CLASS )
-									{
-										elem->newLangElementToTopWithNewline( elem->lineNumber(), Token::C_ARRAY_AUTO_FREE, init_ob->name(), init_ob->type() );
-									}
-									*/
-									/*
-									if( init_ob->typeType() == TypeType::VECTOR )
-									{
-										elem->newLangElementToTopWithNewline( elem->lineNumber(), Token::VECTOR_AUTO_FREE, TypeType::VECTOR, init_ob->name(), init_ob->type() );
-									}
-									else if( init_ob->typeType() == TypeType::TEMPLATE )
-									{
-										elem->newLangElementToTopWithNewline( elem->lineNumber(), Token::TEMPLATE_AUTO_FREE, TypeType::TEMPLATE, init_ob->name(), init_ob->type() );
-									}
-									else if( init_ob->typeType() == TypeType::C_ARRAY )
-									{
-										elem->newLangElementToTopWithNewline( elem->lineNumber(), Token::C_ARRAY_AUTO_FREE, TypeType::C_ARRAY, init_ob->name(), init_ob->type() );
-									}
-									else
-									{
-										elem->newLangElementToTopWithNewline( elem->lineNumber(), Token::OBJECT_AUTO_FREE, TypeType::REF, init_ob->name(), init_ob->type() );
-									}*/
+									//THIS IS THE CORRECT AUTO_FREE IF WE EVER HAPPEN TO NEED IT AGAIN:
 									LangElement* auto_init_elem = init_ob->copy();
 									auto_init_elem->token(Token::AUTO_FREE);
 									elem->addElementToTopOfFunc(auto_init_elem);
+									*/
 								}
 							}
 						}
@@ -1207,8 +1186,22 @@ public:
 		return newLangElement(Token::COMMENT, TypeType::UNDEFINED, set_name);
 	}
 
+	bool injectPointToEndParenthesis;
+
+	LangElement* newPointToElement()
+	{
+		injectPointToEndParenthesis = true;
+		return newLangElement(Token::POINT_TO, TypeType::UNDEFINED, "->");
+	}
+
 	void newLine()
 	{
+		if(injectPointToEndParenthesis == true)
+		{
+			injectPointToEndParenthesis = false;
+			newLangElement(Token::POINT_TO_END_PARENTHESIS, TypeType::UNDEFINED, ")");
+		}
+
 		/*if( currentParentElement() )
 		{
 			currentParentElement()->newLangElement(Token::NEWLINE, "\n");
@@ -1230,6 +1223,8 @@ public:
 			//if it's a comment, then do the newline anyway...
 			newLangElement(Token::NEWLINE, TypeType::UNDEFINED, "\n");	
 		}
+
+
 	}
 
 
@@ -1409,15 +1404,19 @@ public:
 		{
 			lang_elem->definitionElement(maybe_found_class);
 		}
-
+		/*
 		if( lang_elem->parent() )
 		{
 			if( set_type_type != TypeType::VAL )
 			{
+				//HERE'S THE OLD OWN SYSTEM, THAT works with lang_eleme.freeOwned()
+				//If we ever happen to need it again. It is usefull with pointer new and delete
+				//but now that we're using shared_ptr, it's not so usefull, because we're just
+				//values now.
 				lang_elem->parent()->own(lang_elem);
 			}
 		}
-
+		*/
 		if( lang_elem->parentToken() == Token::CLASS )
 		{
 			//we are inside a class definition, not a func:
@@ -2263,7 +2262,7 @@ public:
 
 			//handle quotes:
 
-			if( nroWaitingForPlusCommentEnd == 0 && isWaitingForStarCommentEnd == false )//we don't want quotes to mess with comments.
+			if( nroWaitingForPlusCommentEnd == 0 && isWaitingForStarCommentEnd == false && isSingleLineComment == false )//we don't want quotes to mess with comments.
 			{
 				if( currentChar == '\"')
 				{
@@ -2439,6 +2438,38 @@ public:
 				return true;
 			}
 
+			//if( expectingToken() == Token::COMMENT_LINE_END )
+			if( isSingleLineComment == true )
+			{
+				//cout<<"Waiting comment end...\n";
+			
+				//if( set_token == "\n" )
+				if( currentChar == '\n' )
+				{
+					//cout<<"...hurray! Comment finally ended.\n";
+				
+					/*if( isEndOfLine )
+					{
+						cout<<"We has isEndOfLine...:>"<<endOfLine<<"<\n";
+					}
+					else cout<<"We don't have isEndOfLine...:>"<<endOfLine<<"<\n";
+					*/
+					//newComment(endOfLine);
+					newComment(currentComment);
+					currentComment = "";
+					newLine();
+					//expectingToken = Token::UNDEFINED;
+					isSingleLineComment = false;
+					isEndOfLine = false;
+				}
+				else
+				{
+					currentComment += currentChar;
+				}
+				
+				return true;
+			}
+
 			//handle slashes:
 
 			if( currentChar == '+' )
@@ -2527,7 +2558,7 @@ public:
 				else */
 				if( handleSlash == "/" )
 				{
-					//Comment time.
+					//Comment time until newline.
 					/*
 					wholeToken = currentWord;
 					isWholeToken = true;//end token 1.
@@ -2537,9 +2568,17 @@ public:
 					*/
 					//handleSlash = "";
 
+					//isWaitingForCommentEnd = true;
+
 					wholeToken = "//";//put // to token 1.
 					isWholeToken = true;
 					currentWord = "";
+
+					isSingleLineComment = true;
+
+					currentComment = "//";
+
+					return true;
 				}
 			}
 
@@ -3201,32 +3240,10 @@ public:
 			isSingleLineComment = true;
 			currentLine = "//";
 			//cout<<"Waiting for comment line to end.\n";
-		}
-	
-		//if( expectingToken() == Token::COMMENT_LINE_END )
-		if( isSingleLineComment == true )
-		{
-			//cout<<"Waiting comment end...\n";
-		
-			if( set_token == "\n" )
-			{
-				//cout<<"...hurray! Comment finally ended.\n";
-			
-				/*if( isEndOfLine )
-				{
-					cout<<"We has isEndOfLine...:>"<<endOfLine<<"<\n";
-				}
-				else cout<<"We don't have isEndOfLine...:>"<<endOfLine<<"<\n";
-				*/
-				newComment(endOfLine);
-				newLine();
-				//expectingToken = Token::UNDEFINED;
-				isSingleLineComment = false;
-				isEndOfLine = false;
-			}
-			
 			return;
 		}
+	
+		//
 
 		if( set_token == "\"")
 		{
@@ -4123,7 +4140,8 @@ This never gets called. Look in expecting NAME thing...
 			}
 			else if( set_token == "->" )
 			{
-				newLangElement(Token::POINT_TO, TypeType::UNDEFINED, set_token);
+				//newLangElement(Token::POINT_TO, TypeType::UNDEFINED, set_token);
+				newPointToElement();
 			}
 			else if( set_token == "+" )
 			{
@@ -6474,7 +6492,8 @@ This never gets called. Look in expecting NAME thing...
 								if(lang_elem->parent() && lang_elem->parent()->token() == Token::CLASS)
 								{
 									////////////////////lang_elem->token(Token::DEFINE_REFERENCE_IN_CLASS);
-									lang_elem->parent()->createObjectAutoInitAndFree(lang_elem);
+									//THIS USED TO BE IT: lang_elem->parent()->createObjectAutoInitAndFree(lang_elem);
+									lang_elem->parent()->createObjectAutoInitInConstructors(lang_elem);
 									//listOfAutoInitObjects.push_back(lang_elem);	
 								}
 								else

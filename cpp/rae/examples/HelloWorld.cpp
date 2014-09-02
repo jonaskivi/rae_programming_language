@@ -47,48 +47,37 @@ int32_t HelloWorld::count(int32_t param1, Tester* param2)
 	return(param1 + param2->data);
 }
 
-Tester HelloWorld::testerVal()
-{
-	return(tester);
-}
-
-Tester* HelloWorld::testerLink()
-{
-	return(tester_opt);
-}
-
 int32_t main(int argc, char* const argv[])
 {
 	HelloWorld hello; //semicolons are allowed, but not required.
 	
 	//Rae does not use = for pointing to an object. Instead use -> to point.
-	Tester* tester_lnk2 = hello.tester_opt;//line: 96
-	Tester* tester_lnk = &hello.tester;//line: 97
-	//Should give us: Tester** tester_lnk = &hello.tester;
+	rae::link<Tester> tester_lnk2(hello.tester_opt);//line: 99
+	//DOES NOT WORK ATM: 
+	rae::link<Tester> tester_lnk;//line: 101
+	tester_lnk.linkTo(&hello.tester);//line: 102
+	//Should give us: tester_lnk.linkTo(&hello.tester);
 	
-	Tester* tester_lnk3 = hello.testerLink();//line: 100
+	////////////////////////////////////link Tester tester_lnk3 -> hello.testerLink
 	//ERROR: can't point to with a value type: val Tester tester_val4 -> hello.testerVal
-	Tester tester_val4 = hello.testerVal();//line: 102
+	///////////////////////////val Tester tester_val4 = hello.testerVal
 	//A link to a return value is not allowed, because val as return type is temporary:
 	//link Tester tester_lnk5 -> hello.testerVal
-	std::cout<<"link to a return value: tester_val4: ";//line: 105
-	tester_val4.logMe();//line: 106
+	//log_s("link to a return value: tester_val4: ")
+	//////////////////////////////tester_val4.logMe
 	
 	//val Tester tester_val5 -> hello.testerVal2
 	
-	hello.sayHello();//line: 110
+	hello.sayHello();//line: 115
 	
-	std::cout<<"5 + 2 = ";//line: 112
+	std::cout<<"5 + 2 = ";//line: 117
 	
 	//the following line will not run if tester_lnk is null.
 	//NOT YET: log(hello.count(int param1: hello.num, ref Tester param2: tester_lnk?))
 	
 	//NOT_YET: log(hello.count( hello.num, hello.tester ))
 	
-	hello.tester.data = 3;//line: 119
+	hello.tester.data = 3;//line: 124
 	
-	return(0);//line: 121
-	delete tester_lnk2;//line: 90
-	delete tester_lnk;//line: 90
-	delete tester_lnk3;
+	return(0);
 }
