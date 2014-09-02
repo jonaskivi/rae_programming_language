@@ -1,6 +1,6 @@
 EXECUTABLE := rae_comp
 CXX	:= g++
-CXXFLAGS := -g
+CXXFLAGS := -g -std=c++0x
 INCLUDES := -I. -I./rae_compiler/rae_compiler/
 #LIBS     := -L../boost_uusi/usr_local_lib/ -lboost_chrono -lboost_filesystem -lboost_system
 
@@ -70,12 +70,17 @@ clean:
 
 raehello:
 	./$(EXECUTABLE) ./rae/examples/HelloWorld.rae
-	g++ -I./cpp/ ./cpp/rae/examples/HelloWorld.cpp -o rae_hello
+	$(CXX) $(CXXFLAGS) -I./cpp/ ./cpp/rae/examples/HelloWorld.cpp -o rae_hello
+	./rae_hello
+
+debugraehello:
+	gdb --args ./$(EXECUTABLE) ./rae/examples/HelloWorld.rae
+	$(CXX) $(CXXFLAGS) -I./cpp/ ./cpp/rae/examples/HelloWorld.cpp -o rae_hello
 	./rae_hello
 
 opttester:
 	./$(EXECUTABLE) ./rae/examples/OptTester.rae
-	g++ -I./cpp/ ./cpp/rae/examples/OptTester.cpp -o opttester
+	$(CXX) $(CXXFLAGS) -I./cpp/ ./cpp/rae/examples/OptTester.cpp -o opttester
 	./opttester
 
 #all:

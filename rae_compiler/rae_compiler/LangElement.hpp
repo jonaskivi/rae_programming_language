@@ -60,7 +60,8 @@ enum e
 {
 	UNDEFINED,
 	EMPTY, //intentionally empty
-	PASSTHROUGH,
+	PASSTHROUGH, //to c++ header .hpp
+	PASSTHROUGH_SRC, //to c++ source .cpp
 	ERROR,
 	MODULE,
 	MODULE_NAME,
@@ -220,7 +221,14 @@ enum e
 	FOREACH,
 
 	NEWLINE,
-	NEWLINE_BEFORE_SCOPE_END
+	NEWLINE_BEFORE_SCOPE_END,
+	PRAGMA_CPP, //@c++ or @c++hdr for raw C++ code to be put in the header .hpp
+	PRAGMA_CPP_SRC, //@c++src for raw C++ code to be put in the source .cpp
+	PRAGMA_CPP_END,
+	PRAGMA_ASM, //@asm for raw assembler code.
+	PRAGMA_ASM_END,
+	PRAGMA_ECMA, //@ecma for raw ecmascript/javascript code.
+	PRAGMA_ECMA_END
 };
 
 	string toString(Token::e set);

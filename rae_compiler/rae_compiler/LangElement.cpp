@@ -46,6 +46,12 @@ string toString(Token::e set)
 			return "Token::UNDEFINED";
 			case Token::EMPTY:
 			return "Token::EMPTY";
+			case Token::PASSTHROUGH:
+			return "Token::PASSTHROUGH";
+			case Token::PASSTHROUGH_SRC:
+			return "Token::PASSTHROUGH_SRC";
+			case Token::ERROR:
+			return "Token::ERROR";
 			case Token::MODULE:
 			return "Token::MODULE";
 			case Token::MODULE_NAME:
@@ -293,6 +299,22 @@ string toString(Token::e set)
 			return "Token::NEWLINE";
 			case Token::NEWLINE_BEFORE_SCOPE_END:
 			return "Token::NEWLINE_BEFORE_SCOPE_END";
+
+			case Token::PRAGMA_CPP:
+			return "Token::PRAGMA_CPP";
+			case Token::PRAGMA_CPP_SRC:
+			return "Token::PRAGMA_CPP_SRC";
+			case Token::PRAGMA_CPP_END:
+			return "Token::PRAGMA_CPP_END";
+			case Token::PRAGMA_ASM:
+			return "Token::PRAGMA_ASM";
+			case Token::PRAGMA_ASM_END:
+			return "Token::PRAGMA_ASM_END";
+			case Token::PRAGMA_ECMA:
+			return "Token::PRAGMA_ECMA";
+			case Token::PRAGMA_ECMA_END:
+			return "Token::PRAGMA_ECMA_END";
+			
 			/*
 			case Token::BOOL:
 			return "Token::BOOL";

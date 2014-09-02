@@ -1,7 +1,7 @@
 //this file is automatically created from Rae programming language module:
-///Users/joonaz/Dropbox/jonas/2014/ohjelmointi/rae_programming_language/cpp/rae/examples/HelloWorld
+///home/joonaz/Dropbox/jonas/2014/ohjelmointi/rae_programming_language/cpp/rae/examples/HelloWorld
 #include "HelloWorld.hpp"
-
+//@end
 //class Tester
 
 Tester::Tester()
@@ -23,8 +23,8 @@ void Tester::logMe()
 
 HelloWorld::HelloWorld()
 {
-	afloat = 248.52;//line: 44
-	anotherNumber = 42;//line: 43
+	afloat = 248.52;//line: 321
+	anotherNumber = 42;//line: 320
 	num = 5;
 }
 
@@ -35,9 +35,9 @@ HelloWorld::~HelloWorld()
 
 void HelloWorld::sayHello()
 {
-	tester.logMe();//line: 32
-	std::cout<<"World!"<<"\n";//line: 33
-	std::cout<<"tester_opt: "<<"\n";//line: 34
+	tester.logMe();//line: 309
+	std::cout<<"World!"<<"\n";//line: 310
+	std::cout<<"tester_opt: "<<"\n";//line: 311
 	//NOT YET: tester_opt?.logMe()
 	tester_opt->logMe();
 }
@@ -52,10 +52,14 @@ int32_t main(int argc, char* const argv[])
 	HelloWorld hello; //semicolons are allowed, but not required.
 	
 	//Rae does not use = for pointing to an object. Instead use -> to point.
-	rae::link<Tester> tester_lnk2(hello.tester_opt);//line: 99
+	///////////////link Tester tester_lnk2 -> hello.tester_opt
 	//DOES NOT WORK ATM: 
-	rae::link<Tester> tester_lnk;//line: 101
-	tester_lnk.linkTo(&hello.tester);//line: 102
+	rae::link<Tester> tester_lnk;//line: 378
+	tester_lnk.linkTo(&hello.tester);//line: 379
+	
+	std::cout<<"LINK saying hello:"<<"\n";//line: 381
+	///////////TODO NEXT: tester_lnk.sayHello()
+	
 	//Should give us: tester_lnk.linkTo(&hello.tester);
 	
 	////////////////////////////////////link Tester tester_lnk3 -> hello.testerLink
@@ -68,16 +72,16 @@ int32_t main(int argc, char* const argv[])
 	
 	//val Tester tester_val5 -> hello.testerVal2
 	
-	hello.sayHello();//line: 115
+	hello.sayHello();//line: 396
 	
-	std::cout<<"5 + 2 = ";//line: 117
+	std::cout<<"5 + 2 = ";//line: 398
 	
 	//the following line will not run if tester_lnk is null.
 	//NOT YET: log(hello.count(int param1: hello.num, ref Tester param2: tester_lnk?))
 	
 	//NOT_YET: log(hello.count( hello.num, hello.tester ))
 	
-	hello.tester.data = 3;//line: 124
+	hello.tester.data = 3;//line: 405
 	
 	return(0);
 }

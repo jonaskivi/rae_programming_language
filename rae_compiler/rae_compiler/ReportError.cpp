@@ -8,20 +8,32 @@
 		rlutil::setColor(rlutil::YELLOW);
 		cout<<"WARNING: ";
 		rlutil::setColor(rlutil::WHITE);
-		cout<<set<<" / line: "<<set_elem->lineNumber().line<<" / in: "<<set_elem->namespaceString()<<"\n";
-		//rae::log("ERROR: ", lineNumber.line, " ", set, "\n");	
-		
+		cout<<set;
+
+		if(set_elem)
+		{
+			cout<<" / line: "<<set_elem->lineNumber().line<<" / in: "<<set_elem->namespaceString();
+		}
+
+		cout<<"\n";
+
 		ReportError::m_countErrors++;		
 	}
 
 	void ReportError::reportError(string set, LangElement* set_elem)
 	{
-		set_elem->parseError(ParseError::SYNTAX_ERROR);
 		rlutil::setColor(rlutil::RED);
 		cout<<"ERROR: ";
 		rlutil::setColor(rlutil::WHITE);
-		cout<<set<<" / line: "<<set_elem->lineNumber().line<<" / in: "<<set_elem->namespaceString()<<"\n";
-		//rae::log("ERROR: ", lineNumber.line, " ", set, "\n");	
+		cout<<set;
+
+		if(set_elem)
+		{
+			set_elem->parseError(ParseError::SYNTAX_ERROR);
+			cout<<" / line: "<<set_elem->lineNumber().line<<" / in: "<<set_elem->namespaceString();
+		}
+		
+		cout<<"\n";
 		
 		ReportError::m_countErrors++;		
 	}

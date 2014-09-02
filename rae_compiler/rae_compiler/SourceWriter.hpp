@@ -208,6 +208,41 @@
 					writer.writeIndents();
 				}
 			break;
+			case Token::PRAGMA_CPP:
+				if( writer.isHeader() == true )//hpp
+				{
+					writer.writeString("//");
+					writer.writeString(set_elem.name());
+				}
+			break;
+			case Token::PRAGMA_CPP_SRC:
+				if( writer.isHeader() == false )//cpp
+				{
+					writer.writeString("//");
+					writer.writeString(set_elem.name());
+				}
+			break;
+			case Token::PRAGMA_CPP_END:
+				//TODO pragma end header source separation. now its both.
+			case Token::PRAGMA_ASM:
+			case Token::PRAGMA_ASM_END:
+			case Token::PRAGMA_ECMA:
+			case Token::PRAGMA_ECMA_END:
+				writer.writeString("//");
+				writer.writeString(set_elem.name());
+			break;
+			case Token::PASSTHROUGH:
+				if( writer.isHeader() == true )//hpp
+				{
+					writer.writeString(set_elem.name());
+				}
+			break;
+			case Token::PASSTHROUGH_SRC:
+				if( writer.isHeader() == false )//cpp
+				{
+					writer.writeString(set_elem.name());
+				}
+			break;
 			case Token::OVERRIDE:
 				writer.writeString("/*override:*/");
 			break;

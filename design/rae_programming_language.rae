@@ -52,6 +52,21 @@ import c++.vector //it's basically the same as c++ vector
 //no need to: import string //Rae native string //just a c++ string basically...
 import c++.string
 
+@c++
+{
+	//write c++ code here...
+}
+
+@asm
+{
+	//assembler?
+}
+
+@ecma
+{
+	//javascript
+}
+
 class Button : public Rectangle
 {
 public:

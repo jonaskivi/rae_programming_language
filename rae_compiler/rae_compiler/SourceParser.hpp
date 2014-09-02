@@ -326,6 +326,9 @@ public:
 		isPlusCommentReady = false;
 		nroWaitingForPlusCommentEnd = 0;
 
+		isWaitingForPragmaToken = false;
+		isPassthroughMode = false;
+		isPassthroughSourceMode = false;
 
 		m_currentParentElement = 0;
 		currentModule = 0;
@@ -416,6 +419,11 @@ public:
 	bool isPlusCommentReady;
 	int nroWaitingForPlusCommentEnd;
 	string currentPlusComment;
+
+	//for handling the @ special tokens such as @c++
+	bool isWaitingForPragmaToken;
+	bool isPassthroughMode;
+	bool isPassthroughSourceMode;
 
 	string currentModuleHeaderFileName;//e.g. HelloWorld.hpp, we pass this into the cpp writer.
 
@@ -551,7 +559,17 @@ public:
 
 	void newScopeEnd()
 	{
-		LangElement* scope_elem = scopeElementStack.back();
+		LangElement* scope_elem = 0;
+
+		if( scopeElementStack.empty() == true )
+		{
+			//lang_elem = newLangElement(set_lang_token_type, TypeType::UNDEFINED, set_token);
+			ReportError::reportError("unmatched scope end \"}\".", previousElement() );
+		}
+		else
+		{
+			scope_elem = scopeElementStack.back();
+		}
 		
 		if( scope_elem )
 		{
@@ -742,7 +760,13 @@ public:
 			newLangElement(Token::SCOPE_END, TypeType::UNDEFINED, "}");
  		}
 	 	
- 		scopeElementStack.pop_back();
+	 	if( scopeElementStack.empty() == false )
+		{
+ 			scopeElementStack.pop_back();
+ 		}
+		
+		//That removed an element so we have to check for empty again:
+
 		if( scopeElementStack.empty() == false )
 		{
 			currentParentElement( scopeElementStack.back() );
@@ -802,42 +826,51 @@ public:
 
 	LangElement* newParenthesisEnd(Token::e set_lang_token_type, string set_token)
 	{
-		LangElement* stack_elem = parenthesisStack.back();
-
+		LangElement* stack_elem;
 		LangElement* lang_elem;
 
-		if( stack_elem )
+		if( parenthesisStack.empty() == true )
 		{
-			//We just do matching: is it good enough:
-
-			lang_elem = newLangElement(Token::matchParenthesisEnd(stack_elem->token()), TypeType::UNDEFINED, set_token);
-
-			#ifdef DEBUG_RAE
-			/*cout<<"MATCH parenthesis: from: "<<Token::toString(stack_elem->token())
-				<<" to: "<<Token::toString(Token::matchParenthesisEnd(stack_elem->token()))
-				<<" caller: "<<Token::toString(set_lang_token_type)<<"\n");*/
-			//rae::log("match parenthesis...\n");
-			#endif
-
-			/*
-			if( stack_elem->token() == Token::PARENTHESIS_BEGIN_LOG )
-			{
-				stack_elem->newLangElement(lineNumber, set_lang_token_type, set_token );
-			}
-			else
-			{
-				stack_elem->newLangElement(lineNumber, set_lang_token_type, set_token );
-			}
-			*/
-			
-			//cout<<"End parenthesis for: "<<Token::toString( scope_elem->token() );
+			lang_elem = newLangElement(set_lang_token_type, TypeType::UNDEFINED, set_token);
+			ReportError::reportError("unmatched parenthesis end \")\".", lang_elem);
 		}
 		else
 		{
-			lang_elem = newLangElement(set_lang_token_type, TypeType::UNDEFINED, set_token);
- 		}
-	 	
- 		parenthesisStack.pop_back();
+			stack_elem = parenthesisStack.back();
+
+			if( stack_elem )
+			{
+				//We just do matching: is it good enough:
+
+				lang_elem = newLangElement(Token::matchParenthesisEnd(stack_elem->token()), TypeType::UNDEFINED, set_token);
+
+				#ifdef DEBUG_RAE
+				/*cout<<"MATCH parenthesis: from: "<<Token::toString(stack_elem->token())
+					<<" to: "<<Token::toString(Token::matchParenthesisEnd(stack_elem->token()))
+					<<" caller: "<<Token::toString(set_lang_token_type)<<"\n");*/
+				//rae::log("match parenthesis...\n");
+				#endif
+
+				/*
+				if( stack_elem->token() == Token::PARENTHESIS_BEGIN_LOG )
+				{
+					stack_elem->newLangElement(lineNumber, set_lang_token_type, set_token );
+				}
+				else
+				{
+					stack_elem->newLangElement(lineNumber, set_lang_token_type, set_token );
+				}
+				*/
+				
+				//cout<<"End parenthesis for: "<<Token::toString( scope_elem->token() );
+			}
+			else
+			{
+				lang_elem = newLangElement(set_lang_token_type, TypeType::UNDEFINED, set_token);
+	 		}
+		 	
+	 		parenthesisStack.pop_back();
+	 	}
 
  		return lang_elem;
 	}
@@ -857,53 +890,55 @@ public:
 
 	LangElement* newBracketEnd(Token::e set_lang_token_type, string set_token)
 	{
-		LangElement* stack_elem = bracketStack.back();
+		LangElement* stack_elem;
+		LangElement* lang_elem;
 
 		if( bracketStack.empty() == true )
 		{
-			stack_elem = 0;//null
-
-			ReportError::reportError("No matching starting [ for ]. Missing bracket.", previousElement() );
+			lang_elem = newLangElement(set_lang_token_type, TypeType::UNDEFINED, set_token);
+			ReportError::reportError("unmatched bracket end \"]\".", lang_elem);
 		}
+		else
+		{			
+			stack_elem = bracketStack.back();
 
-		LangElement* lang_elem;
-
-		if( stack_elem )
-		{
-			//cout<<"we has stack_elem in newBracketEnd.\n");
-			//We just do matching: is it good enough:
-
-			lang_elem = newLangElement(Token::matchBracketEnd(stack_elem->token()), TypeType::UNDEFINED, set_token);
-
-			//cout<<"I bet we've crashed.\n");
-
-
-			#ifdef DEBUG_RAE
-			cout<<"MATCH bracket: from: "<<Token::toString(stack_elem->token())
-				<<" to: "<<Token::toString(Token::matchBracketEnd(stack_elem->token()))
-				<<" caller: "<<Token::toString(set_lang_token_type)<<"\n";
-			//rae::log("match bracket.\n");
-			#endif
-
-			/*
-			if( stack_elem->token() == Token::bracket_BEGIN_LOG )
+			if( stack_elem )
 			{
-				stack_elem->newLangElement(lineNumber, set_lang_token_type, set_token );
+				//cout<<"we has stack_elem in newBracketEnd.\n");
+				//We just do matching: is it good enough:
+
+				lang_elem = newLangElement(Token::matchBracketEnd(stack_elem->token()), TypeType::UNDEFINED, set_token);
+
+				//cout<<"I bet we've crashed.\n");
+
+
+				#ifdef DEBUG_RAE
+				cout<<"MATCH bracket: from: "<<Token::toString(stack_elem->token())
+					<<" to: "<<Token::toString(Token::matchBracketEnd(stack_elem->token()))
+					<<" caller: "<<Token::toString(set_lang_token_type)<<"\n";
+				//rae::log("match bracket.\n");
+				#endif
+
+				/*
+				if( stack_elem->token() == Token::bracket_BEGIN_LOG )
+				{
+					stack_elem->newLangElement(lineNumber, set_lang_token_type, set_token );
+				}
+				else
+				{
+					stack_elem->newLangElement(lineNumber, set_lang_token_type, set_token );
+				}
+				*/
+				
+				//cout<<"End bracket for: "<<Token::toString( scope_elem->token() );
 			}
 			else
 			{
-				stack_elem->newLangElement(lineNumber, set_lang_token_type, set_token );
-			}
-			*/
-			
-			//cout<<"End bracket for: "<<Token::toString( scope_elem->token() );
-		}
-		else
-		{
-			lang_elem = newLangElement(set_lang_token_type, TypeType::UNDEFINED, set_token);
- 		}
-	 	
- 		bracketStack.pop_back();
+				lang_elem = newLangElement(set_lang_token_type, TypeType::UNDEFINED, set_token);
+	 		}
+		 	
+	 		bracketStack.pop_back();
+	 	}
 
  		return lang_elem;
 	}
@@ -2257,6 +2292,75 @@ public:
 				//just handling the linenumbers here, so that none get lost.
 				lineNumber.line++;
 			}
+			
+			
+			if( isPassthroughMode == true || isPassthroughSourceMode == true )
+			{
+				if( isWaitingForPragmaToken == true )
+				{
+					//enter or space (or slash for comments) to end pragma.
+					if( currentChar == '\n' || currentChar == ' ' || currentChar == '/' )
+					{
+						isWaitingForPragmaToken = false;
+						wholeToken = currentWord;
+						isWholeToken = true;
+
+						isWaitingForPragmaToken = false;
+
+						currentWord = "";
+						currentLine += currentChar;
+
+						if( currentChar == '\n' )
+						{
+							isWholeToken2 = true;
+							wholeToken2 = "\n";
+						}
+					}
+					else
+					{
+						//cout<<"waiting for end pragma end.";
+						currentWord += currentChar;
+						currentLine += currentChar;
+					}
+
+					return true;//would get called anyway, but here for "clarity"
+				}
+				else
+				{
+					//In passthroughmode we try to separate them as lines. But instead
+					//using currentLine, we're using currentWord, as I'm not sure how well
+					//we are currently supporting currentLine.
+					if( currentChar == '\n')
+					{
+						wholeToken = currentWord;
+						wholeToken += currentChar;
+						currentWord = "";
+						currentLine = "";
+						isWholeToken = true;
+
+						//cout<<"PASSTHROUGH: "<<wholeToken;
+					}
+					else if( currentChar == '@' )
+					{
+						wholeToken = currentWord;
+						isWholeToken = true;
+
+						//cout<<"Got @. Starting to wait for a @end pragma.\n";
+
+						isWaitingForPragmaToken = true;
+
+						currentWord = "@";
+						currentLine += currentChar;
+					}
+					else
+					{
+						currentWord += currentChar;
+						currentLine += currentChar;
+					}
+				}			
+
+				return true;
+			}
 
 			//list of separators:
 
@@ -2495,7 +2599,9 @@ public:
 						return true;
 					}
 				}
-				else
+				else if(isWaitingForPragmaToken == false)
+				//a very special case for @c++ so that the plusses don't get
+				//passed through as tokens.
 				{				
 					wholeToken = currentWord;
 					isWholeToken = true;
@@ -2605,6 +2711,37 @@ public:
 				currentWord = "";
 			}
 
+			if(isWaitingForPragmaToken == true)
+			{
+				//space or enter (or slash for comments) ends a pragma token.
+				if( currentChar == ' ' || currentChar == '\n' || currentChar == '/' )
+				{
+					cout<<"End @ pragma: "<<currentWord<<"\n";
+
+					wholeToken = currentWord;
+					isWholeToken = true;
+
+					isWaitingForPragmaToken = false;
+
+					currentWord = "";
+					currentLine += currentChar;
+
+					if( currentChar == '\n' )
+					{
+						isWholeToken2 = true;
+						wholeToken2 = "\n";
+					}
+				}
+				else
+				{
+					cout<<"waiting for pragma end.";
+					currentWord += currentChar;
+					currentLine += currentChar;
+				}
+
+				return true;
+			}
+
 			//handle other stuff:
 
 			//The minus sign is handled in a deferred way.
@@ -2662,6 +2799,18 @@ public:
 
 				currentWord = "-"; //Oh, we'll put it here too...
 				currentLine += currentChar;//We'll still put the minus here...
+			}
+			else if( currentChar == '@' )
+			{
+				wholeToken = currentWord;
+				isWholeToken = true;
+
+				cout<<"Got @. Starting to wait for a pragma.\n";
+
+				isWaitingForPragmaToken = true;
+
+				currentWord = "@";
+				currentLine += currentChar;
 			}
 			else if( currentChar == '.' )
 			{
@@ -3201,7 +3350,40 @@ public:
 		{
 			return;
 		}
-		else if( set_token == "\t" )
+
+		//We catch all tokens when doing PRAGMA_CPP until we get a website address
+		//such as: forsaken_woods@endisnear.com
+		//Oh. @Pragmas need to end with space or enter, so that might handle that case.
+		if( expectingToken() == Token::PRAGMA_CPP )
+		{
+			if(set_token == "@end")
+			{
+				isPassthroughMode = false;
+				newLangElement(Token::PRAGMA_CPP_END, TypeType::UNDEFINED, set_token);
+				doReturnToExpectToken();
+			}
+			else
+			{
+				newLangElement(Token::PASSTHROUGH, TypeType::UNDEFINED, set_token);
+			}
+			return;
+		}
+		else if( expectingToken() == Token::PRAGMA_CPP_SRC )
+		{
+			if(set_token == "@end")
+			{
+				isPassthroughSourceMode = false;
+				newLangElement(Token::PRAGMA_CPP_END, TypeType::UNDEFINED, set_token);
+				doReturnToExpectToken();
+			}
+			else
+			{
+				newLangElement(Token::PASSTHROUGH_SRC, TypeType::UNDEFINED, set_token);
+			}
+			return;
+		}
+
+		if( set_token == "\t" )
 		{
 			return;
 		}
@@ -4325,7 +4507,7 @@ This never gets called. Look in expecting NAME thing...
 			}
 			else if( set_token == "delete" )
 			{
-				cout<<"TODO Got delete. Waiting delete_class.\n";
+				cout<<"TODO Got delete. there's no delete keyword in Rae. Use free instead.\n";
 				//rae::log("TODO Got delete. Waiting delete_class.\n");
 			//expectingToken = Token::FUNC_DEFINITION;
 			//newFunc();
@@ -4347,6 +4529,34 @@ This never gets called. Look in expecting NAME thing...
 			{
 			////rae::log("found WORD module:>", set_token, "<\n");
 				newModule(set_token);	
+			}
+			//copy to c++ header .hpp:
+			else if( set_token == "@c++" || set_token == "@c++hdr" )
+			{
+				isPassthroughMode = true;
+				//cout<<"To PASSTHROUGH mode.\n";
+				newLangElement(Token::PRAGMA_CPP, TypeType::UNDEFINED, set_token);
+				expectingToken(Token::PRAGMA_CPP);
+			}
+			//copy to c++ source file .cpp:
+			else if( set_token == "@c++src" )
+			{
+				isPassthroughSourceMode = true;
+				//cout<<"To PASSTHROUGH mode.\n";
+				newLangElement(Token::PRAGMA_CPP_SRC, TypeType::UNDEFINED, set_token);
+				expectingToken(Token::PRAGMA_CPP_SRC);
+			}
+			else if( set_token == "@asm" )
+			{
+				ReportError::reportError("@asm is reserved for assembler, but it is not yet implemented.");
+			}
+			else if( set_token == "@ecma" )
+			{
+				ReportError::reportError("@ecma is reserved for ecmascript, but it is not yet implemented.");
+			}
+			else if( set_token == "@javascript" )
+			{
+				ReportError::reportError("@javascript is reserved, but use @ecma instead, but it is not yet implemented.");
 			}
 			//Ok, stop the press! It's not a reserved word. We really have to do something with this info:
 			//Maybe we'll first check if it's some user defined type.
@@ -4710,8 +4920,9 @@ This never gets called. Look in expecting NAME thing...
 						currentFunc->token( Token::DESTRUCTOR );
 					}*/
 
-					//if a funcs name is new, then it is a constructor.
-					if( set_token == "new" )
+					//if a funcs name is init, then it is a constructor.
+					//Used to be new: if( set_token == "new" )
+					if( set_token == "init" )
 					{
 						#ifdef DEBUG_RAE
 						//rae::log("Got new. It's a CONSTRUCTOR.\n");
