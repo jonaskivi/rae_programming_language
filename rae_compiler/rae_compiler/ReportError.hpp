@@ -35,8 +35,9 @@ public:
 	}
 	*/
 	
-	static void reportWarning(string set, LangElement* set_elem = 0);
-	static void reportError(string set, LangElement* set_elem = 0);
+	static void reportWarning(string set, LangElement* set_elem);
+	static void reportError(string set, LangElement* set_elem);
+	static void reportError(string set, int set_line_number, string in_which_namespace);
 	static void compilerError(string set);
 
 	public: static int countWarnings()

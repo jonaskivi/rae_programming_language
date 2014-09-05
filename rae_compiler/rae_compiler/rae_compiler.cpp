@@ -97,6 +97,7 @@ public:
 	{
 		createRaeStdLibModule("string");
 		createRaeStdLibModule("vector");
+		createRaeStdLibCppSupport("link");
 	}
 
 	void createRaeStdLibModule(string which_stdlib_module)
@@ -108,6 +109,22 @@ public:
 		a_parser->searchElementInOtherModulesSignal.connect( bind(&LangCompiler::searchElementInOtherModules, this, _1, _2) );
 		stdLibModules.push_back(a_parser);
 		a_parser->parseString();
+	}
+
+	void createRaeStdLibCppSupport(string which_stdlib_module)
+	{
+		SourceParser* a_parser = new SourceParser();
+		a_parser->createRaeStdLib(which_stdlib_module);
+		//remember to connect all signals:
+		//////a_parser->newImportSignal.connect( bind(&LangCompiler::addSourceFileAsImport, this, _1) );
+		//////a_parser->searchElementInOtherModulesSignal.connect( bind(&LangCompiler::searchElementInOtherModules, this, _1, _2) );
+		//////stdLibModules.push_back(a_parser);
+
+		sourceParsers.push_back(a_parser);
+		
+		a_parser->parseString();
+
+
 	}
 
 	void addModuleSearchPath(string set_path)//must end with / currently.

@@ -209,10 +209,32 @@
 				}
 			break;
 			case Token::PRAGMA_CPP:
+				//figure out if we are inside func. then output to cpp file. otherwise to header.
+				if( set_elem.parentFunc() == nullptr )
+				{
+					if( writer.isHeader() == true )//hpp
+					{
+						writer.writeString("//");
+						writer.writeString(set_elem.name());
+						writer.writeChar('\n');
+					}					
+				}
+				else //inside func:
+				{
+					if( writer.isHeader() == false )//cpp
+					{
+						writer.writeString("//");
+						writer.writeString(set_elem.name());
+						writer.writeChar('\n');
+					}					
+				}
+			break;
+			case Token::PRAGMA_CPP_HDR:
 				if( writer.isHeader() == true )//hpp
 				{
 					writer.writeString("//");
 					writer.writeString(set_elem.name());
+					writer.writeChar('\n');
 				}
 			break;
 			case Token::PRAGMA_CPP_SRC:
@@ -220,6 +242,7 @@
 				{
 					writer.writeString("//");
 					writer.writeString(set_elem.name());
+					writer.writeChar('\n');
 				}
 			break;
 			case Token::PRAGMA_CPP_END:
@@ -230,6 +253,7 @@
 			case Token::PRAGMA_ECMA_END:
 				writer.writeString("//");
 				writer.writeString(set_elem.name());
+				writer.writeChar('\n');
 			break;
 			case Token::PASSTHROUGH:
 				if( writer.isHeader() == true )//hpp
@@ -259,6 +283,8 @@
 			case Token::INIT_DATA:
 			
 			{
+				writer.writeString("INDATA");
+
 				bool write_init_data = true;
 
 				if( writer.isHeader() == true )//hpp
@@ -288,7 +314,7 @@
 				if( write_init_data == true )
 				{
 					writer.writeString(" = ");
-					writer.writeString( set_elem.name() );
+					iterateWrite(writer, set_elem);
 				}
 			}
 							
@@ -303,7 +329,8 @@
 					if( set_elem.initData() )
 					{
 						writer.writeString(" = ");
-						writer.writeString( set_elem.initData()->name() );
+						//writer.writeString( set_elem.initData()->name() );
+						iterateWrite(writer, *set_elem.initData());
 					}
 					else //this should never happen. because initData is set every time a built in type is created.
 					{
@@ -630,6 +657,10 @@
 				else if(writer.previousElement() && writer.previousElement()->typeType() == TypeType::VAL )
 				{
 					writer.writeChar( '.' );
+				}
+				else if(writer.previousElement() && writer.previousElement()->typeType() == TypeType::LINK )
+				{
+					writer.writeString( ".obj->" );
 				}
 				else
 				{
@@ -1146,6 +1177,17 @@
 				writer.writeString( set_elem.name() );
 				///////writer.writeChar( '\n' );
 				writer.currentIndentPlus();
+
+				if(set_elem.parent() && set_elem.parent()->token() == Token::CLASS)
+				{
+					cout<<"IN SCOPE_BEGIN for class: "<<set_elem.parentClassName()<<"\n";
+					cout<<"parent: "<<set_elem.parent()->toString()<<"\n";
+					
+					//This is the scope that begins a class.
+					//inject class boilerplate here.
+					injectClassBoilerPlate(writer, set_elem);
+				}
+
 				/*foreach( LangElement* elem, langElements )
 				{
 					elem->write(writer);
@@ -2043,7 +2085,8 @@
 					writer.writeString("#include <stdint.h>\n");//for int32_t etc.
 					writer.writeString("#include <iostream>\n");
 					writer.writeString("#include <string>\n");
-					writer.writeString("#include <vector>\n\n");
+					writer.writeString("#include <vector>\n");
+					writer.writeString("#include \"rae/link.hpp\"\n\n");
 					//writer.writeString("using namespace std;"); //not this... I guess.
 					
 					/*foreach( LangElement* elem, set_elem.langElements )

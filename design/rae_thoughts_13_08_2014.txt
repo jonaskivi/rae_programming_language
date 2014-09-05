@@ -1,0 +1,121 @@
+In C++ the assignment operator is a bit strange regarding pointers. I admit that C++'s pointers are very value oriented, but anyway it seems strange to point pointers to objects with the assignment operator (=).
+
+[code language="cpp"]
+Tester tester_val
+Tester* tester_ptr
+
+//value copy
+tester_val = *tester_ptr;
+//set pointer to object
+tester_ptr = &tester_val;
+[/code]
+
+And other members of the language family (Java, C#) have the same problem, and in fact, it is even worse with those two, as a reference and assigning it with the = operator is the default case. (But in C++ you can use value types, and in C# structs...)
+I just checked and the web is filled with beginner programmers strugling with these concepts.
+
+So, in my opininion, a language should have a separate assignment (e.g. copying) operator and a separate set pointer (or reference) operator.
+
+Let's see how it would look in Rae code:
+
+If we'd have a value type object and a link (a non owning reference):
+
+[code language="cpp"]
+val Tester tester_val
+link Tester tester_lnk
+[/code]
+
+Assignment (or copy) operator
+[code language="cpp"]
+tester_lnk = tester_val //segfault because we're trying to copy by value to null.
+[/code]
+
+Actually we'd need to ? it because links are optionals too. So the former shouldn't even compile. So the correct line would be something like:
+[code language="cpp"]
+tester_lnk? = tester_val
+[/code]
+But that will still not run, because link is null currently. :)
+
+
+And a set reference operator could be one of these (or propose a better one in the comments!):
+[code language="cpp"]
+tester_lnk -> tester_val
+tester_lnk @ tester_val
+tester_lnk @= tester_val
+tester_lnk -@ tester_val
+tester_lnk +@ tester_val
+tester_lnk =& tester_val
+//Hmm. This looks familiar.
+//Hey that's C++!! Like this:
+tester_ptr = &tester_val
+[/code]
+
+I personally think the nicest one of these is the -> as it is instantly recognizable as the "point to" -operator. The bad part is, that it looks like the C++ pointer dereference operator, but since we're not using it anywhere else, it doesn't matter.
+
+Let's look at it one more time, to see if it really looks good or not (as the code is going to get filled with these).
+
+[code language="cpp"]
+val Tester tester_val
+link Tester tester_lnk -> tester_val
+[/code]
+
+What do you think.
+
+P.S. This change also needs another change. The compare references operator. Which is "==" (in C++, Java) and "is" in D. So we could use one of the following:
+
+[code language="cpp"]
+if( tester_lnk <-> another_lnk )
+if( tester_lnk <=> another_lnk ) //looks too similar to <=
+if( tester_lnk @ another_lnk )
+if( tester_lnk is another_lnk ) //ok, but doesn't look like an operator.
+
+P.P.S. Hmm. A counter argument to this reasoning is this:
+We are already removing the already mentioned pointer dereferencing operator some_ptr->callSomething(), and just using the dot some_ptr.callSomething() everywhere.
+We are doing this so that we could just easily change from a pointer type to a value type when needed, without having to replace all our -> with dots.
+So, how does changing the assignment to mean kind of like the same thing with pointers and values affect this code reuse? And the fact that we'll be mostly using opts and links anyway, which need to be if(tester_opt) or tester_opt?.callSomething()'d anyway, if we want to use them. So doesn't ?. serve the same purpose as ->, but it just isn't enforced in any way on compile time in C++???
+
+Language design is interesting.
+[/code]
+
+
+link Tester tester_lnk = some_val //copies by value. tester_lnk is null so this will fail.
+//You'd first set tester_lnk to something and then copy:
+
+link Tester tester_lnk @= tester_val
+
+
+tester_lnk copy some_ref
+
+
+-----------------
+
+var myString:String = "Hello"
+val string myString = "Hello"
+
+var myString:String? = "Hello"
+opt string myString = "Hello"
+
+opt Tester my_tester = null
+
+int get_data = my_tester?.data
+
+someUnrelatedCode();//won't get called either if my_tester is null.
+
+doSomething(get_data);//still using the optional data.
+
+--------------------
+Will be in C++
+
+Tester* my_tester = 0;
+
+if(my_tester != 0)
+{
+	int get_data = my_tester->data;
+
+	someUnrelatedCode();
+
+	doSomething(get_data);
+}
+else
+{
+	rae::reportError();//line 18
+}

@@ -164,6 +164,9 @@ string toString(Token::e set)
 			*/
 			case Token::INIT_DATA:
 			return "Token::INIT_DATA";
+
+			case Token::RAE_NULL:
+			return "Token::RAE_NULL";
 			
 			case Token::VISIBILITY_DEFAULT:
 			return "Token::VISIBILITY_DEFAULT";
@@ -302,6 +305,8 @@ string toString(Token::e set)
 
 			case Token::PRAGMA_CPP:
 			return "Token::PRAGMA_CPP";
+			case Token::PRAGMA_CPP_HDR:
+			return "Token::PRAGMA_CPP_HDR";
 			case Token::PRAGMA_CPP_SRC:
 			return "Token::PRAGMA_CPP_SRC";
 			case Token::PRAGMA_CPP_END:

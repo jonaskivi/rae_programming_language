@@ -136,6 +136,8 @@ enum e
 	//BUILT_IN_TYPE_AUTO_INIT,
 	INIT_DATA,
 
+	RAE_NULL,
+
 	VISIBILITY_DEFAULT,
 	VISIBILITY,
 	VISIBILITY_PARENT_CLASS,
@@ -222,8 +224,9 @@ enum e
 
 	NEWLINE,
 	NEWLINE_BEFORE_SCOPE_END,
-	PRAGMA_CPP, //@c++ or @c++hdr for raw C++ code to be put in the header .hpp
-	PRAGMA_CPP_SRC, //@c++src for raw C++ code to be put in the source .cpp
+	PRAGMA_CPP, //@c++ automatically try to figure out where to put this raw c++ code. Usually it goes to header, inside funcs it goes to cpp files.
+	PRAGMA_CPP_HDR, //@c++hpp for raw C++ code to be put in the header .hpp
+	PRAGMA_CPP_SRC, //@c++cpp for raw C++ code to be put in the source .cpp
 	PRAGMA_CPP_END,
 	PRAGMA_ASM, //@asm for raw assembler code.
 	PRAGMA_ASM_END,
@@ -314,12 +317,12 @@ public:
 		m_builtInType = BuiltInType::UNDEFINED;
 		m_role = Role::UNDEFINED;
 		m_parseError = ParseError::UNDEFINED;
-		m_currentElement = 0;
-		m_parent = 0;
-		m_initData = 0;
-		m_definitionElement = 0;
-		m_previousElement = 0;
-		m_nextElement = 0;
+		m_currentElement = nullptr;//0;
+		m_parent = nullptr;//0;
+		m_initData = nullptr;//0;
+		m_definitionElement = nullptr;//0;
+		m_previousElement = nullptr;//0;
+		m_nextElement = nullptr;//0;
 		m_isUnknownType = false;
 	}
 	
@@ -327,12 +330,12 @@ public:
 	{
 		lineNumber(set_line_number);
 		m_token = set_lang_token_type;
-		m_currentElement = 0;
-		m_parent = 0;
-		m_initData = 0;
-		m_definitionElement = 0;
-		m_previousElement = 0;
-		m_nextElement = 0;
+		m_currentElement = nullptr;//0;
+		m_parent = nullptr;//0;
+		m_initData = nullptr;//0;
+		m_definitionElement = nullptr;//0;
+		m_previousElement = nullptr;//0;
+		m_nextElement = nullptr;//0;
 
 		m_name = set_name;
 
@@ -1001,10 +1004,10 @@ public:
 	//Oh well, I added another pointer to a langElement here. 
 	//This one is data about initialization... example:
 	//int someInt = 5
-	//so, initData would be "5"
+	//so, initData would be that "="" and contain new LangElement 5, which is of the type ::NUMBER.
 	//SomeClass someOb = new SomeOb(float param1: 256.0, OtherClass param2: ob);
 	//Well, that's a bit TODO.
-	//Maybe it could be a linked list! So it links to next until = 0!!!!
+	//
 
 	public: LangElement* initData() { return m_initData; }
 	public: void initData(LangElement* set) { m_initData = set; }
@@ -1066,7 +1069,10 @@ public:
 			}
 		}
 
-		lang_elem = new LangElement(lineNumber(), Token::INIT_DATA, TypeType::UNDEFINED, init_string);
+		lang_elem = new LangElement(lineNumber(), Token::INIT_DATA, TypeType::UNDEFINED, "=");
+
+		lang_elem->newLangElement(lineNumber(), Token::NUMBER, TypeType::UNDEFINED, init_string);
+
 		//lang_elem = new LangElement(lineNumber(), Token::UNDEFINED, init_string);
 		initData(lang_elem);
 		
@@ -1107,6 +1113,19 @@ public:
 	protected: LangElement* m_parent;
 
 public:
+
+	string parentClassName()
+	{
+		LangElement* par_clas = parentClass();
+
+		if(par_clas)
+		{
+			return par_clas->name();
+		}
+		//else
+		return "ERRORnotAClass";
+	}
+
 	//then some strange checking from the parent, the class and func and stuff:
 	LangElement* parentClass()
 	{
