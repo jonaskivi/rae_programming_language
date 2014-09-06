@@ -307,7 +307,8 @@ public:
 		isEndOfLine = false;
 		isSingleLineComment = false;
 		//m_returnToExpectToken = Token::UNDEFINED;
-		m_expectingToken = Token::UNDEFINED;
+		//m_expectingToken = Token::UNDEFINED;
+		expectingToken(Token::UNDEFINED);
 		m_expectingTypeType = TypeType::UNDEFINED;
 		m_expectingRole = Role::UNDEFINED;
 		expectingChar = 'T';
@@ -339,7 +340,7 @@ public:
 		currentReference = 0;
 		currentTempElement = 0;
 
-		
+		isReceivingInitData = false;		
 	}
 
 	bool debugWriteLineNumbers;//= false
@@ -349,20 +350,35 @@ public:
 		if( returnToExpectTokenStack.empty() )
 		{
 			expectingToken(Token::UNDEFINED);
+			cout<<"NO TOKENS: Returned to expectToken: Token::UNDEFINED.\n";
 			return m_expectingToken;
 		}
 
 		//else
-		expectingToken( returnToExpectTokenStack.back() );
+		//expectingToken( returnToExpectTokenStack.back() );
 		returnToExpectTokenStack.pop_back();
+
+		if( returnToExpectTokenStack.empty() )
+		{
+			expectingToken(Token::UNDEFINED);
+			cout<<"POPPED AND NO TOKENS: Returned to expectToken: Token::UNDEFINED.\n";
+			return m_expectingToken;
+		}
+		else
+		{
+			m_expectingToken = returnToExpectTokenStack.back();
+		}
+
+		cout<<"Returned to expectToken: "<<Token::toString(m_expectingToken)<<"\n";
 		return m_expectingToken;
 		//return m_returnToExpectToken;
 	}
+	/*
 	public: void addReturnToExpectToken(Token::e set)
 	{
 		returnToExpectTokenStack.push_back(set);
 		//m_returnToExpectToken = set;
-	}
+	}*/
 	public: Token::e whatIsReturnToExpectToken()//don't use this... just for if you need it to check what it is.
 	{
 		if( returnToExpectTokenStack.empty() )
@@ -377,10 +393,11 @@ public:
 	public: Token::e expectingToken(){ return m_expectingToken; }
 	public: void expectingToken(Token::e set)
 	{
-		#ifdef DEBUG_RAE_PARSER
+		//#ifdef DEBUG_RAE_PARSER
 			cout<<"set expectingToken to: "<<Token::toString(set)<<"\n";
-		#endif
+		//#endif
 		m_expectingToken = set;
+		//returnToExpectTokenStack.push_back(set);
 	}
 	protected: Token::e m_expectingToken;// = EDLTokenType::TITLE;
 
@@ -397,6 +414,9 @@ public:
 	int expectingChar;// = 'T';
 	Token::e foundToken;// = EDLTokenType::UNDEFINED;
 	
+	//This is similar to expectingRole and expectingToken TODO make better.
+	bool isReceivingInitData;
+
 	bool isSingleLineComment;// = false; //TODO rename to isWaitingForSingleLineComment for concistency.
 	string currentComment;
 	
@@ -807,9 +827,24 @@ public:
 	//currently using it just for this one thing:
 	void endInitData()
 	{
-		LangElement* scope_elem = 0;
+		isReceivingInitData = false;
 
-		if( scopeElementStack.empty() == true )
+		LangElement* initdata_start_elem = currentParentElement();
+
+		if(initdata_start_elem && initdata_start_elem->token() != Token::INIT_DATA)
+		{
+			ReportError::reportError("unmatched initdata end.", initdata_start_elem );
+			return;
+		}
+		else
+		{
+			#ifdef DEBUG_RAE
+			cout<<"End init_data.\n" );
+			//rae::log("End scope for: ",Token::toString( scope_elem->token() ));
+			#endif
+		}
+
+		/*if( scopeElementStack.empty() == true )
 		{
 			//lang_elem = newLangElement(set_lang_token_type, TypeType::UNDEFINED, set_token);
 			ReportError::reportError("unmatched initdata end.", previousElement() );
@@ -818,24 +853,10 @@ public:
 		else
 		{
 			scope_elem = scopeElementStack.back();
-		}
+		}*/
 		
 		//removed freeOwned from here.
 		//removed checking for NEWLINE_BEFORE_SCOPE_END
-		
-		if( scope_elem )
-		{
-			#ifdef DEBUG_RAE
-			cout<<"End init_data for: "<<Token::toString( scope_elem->token() );
-			//rae::log("End scope for: ",Token::toString( scope_elem->token() ));
-			#endif
-		}
-	
-		//This removes the INIT_DATA element from the scopeElementStack.	
-		if( scopeElementStack.empty() == false )
-		{
- 			scopeElementStack.pop_back();
- 		}
 		
 		//That removed an element so we have to check for empty again:
 
@@ -3441,10 +3462,28 @@ public:
 		
 		if( expectingToken() == Token::INIT_DATA )
 		{
-			we should make a expectingToken() == Token::INIT_DATA_ACTUAL_DATA that we wait after we get 
-			the =. And also to handle //comments /**/ as not being init_data, or can they be initDATA? or passed with it?
+			if( set_token == "=" )
+			{
+				//create a init_data element and continue waiting for the actual data!
+				LangElement* in_dat = newLangElement(Token::INIT_DATA, TypeType::UNDEFINED, set_token);
+				currentReference->initData(in_dat);
 
-			if(set_token == ")")
+				isReceivingInitData = true;
+
+				expectingToken( Token::ACTUAL_INIT_DATA );
+
+				#ifdef DEBUG_RAE_HUMAN
+					cout<<"= starting to receive init_data for "<<currentReference->type()<<" "<<currentReference->namespaceString()<<"\n";
+				#endif
+
+			}
+			else if( set_token == "\n" )
+			{
+				//No initdata.
+				doReturnToExpectToken();
+				newLine();				
+			}
+			else if(set_token == ")")
 			{
 				if(expectingRole() == Role::FUNC_RETURN )
 				{
@@ -3477,12 +3516,38 @@ public:
 			{
 				if( expectingRole() == Role::FUNC_RETURN || expectingRole() == Role::FUNC_PARAMETER )
 				{
+					//No initdata.
+					
 					newLangElement(Token::COMMA, TypeType::UNDEFINED, ",");
-					expectingToken(Token::UNDEFINED);
+					//expectingToken(Token::UNDEFINED);
+					doReturnToExpectToken();
 				}
 				else
 				{
 					ReportError::reportError("unexpected , COMMA while waiting for initdata for built in type.\n", previousElement() );	
+				}
+			}
+		}
+		else if( expectingToken() == Token::ACTUAL_INIT_DATA )
+		{
+			//we should make a expectingToken() == Token::ACTUAL_INIT_DATA that we wait after we get 
+			//the =. And also to handle //comments /**/ as not being init_data, or can they be initDATA? or passed with it?
+
+			
+			if( set_token == "." )
+			{
+				if( previousElement() && previousToken() == Token::NUMBER )
+				{
+					//newLangElement(Token::DOT, set_token);
+					previousElement()->name( previousElement()->name() + set_token );
+					expectingToken(Token::NUMBER_AFTER_DOT);
+					//expectingRole(Role::INIT_DATA);
+
+				}
+				else
+				{
+					ReportError::reportError("A strange dot while waiting for INIT_DATA. Floating point numbers are written: 0.0", previousElement() );
+					newLangElement(Token::REFERENCE_DOT, TypeType::UNDEFINED, set_token);
 				}
 			}
 			else if( set_token == "\n" )
@@ -3515,16 +3580,6 @@ public:
 
 				doReturnToExpectToken();
 				newLine();				
-			}
-			else if( set_token == "=" )
-			{
-				//create a init_data element and continue waiting for the actual data!
-				LangElement* in_dat = newLangElement(Token::INIT_DATA, TypeType::UNDEFINED, set_token);
-				currentReference->initData(in_dat);
-
-				#ifdef DEBUG_RAE_HUMAN
-					cout<<"= starting to receive init_data for "<<currentReference->type()<<" "<<currentReference->namespaceString()<<"\n";
-				#endif
 			}
 			else if( set_token == "\"" )
 			{
@@ -3625,7 +3680,8 @@ public:
 					ReportError::reportError("expecting an INIT_DATA. It should be a number or new.", previousElement() );
 				}*/
 				//expectingToken = Token::UNDEFINED;
-				doReturnToExpectToken();
+				
+				//doReturnToExpectToken();
 			}
 		}
 		else if( expectingToken() == Token::IMPORT_NAME )
@@ -3709,7 +3765,7 @@ public:
 			{
 				//cout<<"Got func_def (. Waiting return_types.\n";
 				
-				expectingToken(Token::MODULE_NAME);
+				//expectingToken(Token::MODULE_NAME);
 			}
 			else if( set_token == "\n" )
 			{
@@ -3743,7 +3799,7 @@ public:
 				}
 
 				newLine();
-				//expectingToken = Token::UNDEFINED;
+				//expectingToken(Token::UNDEFINED);
 				doReturnToExpectToken();
 			}
 			else
@@ -3751,7 +3807,7 @@ public:
 				if( currentModule )
 					currentModule->newLangElement(lineNumber, Token::MODULE_NAME, TypeType::UNDEFINED, set_token);
 
-				expectingToken(Token::MODULE_NAME);
+				//expectingToken(Token::MODULE_NAME);
 			}
 		}
 		/*
@@ -3806,18 +3862,27 @@ public:
 		}
 		else if( expectingToken() == Token::NUMBER_AFTER_DOT )
 		{
-			if( previousElement() && (previousToken() == Token::NUMBER || previousToken() == Token::INIT_DATA) )//the previousElement() check is needed because we use it next.
+			if( previousElement() && previousToken() == Token::NUMBER )//the previousElement() check is needed because we use it next.
 			{
 				if( isNumericChar(set_token[0]) )
 				{	
 					previousElement()->name( previousElement()->name() + set_token );
 					//expectingToken = Token::UNDEFINED;
-					doReturnToExpectToken();
+					//doReturnToExpectToken();
 				}
 				else
 				{
 					//cout<<"ERROR: "<<lineNumber.line<<" float number messed up, after dot.";
 					ReportError::reportError(" float number messed up, after dot.", previousElement());
+				}
+
+				if( isReceivingInitData == true )
+				{
+					expectingToken(Token::ACTUAL_INIT_DATA);
+				}
+				else
+				{
+					doReturnToExpectToken();
 				}
 			}
 		}
@@ -4088,7 +4153,7 @@ public:
 			}
 			else if( set_token == "." )
 			{
-				if( previousElement() && (previousToken() == Token::NUMBER || previousToken() == Token::INIT_DATA) )
+				if( previousElement() && previousToken() == Token::NUMBER )
 				{
 					//newLangElement(Token::DOT, set_token);
 					previousElement()->name( previousElement()->name() + set_token );
@@ -4940,8 +5005,10 @@ This never gets called. Look in expecting NAME thing...
 				#endif
 				newParenthesisBegin(Token::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES, "(");
 				expectingRole(Role::FUNC_RETURN);
-				//doReturnToExpectToken();
+				
+				//doReturnToExpectToken();//How about this change?
 				expectingToken(Token::UNDEFINED);
+
 				//expectingToken(Token::FUNC_RETURN_TYPE);
 			}
 			else
@@ -5001,6 +5068,8 @@ This never gets called. Look in expecting NAME thing...
 				}
 				//expectingToken(Token::FUNC_ARGUMENT_TYPE);
 				expectingRole(Role::FUNC_PARAMETER);
+
+				//doReturnToExpectToken();//How about this change?
 				expectingToken(Token::UNDEFINED);
 			}
 		}

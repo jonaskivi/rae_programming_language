@@ -134,7 +134,8 @@ enum e
 	//TEMPLATE_AUTO_INIT,
 	//TEMPLATE_AUTO_FREE,
 	//BUILT_IN_TYPE_AUTO_INIT,
-	INIT_DATA,
+	INIT_DATA,//maybe rename to INIT_DATA_BEGIN or something...
+	ACTUAL_INIT_DATA,//maybe rename to just INIT_DATA...
 
 	RAE_NULL,
 

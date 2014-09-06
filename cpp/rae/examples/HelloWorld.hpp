@@ -88,11 +88,12 @@ public:
 public: 
 	
 	void logMe();//line: 8
-	int32_t dataINDATA};
+	int32_t dataINDATA;
+};
 
 
 class HelloWorld
-	{
+{
 public:
 	
 	//-------------Rae boilerplate code-------------
@@ -164,14 +165,64 @@ public:
 	//-------------end Rae boilerplate code-------------
 
 
-	public: 
-		
-		//constructor:
-		HelloWorld();//line: 22
-		//destructor:
-		~HelloWorld();//line: 27
-		public: void sayHello();//line: 33
-		public: int32_t count(int32_t param1, Tester* param2);//line: 42
-		int32_t numINDATATester* tester_opt;//= new Tester RAE ERROR 
-		Tester* tester_notINDATA#endif // _rae_examples_HelloWorld_hpp_
+public: 
+	
+	//constructor:
+	HelloWorld();//line: 22
+	//destructor:
+	~HelloWorld();//line: 27
+	public: void sayHello();//line: 33
+	public: int32_t count(int32_t param1, Tester* param2);//line: 42
+	int32_t numINDATA;//line: 47
+	protected: int64_t anotherNumberINDATA;//line: 48
+	public: float afloatINDATA;//line: 49
+	
+	//REMOVE FROM HELLO
+	/*
+RETURN THIS RIGHT AFTER IT COMPILES:
+	func (val Tester)testerVal()
+	{
+		return(tester)
+	}
+
+	func (link Tester)testerLink()
+	{
+		return(tester_opt)
+	}
+*/
+	/*func (val Tester)testerVal2()
+	{
+		return(tester_opt)
+	}*/
+	
+	//
+	/*
+	[Tester] testers //Swift
+
+	//A related note: template syntax with brackets?
+	vector[Tester] testers
+	signal[void, int, float] mouseClicked
+
+	link [val Tester] linkToArray
+
+	//Signals syntax uses the func syntax:
+	signal (bool result, int other)mouseClicked(ref Tester a_tester, int a_value)
+
+	//Am I wrong if I think that signals can be used in all cases where you'd use a deledate?
+	//They work differently, but a signal is just more flexible.
+	delegate (bool result, int other)mouseClicked(ref Tester a_tester, int a_value)
+*/
+	
+	//REMOVE
+	
+	Tester tester;//line: 89
+	
+	Tester* tester_opt;//= new Tester
+	
+	Tester* tester_notINDATA;//line: 93
+	
+	rae::link<Tester> tester_link;
+};
+
+#endif // _rae_examples_HelloWorld_hpp_
 

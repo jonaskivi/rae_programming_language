@@ -164,6 +164,8 @@ string toString(Token::e set)
 			*/
 			case Token::INIT_DATA:
 			return "Token::INIT_DATA";
+			case Token::ACTUAL_INIT_DATA:
+			return "Token::ACTUAL_INIT_DATA";
 
 			case Token::RAE_NULL:
 			return "Token::RAE_NULL";
