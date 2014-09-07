@@ -6247,7 +6247,7 @@ This never gets called. Look in expecting NAME thing...
 			else if( current_context_use->parent() && found_definition->parent() )
 			{
 				//note to self: here we are most probably only dealing with USE_REFERENCEs, USE_MEMBERs and FUNC_CALLs.
-				//all definitions we're most likely already checked.
+				//all definitions were most likely already checked.
 
 				#ifdef DEBUG_RAE_PARSER
 				if(current_context_use->name() == debug_string_con)

@@ -43,12 +43,20 @@
 		}
 	}
 
+	void validateFuncCall(LangElement& set_elem)
+	{
+		iterate and find arguments. validate them. add conversion & etc.
+	}
+
 	bool validateElement(LangElement& set_elem)
 	{
 
 		switch(set_elem.token())
 		{
 			default:
+			break;
+			case Token::FUNC_CALL:
+				validateFuncCall(set_elem);
 			break;
 			case Token::POINT_TO:
 				if( set_elem.previousElement() )

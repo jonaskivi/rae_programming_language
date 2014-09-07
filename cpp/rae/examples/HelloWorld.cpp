@@ -149,9 +149,11 @@ int32_t main(int argc, char* const argv[])
 	//the following line will not run if tester_lnk is null.
 	//NOT YET: log(hello.count(int param1: hello.num, ref Tester param2: tester_lnk?))
 	
-	//NOT_YET: log(hello.count( hello.num, hello.tester ))
+	std::cout<<hello.count(hello.num, hello.tester_ref)<<"\n";//line: 178
 	
-	hello.tester.data = 3;//line: 180
+	std::cout<<hello.count(hello.num, hello.tester)<<"\n";//line: 180
+	
+	hello.tester.data = 3;//line: 182
 	
 	return(0);
 }
