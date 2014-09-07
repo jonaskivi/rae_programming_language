@@ -1,5 +1,5 @@
 //this file is automatically created from Rae programming language module:
-///Users/joonaz/Dropbox/jonas/2014/ohjelmointi/rae_programming_language/cpp/rae/examples/HelloWorld
+///home/joonaz/Dropbox/jonas/2014/ohjelmointi/rae_programming_language/cpp/rae/examples/HelloWorld
 #ifndef _rae_examples_HelloWorld_hpp_
 #define _rae_examples_HelloWorld_hpp_
 
@@ -88,7 +88,7 @@ public:
 public: 
 	
 	void logMe();//line: 8
-	int32_t dataINDATA;
+	int32_t data;
 };
 
 
@@ -172,10 +172,10 @@ public:
 	//destructor:
 	~HelloWorld();//line: 27
 	public: void sayHello();//line: 33
-	public: int32_t count(int32_t param1, Tester* param2);//line: 42
-	int32_t numINDATA;//line: 47
-	protected: int64_t anotherNumberINDATA;//line: 48
-	public: float afloatINDATA;//line: 49
+	public: int32_t count(int32_t param1, Tester* param2);//line: 43
+	int32_t num;//line: 48
+	protected: int64_t anotherNumber;//line: 49
+	public: float afloat;//line: 50
 	
 	//REMOVE FROM HELLO
 	/*
@@ -208,18 +208,20 @@ RETURN THIS RIGHT AFTER IT COMPILES:
 	//Signals syntax uses the func syntax:
 	signal (bool result, int other)mouseClicked(ref Tester a_tester, int a_value)
 
-	//Am I wrong if I think that signals can be used in all cases where you'd use a deledate?
+	//Am I wrong if I think that signals can be used in all cases where you'd use a delegate?
 	//They work differently, but a signal is just more flexible.
 	delegate (bool result, int other)mouseClicked(ref Tester a_tester, int a_value)
 */
 	
 	//REMOVE
 	
-	Tester tester;//line: 89
+	Tester tester;//line: 90
 	
 	Tester* tester_opt;//= new Tester
 	
-	Tester* tester_notINDATA;//line: 93
+	Tester* tester_not;//line: 94
+	
+	Tester* tester_ref;//line: 96
 	
 	rae::link<Tester> tester_link;
 };

@@ -345,12 +345,16 @@ public:
 
 	bool debugWriteLineNumbers;//= false
 	
+	//Hmm. Currently this system does not work. doReturnToExpectToken just
+	//sets it to Token::UNDEFINED every time... maybe we should just remove this system,
+	//and just use expectingToken(Token::UNDEFINED) every time. And use Role for these situations,
+	//when we need to know some more context about what we were doing before.
 	public: Token::e doReturnToExpectToken()
 	{
 		if( returnToExpectTokenStack.empty() )
 		{
 			expectingToken(Token::UNDEFINED);
-			cout<<"NO TOKENS: Returned to expectToken: Token::UNDEFINED.\n";
+			//cout<<"NO TOKENS: Returned to expectToken: Token::UNDEFINED.\n";
 			return m_expectingToken;
 		}
 
@@ -361,7 +365,7 @@ public:
 		if( returnToExpectTokenStack.empty() )
 		{
 			expectingToken(Token::UNDEFINED);
-			cout<<"POPPED AND NO TOKENS: Returned to expectToken: Token::UNDEFINED.\n";
+			//cout<<"POPPED AND NO TOKENS: Returned to expectToken: Token::UNDEFINED.\n";
 			return m_expectingToken;
 		}
 		else
@@ -369,7 +373,7 @@ public:
 			m_expectingToken = returnToExpectTokenStack.back();
 		}
 
-		cout<<"Returned to expectToken: "<<Token::toString(m_expectingToken)<<"\n";
+		//cout<<"Returned to expectToken: "<<Token::toString(m_expectingToken)<<"\n";
 		return m_expectingToken;
 		//return m_returnToExpectToken;
 	}
@@ -393,9 +397,9 @@ public:
 	public: Token::e expectingToken(){ return m_expectingToken; }
 	public: void expectingToken(Token::e set)
 	{
-		//#ifdef DEBUG_RAE_PARSER
+		#ifdef DEBUG_RAE_PARSER
 			cout<<"set expectingToken to: "<<Token::toString(set)<<"\n";
-		//#endif
+		#endif
 		m_expectingToken = set;
 		//returnToExpectTokenStack.push_back(set);
 	}
@@ -669,6 +673,14 @@ public:
 					{
 						foreach( LangElement* elem, listOfConstructors )
 						{
+							//Moved this boilerplate to writer and RaeStdLib.hpp inject things.
+							/*
+							//more link boilerplate for the constructors:
+							//LangElement(LineNumber& set_line_number, Token::e set_lang_token_type, TypeType::e set_type_type, string set_name = "", string set_type = "")
+							LangElement* rae_link_list_init = new LangElement(lineNumber, Token::USE_REFERENCE, TypeType::UNDEFINED, string set_name = "", string set_type = "");
+							auto_init_elem->token(Token::AUTO_INIT);
+							elem->addElementToTopOfFunc(auto_init_elem);
+							*/
 							foreach( LangElement* init_ob, listOfAutoInitObjects )
 							{
 								if( init_ob )
@@ -700,9 +712,21 @@ public:
 									{	
 										elem->newLangElementToTopWithNewline( elem->lineNumber(), Token::OBJECT_AUTO_INIT, TypeType::REF, init_ob->name(), init_ob->type() );
 									}*/
-									LangElement* auto_init_elem = init_ob->copy();
-									auto_init_elem->token(Token::AUTO_INIT);
-									elem->addElementToTopOfFunc(auto_init_elem);
+
+									if( init_ob->typeType() == TypeType::LINK && init_ob->initData() == nullptr )
+									{
+										//Don't do anything. if link and no initdata.
+									}
+									else if( init_ob->typeType() == TypeType::VAL && init_ob->initData() == nullptr )
+									{
+										//Don't do anything. if val and no initdata.
+									}
+									else //all other cases we create an AUTO_INIT object by copying.
+									{
+										LangElement* auto_init_elem = init_ob->copy();
+										auto_init_elem->token(Token::AUTO_INIT);
+										elem->addElementToTopOfFunc(auto_init_elem);
+									}
 								}
 							}
 						}
@@ -739,12 +763,20 @@ public:
 							{
 								if( init_ob )
 								{
-									/*
-									//THIS IS THE CORRECT AUTO_FREE IF WE EVER HAPPEN TO NEED IT AGAIN:
-									LangElement* auto_init_elem = init_ob->copy();
-									auto_init_elem->token(Token::AUTO_FREE);
-									elem->addElementToTopOfFunc(auto_init_elem);
-									*/
+									if( init_ob->typeType() == TypeType::LINK && init_ob->initData() == nullptr )
+									{
+										//Don't do anything. if link and no initdata.
+									}
+									else if( init_ob->typeType() == TypeType::VAL && init_ob->initData() == nullptr )
+									{
+										//Don't do anything. if val and no initdata.
+									}
+									else
+									{
+										LangElement* auto_init_elem = init_ob->copy();
+										auto_init_elem->token(Token::AUTO_FREE);
+										elem->addElementToTopOfFunc(auto_init_elem);
+									}
 								}
 							}
 						}
@@ -1550,11 +1582,10 @@ public:
 			//we are inside a class definition, not a func:
 			/////////lang_elem->token(Token::DEFINE_REFERENCE_IN_CLASS);
 
-			if( set_type_type == TypeType::REF )
-			{
+			//if( set_type_type == TypeType::REF )
+			//{
 				listOfAutoInitObjects.push_back(lang_elem);
-				//TODO VAL and OPT?
-			}
+			//}
 		}
 
 		addToUserDefinedTokens(lang_elem);
@@ -3610,8 +3641,11 @@ public:
 			}
 			else if( set_token == "null" )
 			{
+				cout<<"Got null initdata.\n";
+
 				if(currentParentElement() && currentParentElement()->token() == Token::INIT_DATA)
 				{
+					cout<<"And created null initdata for element: "<<currentReference->toString()<<"\n";
 					LangElement* in_dat = newLangElement(Token::RAE_NULL, TypeType::UNDEFINED, set_token);
 				}
 				else
@@ -6773,6 +6807,7 @@ This never gets called. Look in expecting NAME thing...
 							lang_elem->isUnknownType(false);
 							if(lang_elem->typeType() == TypeType::UNDEFINED)
 							{
+								ReportError::reportError("SourceParser.handleUnknownTokens() Found undefined and setting it to REF. This is todo.", lang_elem);
 								lang_elem->typeType(TypeType::REF);//This is probably not needed, if we get func_arguments to be created
 								//as refs as default. We should actually know their typetype when we create them! FIXIT. TODO.
 							}

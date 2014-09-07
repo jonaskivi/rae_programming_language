@@ -35,7 +35,8 @@ public:
 		log("World!")
 		log("tester_opt: ")
 		//NOT YET: tester_opt?.logMe()
-		tester_opt.logMe()		
+		tester_opt.logMe()
+		log("Should have said it.");		
 	}
 	
 	func (int result) count (int param1, ref Tester param2) public
@@ -78,7 +79,7 @@ RETURN THIS RIGHT AFTER IT COMPILES:
 	//Signals syntax uses the func syntax:
 	signal (bool result, int other)mouseClicked(ref Tester a_tester, int a_value)
 
-	//Am I wrong if I think that signals can be used in all cases where you'd use a deledate?
+	//Am I wrong if I think that signals can be used in all cases where you'd use a delegate?
 	//They work differently, but a signal is just more flexible.
 	delegate (bool result, int other)mouseClicked(ref Tester a_tester, int a_value)
 */
@@ -90,6 +91,8 @@ RETURN THIS RIGHT AFTER IT COMPILES:
 	opt Tester tester_opt //= new Tester
 
 	opt Tester tester_not = null
+
+	ref Tester tester_ref
 
 	link Tester tester_link
 }
@@ -163,8 +166,10 @@ func
 	//val Tester tester_val5 -> hello.testerVal2
 
 	hello.sayHello()
-	
+
 	log_s("5 + 2 = ")
+
+	log("todo count.")
 	
 	//the following line will not run if tester_lnk is null.
 	//NOT YET: log(hello.count(int param1: hello.num, ref Tester param2: tester_lnk?))

@@ -93,6 +93,29 @@ public:
 
 }
 
+void injectConstructorBoilerPlate( StringFileWriter& writer, LangElement& set_elem)
+{
+	//string our_class_name = set_elem.parentClassName();
+
+	writer.writeString(R"delimITER(	
+	//-------------Rae boilerplate code-------------
+	_rae_link_list = nullptr;
+	//-------------end Rae boilerplate code-------------
+
+)delimITER");
+}
+
+void injectDestructorBoilerPlate( StringFileWriter& writer, LangElement& set_elem)
+{
+	//string our_class_name = set_elem.parentClassName();
+
+	writer.writeString(R"delimITER(	
+	//-------------Rae boilerplate code-------------
+	_rae_unlink_all();
+	//-------------end Rae boilerplate code-------------
+
+)delimITER");
+}
 
 	void createRaeStdLib(string which_stdlib_class)
 	{

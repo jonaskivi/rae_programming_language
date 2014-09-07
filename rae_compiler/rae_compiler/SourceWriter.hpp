@@ -279,11 +279,13 @@
 				writer.writeString(set_elem.name());
 			break;
 				 */
-			
+			case Token::RAE_NULL:
+				writer.writeString("nullptr");
+			break;
 			case Token::INIT_DATA:
 			
 			{
-				writer.writeString("INDATA");
+				//DEBUG:writer.writeString("INDATA");
 
 				bool write_init_data = true;
 
@@ -347,6 +349,55 @@
 					writer.writeString(" = new ");
 					writer.writeString(set_elem.typeInCpp());
 					writer.writeString("()");
+				}
+				else if(set_elem.typeType() == TypeType::OPT)
+				{
+					writer.writeString(set_elem.name());
+
+					if( set_elem.initData() )
+					{
+						writer.writeString(" = ");
+						//writer.writeString( set_elem.initData()->name() );
+						iterateWrite(writer, *set_elem.initData());
+					}
+					else
+					{
+						//writer.writeString(m_type);
+						//writer.writeString("* ");
+						writer.writeString(" = new ");
+						writer.writeString(set_elem.typeInCpp());
+						writer.writeString("()");
+					}
+				}
+				else if(set_elem.typeType() == TypeType::VAL)
+				{
+					if( set_elem.initData() )
+					{
+						ReportError::reportWarning("AUTO_INIT for VAL is TODO.", &set_elem);
+						writer.writeString(" = ");
+						//writer.writeString( set_elem.initData()->name() );
+						iterateWrite(writer, *set_elem.initData());
+					}
+					else
+					{
+						//writer.writeString("SKIP VAL AUTO_INIT");
+						//skipping val auto init.
+					}
+				}
+				else if(set_elem.typeType() == TypeType::LINK)
+				{
+					if( set_elem.initData() )
+					{
+						ReportError::reportWarning("AUTO_INIT for LINK is TODO.", &set_elem);
+						writer.writeString(" = ");
+						//writer.writeString( set_elem.initData()->name() );
+						iterateWrite(writer, *set_elem.initData());
+					}
+					else
+					{
+						//writer.writeString("SKIP LINK AUTO_INIT");
+						//skipping link auto init.
+					}
 				}
 				//case Token::TEMPLATE_AUTO_INIT:
 				else if(set_elem.typeType() == TypeType::TEMPLATE)
@@ -418,10 +469,17 @@
 					}
 					else
 					{*/
-						ReportError::reportError("TODO FREE and AUTO_FREE is deprecated currently.", &set_elem);
+						//ReportError::reportError("TODO FREE and AUTO_FREE is deprecated currently.", &set_elem);
 						//These two lines are the ones to use: but we've disabled them for now because we mostly use values and links.
-						//////////writer.writeString("delete ");
-						//////////writer.writeString(set_elem.name());
+						writer.lineNeedsSemicolon(false);
+						writer.writeString("if(");
+						writer.writeString(set_elem.name());
+						writer.writeString(" != nullptr ) { ");
+						writer.writeString("delete ");
+						writer.writeString(set_elem.name());
+						writer.writeString("; ");
+						writer.writeString(set_elem.name());
+						writer.writeString(" = nullptr; }");
 					//}
 
 			break;
@@ -1187,6 +1245,21 @@
 					//inject class boilerplate here.
 					injectClassBoilerPlate(writer, set_elem);
 				}
+				else if(set_elem.parent() && set_elem.parent()->token() == Token::CONSTRUCTOR)
+				{
+					cout<<"IN SCOPE_BEGIN for constructor: "<<set_elem.toString()<<"\n";
+					cout<<"parent: "<<set_elem.parent()->toString()<<"\n";
+					
+					injectConstructorBoilerPlate(writer, set_elem);
+				}
+				else if(set_elem.parent() && set_elem.parent()->token() == Token::DESTRUCTOR)
+				{
+					cout<<"IN SCOPE_BEGIN for destructor: "<<set_elem.toString()<<"\n";
+					cout<<"parent: "<<set_elem.parent()->toString()<<"\n";
+					
+					injectDestructorBoilerPlate(writer, set_elem);
+				}
+
 
 				/*foreach( LangElement* elem, langElements )
 				{
