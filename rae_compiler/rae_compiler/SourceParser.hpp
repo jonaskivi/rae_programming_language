@@ -1513,7 +1513,8 @@ public:
 
 		return lang_elem;
 	}
-
+/*
+REMOVED:
 	LangElement* newDefineFuncArgument(string set_type, string set_name = "")
 	{
 
@@ -1552,7 +1553,7 @@ public:
 
 		return lang_elem;
 	}
-
+*/
 	LangElement* newDefineReference(TypeType::e set_type_type, Role::e set_role, LangElement* maybe_found_class, string set_type, string set_name = "")
 	{
 		LangElement* lang_elem = newLangElement(Token::DEFINE_REFERENCE, set_type_type, set_name, set_type);
@@ -6622,7 +6623,7 @@ This never gets called. Look in expecting NAME thing...
 					break;
 					*/
 					case Token::DEFINE_FUNC_RETURN:
-					case Token::DEFINE_FUNC_ARGUMENT:
+					//REMOVED: case Token::DEFINE_FUNC_ARGUMENT:
 					//case Token::DEFINE_REFERENCE_IN_CLASS:
 					case Token::DEFINE_REFERENCE:
 					//case Token::DEFINE_BUILT_IN_TYPE_IN_CLASS:
@@ -6800,8 +6801,8 @@ This never gets called. Look in expecting NAME thing...
 					break;
 					case Token::CLASS:
 						
-						if(lang_elem->token() == Token::DEFINE_FUNC_ARGUMENT
-							|| lang_elem->token() == Token::DEFINE_FUNC_RETURN
+						if(//REMOVED: lang_elem->token() == Token::DEFINE_FUNC_ARGUMENT
+							lang_elem->token() == Token::DEFINE_FUNC_RETURN
 							)
 						{
 							lang_elem->isUnknownType(false);
@@ -6899,7 +6900,7 @@ This never gets called. Look in expecting NAME thing...
 					break;
 					*/
 					case Token::DEFINE_FUNC_RETURN:
-					case Token::DEFINE_FUNC_ARGUMENT:
+					//REMOVED: case Token::DEFINE_FUNC_ARGUMENT:
 					//case Token::DEFINE_REFERENCE_IN_CLASS:
 					case Token::DEFINE_REFERENCE:
 					//case Token::DEFINE_BUILT_IN_TYPE_IN_CLASS:

@@ -43,10 +43,21 @@
 		}
 	}
 
+	//Does the_square_object fit the_hole:
+	//in assignments:
+	//something = other.call(args) + 52
+	//in func_calls:
+	//other.call( something.somewhere( got.here(1+3) + oh_no ), what_is_this, 45 )
+
+	void validateStatement(LangElement& the_hole, LangElement& the_square_object)
+	{
+
+	}
+
 	void validateFuncCall(LangElement& set_elem)
 	{
 		//TODO iterate and find arguments. validate them. add conversion & etc.
-		if(set_elem.token() != Token::FUNC_CALL)
+		if( set_elem.isFunc() )
 		{
 			ReportError::compilerError("Trying to validateFuncCall an element which is not a FUNC_CALL.", &set_elem);
 			return;
@@ -56,11 +67,42 @@
 		//alias func_definition -> set_elem.definitionElement
 		//instead of creating a temporary in these situations, we're just doing this for clarity:
 		LangElement* func_definition = set_elem.definitionElement();
+
+		if(func_definition == nullptr)
+		{
+			ReportError::compilerError("Trying to validateFuncCall but the function was not found and set to definitionElement yet.", &set_elem);
+			return;
+		}
+
+		//cout<<"Validate function ok.\n";
 		
-		vector<LangElement*> func_params = func_definition.funcParameterList();
-		
-		vector<LangElement*> func_call_args = set_elem.funcCallArgumentList();
-		
+		vector<LangElement*> func_params = func_definition->funcParameterList();
+
+		//cout<<"Params for function: "<<func_definition->name()<<"\n";
+
+		/*
+		//nice debugging of funcParameterList:
+		for(LangElement* elem: func_params)
+		{
+			cout<<"param: "<<elem->toSingleLineString()<<"\n";
+			if(elem->definitionElement())
+			{
+				cout<<"TYPE definitionElement: "<<elem->definitionElement()->toSingleLineString()<<"\n";
+			}
+			else cout<<"types DON'T have definitionElements.\n"; //this mostly happens only for built_in_types.
+			//and I'm happy to tell you that we seem to have definitionElements for user defined types!
+		}
+		*/
+
+		/*
+		vector<LangElement*> func_call_args = set_elem.funcCallArgumentList();		
+		for(LangElement* elem: func_call_args)
+		{
+			cout<<"func_call_args: "<<elem->toSingleLineString()<<"\n";
+		}
+		*/
+
+		/*
 		if(func_call_args.size() > func_params.size() )
 		{
 			//Hmm. TODO function parameter overloading:
@@ -108,64 +150,7 @@
 					//val to link //create a new link object. That you can pass on.
 					//val to ptr //unsafe but ok inside unsafe{}
 					//val to array //needs a converter. We create a temp array with one link?
-					//or many times they'll be links to arrays of vals or opts.
-					//How can we make passing arrays of different types generic?
-					//templated arrays:
-					in a class somewhere: [Tester] array_val
-					somewhere else: [link Tester] array_of_links
-					third: link[opt Tester] link_to_array_of_opts
 					
-					//func_params: ref by default? So no need to mark that ref:
-					
-					func ()doStuffWithArrays( template[Tester] set_array ) //for any type of array with any type Testers.
-					func ()doStuffWithArrays( template[T] set_array ) //for any array
-					func ()doStuffWithArrays( auto[Tester] set_array ) //how about auto keyword here as well? "template" is maybe clearer on what's happening.
-
-					//so a templated class would become, just like in D:
-					class(T)
-					{
-						T some_val
-						link T some_link
-					}
-
-
-					class(link[opt B])
-					{
-						link[opt B] link_to_array_of_opts_of_type_b
-					}
-
-					class(T, template[B])
-					{
-						T some_val
-						template[B] templated_array
-						//must use if(templated_array) and if(member) to access members. 
-						//Can't use point_to with them, because they could be vals. But this also could be automated
-						//so that if you'd use point_to, you just couldn't use the template with val types anymore. only with links and opts.
-						//But that leads us to: can we point_to with opts? we certainly can't with refs, because they must only 
-					}
-
-					func ()doStuffWithArrays( tmpl[Tester] set_array )
-					func ()doStuffWithArrays( tml[Tester] set_array )
-					func ()doStuffWithArrays( generic[Tester] set_array )
-					{
-						//for(Tester a_tester, set_array )//ref by default.
-						for(auto a_tester in set_array )
-						{
-							a_tester.doStuff //What if this was an opt or link?
-							//How can we template this as it's so different...
-							//and how can we write point_to operators if this is
-							//an array of vals:
-							a_tester -> some_completely_different_val
-							//So, I guess we can't template if:
-							//if we are using point_to operators.
-							//if we are not using if(a_tester) all the time.
-							//Which leads to a bit funny code.
-							//I guess we could then generate the same func for
-							//different types of arrays on demand.
-							//If you'd use it with link[opt Tester] we would generate
-							//a version for that.
-						}
-					}
 					
 				}
 				
@@ -173,7 +158,7 @@
 			
 			ind++;
 		}
-		
+		*/
 		
 	}
 

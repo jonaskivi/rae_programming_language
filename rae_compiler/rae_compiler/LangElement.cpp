@@ -192,12 +192,12 @@ string toString(Token::e set)
 			return "Token::FUNC_RETURN_TYPE";
 			case Token::FUNC_RETURN_NAME:
 			return "Token::FUNC_RETURN_NAME";
-			case Token::DEFINE_FUNC_ARGUMENT:
-			return "Token::DEFINE_FUNC_ARGUMENT";
-			case Token::FUNC_ARGUMENT_TYPE:
-			return "Token::FUNC_ARGUMENT_TYPE";
-			case Token::FUNC_ARGUMENT_NAME:
-			return "Token::FUNC_ARGUMENT_NAME";
+			//REMOVED: case Token::DEFINE_FUNC_ARGUMENT:
+			//REMOVED: return "Token::DEFINE_FUNC_ARGUMENT";
+			//REMOVED: case Token::FUNC_ARGUMENT_TYPE:
+			//REMOVED: return "Token::FUNC_ARGUMENT_TYPE";
+			//REMOVED: case Token::FUNC_ARGUMENT_NAME:
+			//REMOVED: return "Token::FUNC_ARGUMENT_NAME";
 			case Token::FUNC_CALL:
 			return "Token::FUNC_CALL";
 			

@@ -1,5 +1,5 @@
 //this file is automatically created from Rae programming language module:
-///home/joonaz/Dropbox/jonas/2014/ohjelmointi/rae_programming_language/cpp/rae/examples/HelloWorld
+///Users/joonaz/Dropbox/jonas/2014/ohjelmointi/rae_programming_language/cpp/rae/examples/HelloWorld
 #include "HelloWorld.hpp"
 
 //class Tester
@@ -151,9 +151,10 @@ int32_t main(int argc, char* const argv[])
 	
 	std::cout<<hello.count(hello.num, hello.tester_ref)<<"\n";//line: 178
 	
-	std::cout<<hello.count(hello.num, hello.tester)<<"\n";//line: 180
+	std::cout<<hello.count(hello.num + 1 + 3, hello.tester)<<"\n";//line: 180
+	//log(hello.count( hello.num + 1 + "an_error", hello.tester )) //will have to check for this
 	
-	hello.tester.data = 3;//line: 182
+	hello.tester.data = 3;//line: 183
 	
 	return(0);
 }

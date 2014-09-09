@@ -790,6 +790,15 @@ func
 	return(0) //return is used just like a func call!
 }
 
+
+alias in rae:
+
+//In Rae I'd like to just write:
+//alias func_definition -> set_elem.definitionElement
+//instead of creating a temporary in these situations, we're just doing this for clarity:
+LangElement* func_definition = set_elem.definitionElement();
+		
+
 //you can place this in any file, but for Rae style:
 //you can put all your code in .rae files inside the class.
 //OR you can use prototypes in the class, and make a .imp.rae file

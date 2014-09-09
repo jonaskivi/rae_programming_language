@@ -151,7 +151,7 @@ enum e
 	DEFINE_FUNC_RETURN,
 	FUNC_RETURN_TYPE,
 	FUNC_RETURN_NAME,
-	DEFINE_FUNC_ARGUMENT,//refactor... this is for built-in-types and class references...
+	//REMOVED: DEFINE_FUNC_ARGUMENT,//refactor... this is for built-in-types and class references...
 	//so why do we need them separate when using DEFINE_REFERENCE and DEFINE_BUILT_IN_TYPE.
 	//and then we also got DEFINE_ARRAY and DEFINE_VECTOR
 	//sounds like we could use an enum like
@@ -159,8 +159,8 @@ enum e
 	//reference, built-in, vector, array, etc. new types...
 	//that could replace the isBuiltInType thing in LangElement.
 	//DEFINE_FUNC_ARGUMENT_ARRAY,//Uh, we should refactor... 
-	FUNC_ARGUMENT_TYPE,
-	FUNC_ARGUMENT_NAME,
+	//REMOVED: FUNC_ARGUMENT_TYPE,
+	//REMOVED: FUNC_ARGUMENT_NAME,
 	FUNC_CALL, //or should it be USE_FUNC for consistency?
 
 	INFO_FUNC_PARAM,
@@ -456,9 +456,9 @@ public:
 		return ret;
 	}
 
-	string toStringNoLines()
+	string toSingleLineString()
 	{
-		string ret = " name: " + name() + tokenString() + " typetype: " + typeTypeString() + " type: " + type() + "<. line: " + numberToString(lineNumber().line);
+		string ret = " name: " + name() + " " + tokenString() + " typetype: " + typeTypeString() + " type: " + type() + " line: " + numberToString(lineNumber().line);
 		return ret;
 	}
 
@@ -568,7 +568,7 @@ public:
 			|| token() == Token::CONSTRUCTOR
 			|| token() == Token::DESTRUCTOR
 			|| token() == Token::MAIN
-			|| token() == Token::DEFINE_FUNC_ARGUMENT
+			//REMOVED: || token() == Token::DEFINE_FUNC_ARGUMENT
 			|| token() == Token::DEFINE_FUNC_RETURN
 		)
 		{
@@ -649,7 +649,8 @@ public:
 				#ifdef DEBUG_RAE_RVALUE
 				cout<<"LangElement::statementRValue() bohoo. no funcReturnType() while it is a FUNC_CALL. Strange. Odd. Probably an error: "<<toString()<<"\n";
 				#endif
-				return 0; //if a func has no return type then there's no statementRValue.
+				ReportError::reportError("Compiler asked for statement return value, but this function call doesn't return anything.", this);
+				return nullptr; //if a func has no return type then there's no statementRValue.
 			}
 		}
 		else if( token() == Token::USE_REFERENCE
@@ -794,6 +795,124 @@ public:
 		//no return type.
 		return 0;
 	}
+	
+	
+	//We return by value vector, but we hope move semantics get rid of the copy and just move the vector.
+	vector<LangElement*> funcParameterList()
+	{
+		if( token() != Token::FUNC && token() != Token::FUNC_CALL )
+		{
+			ReportError::compilerError("Trying to get funcParameterList, but this is not a FUNC or a FUNC_CALL.", this);
+			assert(0);
+		}
+
+		if( token() == Token::FUNC_CALL )
+		{
+			if(definitionElement() != 0)
+			{
+				return definitionElement()->funcParameterList();
+			}
+			else
+			{
+				ReportError::reportError("Couldn't get funcParameterList for FUNC_CALL, because it's definition is not (yet) found.", this);
+				assert(0);
+			}
+		}
+		//else it's a FUNC:
+
+		vector<LangElement*> ret;
+
+		bool found_begin_func_param_types = false;
+
+		for(LangElement* elem: langElements)
+		{
+			if(found_begin_func_param_types == false)
+			{
+				if( elem->token() == Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES )
+				{
+					found_begin_func_param_types = true;
+				}
+			}
+			else //already found it.
+			{
+				if( elem->token() == Token::PARENTHESIS_END_FUNC_PARAM_TYPES )
+				{
+					break;//break the for when the param_types end.
+				}
+
+				if( elem->token() == Token::DEFINE_REFERENCE )
+				{
+					ret.push_back(elem);
+				}
+			}
+		}
+
+		return ret;
+	}
+	
+/*
+	vector<LangElement*> funcCallArgumentList()
+	{
+		if( token() != Token::FUNC_CALL )
+		{
+			ReportError::compilerError("Trying to get funcCallArgumentList, but this is not a FUNC_CALL.", this);
+			assert(0);
+		}
+
+		vector<LangElement*> ret;
+
+		bool found_parenthesis_begin = false;
+
+		LangElement* elem = this;
+		while( (elem = elem->nextElement()) )//loop with an assignment
+		{
+			//ignore everything before the parenthesis
+			if(found_parenthesis_begin == false)
+			{
+				if( elem->token() == Token::PARENTHESIS_BEGIN )
+				{
+					found_parenthesis_begin = true;
+				}
+				else if( elem->token() == Token::NEWLINE || elem->token() == Token::NEWLINE_BEFORE_SCOPE_END )
+				{
+					cout<<"should break newline\n";
+					break;//break the loop. didn't find parenthesis.
+				}
+			}
+			else //already found it.
+			{
+				if( elem->token() == Token::PARENTHESIS_END )
+				{
+					cout<<"should break parenthesis end.\n";
+					break;//break the for when the arguments end.
+				}
+				else if( elem->token() == Token::NEWLINE || elem->token() == Token::NEWLINE_BEFORE_SCOPE_END )
+				{
+					ReportError::reportError("funcCallArgumentList: No ending parenthesis for a function call.", this);
+					break;//break the loop. didn't find parenthesis. This is an error.
+				}
+				else if( elem->token() == Token::COMMA )
+				{
+					cout<<"skip the comma.\n";
+					//skip it.
+				}
+				else
+				{
+					UNFINISHED IN HERE: because we need to think about how to represent an argument which is a statement like:
+					func_call( arg + 1, arg2 * 55 + "an_error" + hello.callSomething(and_this_here_wont_affect_it) )
+
+					cout<<"added elem: "<<elem->toSingleLineString()<<"\n";
+					//an argument hopefully.
+					if(elem)
+						ret.push_back( elem );
+				}
+			}
+		}
+
+		return ret;
+	}
+*/
+
 
 	//the actual name...
 	public: string& name() { return m_name; }
@@ -1907,8 +2026,11 @@ public:
 		return lang_elem;
 	}*/
 	
+	/*REMOVE IF UNUSED:
 	LangElement* searchFunctionParams(string set_name)
 	{
+		assert(0);
+
 		foreach( LangElement* elem, langElements )
 		{
 			if( elem->name() == set_name )
@@ -1926,6 +2048,7 @@ public:
 		//nothing found:
 		return 0;
 	}
+	*/
 
 	//TODO clean up hasFunctionOrMember and searchName.
 	//They are the same currently. Are they the same also conceptually,

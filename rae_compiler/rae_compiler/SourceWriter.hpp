@@ -291,22 +291,24 @@
 
 				if( writer.isHeader() == true )//hpp
 				{
-					if( set_elem.previousToken() == Token::DEFINE_FUNC_ARGUMENT)
-					{
-						write_init_data = true;
-					}
-					else if( set_elem.previousToken() == Token::DEFINE_REFERENCE )
+					//REMOVED: if( set_elem.previousToken() == Token::DEFINE_FUNC_ARGUMENT)
+					//REMOVED: {
+					//REMOVED: 	write_init_data = true;
+					//REMOVED: }
+					//REMOVED: else
+					if( set_elem.previousToken() == Token::DEFINE_REFERENCE )
 					{
 						write_init_data = false;
 					}
 				}
 				else// if( writer.isHeader() == false )//cpp
 				{
-					if( set_elem.previousToken() == Token::DEFINE_FUNC_ARGUMENT)
-					{
-						write_init_data = false;//here we don't want default initializers. c++ doesn't allow them...
-					}
-					else if( set_elem.previousToken() == Token::DEFINE_REFERENCE )
+					//REMOVED: if( set_elem.previousToken() == Token::DEFINE_FUNC_ARGUMENT)
+					//REMOVED: {
+						//REMOVED: write_init_data = false;//here we don't want default initializers. c++ doesn't allow them...
+					//REMOVED: }
+					//REMOVED: else 
+					if( set_elem.previousToken() == Token::DEFINE_REFERENCE )
 					{
 						write_init_data = false;//Hmm. this could be set to true, but we are already writing this
 						//in other places like below, so let's try not to bother.
@@ -1659,15 +1661,15 @@
 								{
 									//do nothing
 								}
-								else if( set_elem.langElements[i]->token() == Token::DEFINE_FUNC_ARGUMENT )
-								{
+								//REMOVED: else if( set_elem.langElements[i]->token() == Token::DEFINE_FUNC_ARGUMENT )
+								//REMOVED: {
 									//DON'T WANT THESE FOR MAIN, FOR NOW...
 									
 									//writer.writeString( elem->type() );
 									//writer.writeChar( ' ' );
 									//writer.writeString( elem->name() );
 									
-								}
+								//REMOVED: }
 								else if( set_elem.langElements[i]->token() == Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES )
 								{
 									//already written for main
@@ -1771,8 +1773,8 @@
 								{
 									//do nothing, already written
 								}
-								else if( set_elem.langElements[i]->token() == Token::DEFINE_FUNC_ARGUMENT )
-								{
+								//REMOVED: else if( set_elem.langElements[i]->token() == Token::DEFINE_FUNC_ARGUMENT )
+								/*//REMOVED: {
 									cout<<"DEFINE_FUNC_ARGUMENT should be removed now We'll see.\n";
 									assert(0);
 									
@@ -1787,11 +1789,6 @@
 										writer.writeString( set_elem.langElements[i]->typeInCpp() );
 										writer.writeChar('*');	
 									}
-									/*else if( set_elem.langElements[i]->typeType() == TypeType::C_ARRAY )
-									{
-										writer.writeString( set_elem.langElements[i]->typeInCpp() );
-										writer.writeChar('*');	
-									}*/
 									else if( set_elem.langElements[i]->typeType() == TypeType::VECTOR )
 									{
 										writer.writeString( "std::vector<" );
@@ -1809,6 +1806,7 @@
 									}
 									
 								}
+								*/
 								/*else if( set_elem.langElements[i]->token() == Token::PARENTHESIS_END_FUNC_PARAM_TYPES )
 								{
 									/////////writer.writeChar( ' ' );

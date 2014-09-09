@@ -1,5 +1,5 @@
 //this file is automatically created from Rae programming language module:
-///home/joonaz/Dropbox/jonas/2014/ohjelmointi/rae_programming_language/cpp/rae/examples/HelloWorld
+///Users/joonaz/Dropbox/jonas/2014/ohjelmointi/rae_programming_language/cpp/rae/examples/HelloWorld
 #ifndef _rae_examples_HelloWorld_hpp_
 #define _rae_examples_HelloWorld_hpp_
 
