@@ -171,59 +171,21 @@ public:
 	HelloWorld();//line: 22
 	//destructor:
 	~HelloWorld();//line: 27
-	public: void sayHello();//line: 33
-	public: int32_t count(int32_t param1, Tester* param2);//line: 43
-	int32_t num;//line: 48
-	protected: int64_t anotherNumber;//line: 49
-	public: float afloat;//line: 50
+	public: void sayHello();//line: 32
+	public: int32_t count(int32_t param1, Tester* param2);//line: 38
+	int32_t num;//line: 44
+	protected: int32_t anotherNumber;//line: 45
+	public: float afloat;//line: 46
 	
-	//REMOVE FROM HELLO
-	/*
-RETURN THIS RIGHT AFTER IT COMPILES:
-	func (val Tester)testerVal()
-	{
-		return(tester)
-	}
-
-	func (link Tester)testerLink()
-	{
-		return(tester_opt)
-	}
-*/
-	/*func (val Tester)testerVal2()
-	{
-		return(tester_opt)
-	}*/
+	Tester tester;//val is a value type
 	
-	//
-	/*
-	[Tester] testers //Swift
-
-	//A related note: template syntax with brackets?
-	vector[Tester] testers
-	signal[void, int, float] mouseClicked
-
-	link [val Tester] linkToArray
-
-	//Signals syntax uses the func syntax:
-	signal (bool result, int other)mouseClicked(ref Tester a_tester, int a_value)
-
-	//Am I wrong if I think that signals can be used in all cases where you'd use a delegate?
-	//They work differently, but a signal is just more flexible.
-	delegate (bool result, int other)mouseClicked(ref Tester a_tester, int a_value)
-*/
+	Tester* tester_opt;//opt is the optional type. This one is allocated automatically.
 	
-	//REMOVE
+	Tester* tester_not;//line: 53
+	rae::link<Tester> tester_link;//link is a pointer which can not allocate or free memory.
+	//a non-owning pointer which is also automatically set to null when the pointed object is destroyed.
 	
-	Tester tester;//line: 90
-	
-	Tester* tester_opt;//= new Tester
-	
-	Tester* tester_not;//line: 94
-	
-	Tester* tester_ref;//line: 96
-	
-	rae::link<Tester> tester_link;
+	int32_t what_if_im_removed;
 };
 
 #endif // _rae_examples_HelloWorld_hpp_

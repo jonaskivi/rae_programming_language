@@ -49,7 +49,7 @@
 	//in func_calls:
 	//other.call( something.somewhere( got.here(1+3) + oh_no ), what_is_this, 45 )
 
-	void validateStatement(LangElement& the_hole, LangElement& the_square_object)
+	void validateStatement(LangElement& the_hole, LangElement& the_square_element_start)
 	{
 
 	}

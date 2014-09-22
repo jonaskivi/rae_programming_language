@@ -25,7 +25,6 @@ public:
 	//destructor:
 	func ()free()
 	{
-		//free tester_opt
 	}
 	
 	public func
@@ -33,10 +32,6 @@ public:
 	{
 		tester.logMe
 		log("World!")
-		log("tester_opt: ")
-		//NOT YET: tester_opt?.logMe()
-		tester_opt.logMe()
-		log("Should have said it.");		
 	}
 	
 	func (int result) count (int param1, ref Tester param2) public
@@ -44,140 +39,43 @@ public:
 		return(param1 + param2.data)
 	}
 	
-	int num = 5
-	protected long anotherNumber = 42
+	int num = 5 //default initializers are copied to constructors.
+
+	protected int anotherNumber = 42
 	float afloat = 248.52
 
-	//REMOVE FROM HELLO
-/*
-RETURN THIS RIGHT AFTER IT COMPILES:
-	func (val Tester)testerVal()
-	{
-		return(tester)
-	}
+	val Tester tester //val is a value type
 
-	func (link Tester)testerLink()
-	{
-		return(tester_opt)
-	}
-*/
-	/*func (val Tester)testerVal2()
-	{
-		return(tester_opt)
-	}*/
+	opt Tester tester_opt //opt is the optional type. This one is allocated automatically.
 
-	//
-/*
-	[Tester] testers //Swift
+	opt Tester tester_not = null //need to specify that it is null, if you want it to be empty.
 
-	//A related note: template syntax with brackets?
-	vector[Tester] testers
-	signal[void, int, float] mouseClicked
+	link Tester tester_link //link is a pointer which can not allocate or free memory.
+	//a non-owning pointer which is also automatically set to null when the pointed object is destroyed.
 
-	link [val Tester] linkToArray
-
-	//Signals syntax uses the func syntax:
-	signal (bool result, int other)mouseClicked(ref Tester a_tester, int a_value)
-
-	//Am I wrong if I think that signals can be used in all cases where you'd use a delegate?
-	//They work differently, but a signal is just more flexible.
-	delegate (bool result, int other)mouseClicked(ref Tester a_tester, int a_value)
-*/
-
-	//REMOVE
-
-	val Tester tester
-
-	opt Tester tester_opt //= new Tester
-
-	opt Tester tester_not = null
-
-	ref Tester tester_ref
-
-	link Tester tester_link
+	int what_if_im_removed = 1
 }
 
 func
 (int) main (string[] args)
-//TODO (int) main ([string] args)
+//TODO: (int) main ([string] args)
 {
 	val HelloWorld hello; //semicolons are allowed, but not required.
 	
 	//Rae does not use = for pointing to an object. Instead use -> to point.
-	///////////////link Tester tester_lnk2 -> hello.tester_opt
-	//DOES NOT WORK ATM: 
+	//= operator will copy by value, so that the behaviour is consistent,
+	//whether you're using pointers or values.
 	link Tester tester_lnk
-/*
-	log("LINK fails to say hello:")
-	tester_lnk?.logMe()
-	//if(tester_lnk.obj) tester_lnk.obj->logMe();
-
-	lock( hello, other, hello.something )//if any of them is null or fails to lock, then skip.
-	{
-		hello.something.destroyHelloAndSomething(other)//fails to destroy because of lock.
-		hello.something.stillUseHello()
-	}
-	else lock(hello)
-	{
-		hello.justWithHelloThen
-	}
-	else
-	{
-		error("Couldn't lock hello.")
-	}
-
-	lock_wait( hello, hello.something )//if any of them is null then skip, if already locked then wait, forever.
-	{
-		hello.something.destroyHelloAndSomething()//fails to destroy because of lock.
-		hello.something.stillUseHello()
-	}
-	
-	hello! hello.something!
-	{
-		hello.something.destroyHelloAndSomething()
-		hello.something.stillUseHello()
-	}
-
-	hello? hello.something?
-	{
-		hello.something.destroyHelloAndSomething()
-		hello.something.stillUseHello()
-	}
-	
-
-	hello?.something?.tester?.logMe
-	if(hello.obj && hello.obj->something.obj && hello.obj->something.obj->tester.obj ) tester_lnk.obj->logMe();
-*/
 	tester_lnk -> hello.tester
 
 	log("LINK saying hello:")
 	tester_lnk.logMe()
 
-	//Should give us: tester_lnk.linkTo(&hello.tester);
-
-	////////////////////////////////////link Tester tester_lnk3 -> hello.testerLink
-	//ERROR: can't point to with a value type: val Tester tester_val4 -> hello.testerVal
-	///////////////////////////val Tester tester_val4 = hello.testerVal
-	//A link to a return value is not allowed, because val as return type is temporary:
-	//link Tester tester_lnk5 -> hello.testerVal
-	//log_s("link to a return value: tester_val4: ")
-	//////////////////////////////tester_val4.logMe
-
-	//val Tester tester_val5 -> hello.testerVal2
-
 	hello.sayHello()
 
 	log_s("5 + 2 = ")
 
-	log("todo count.")
-	
-	//the following line will not run if tester_lnk is null.
-	//NOT YET: log(hello.count(int param1: hello.num, ref Tester param2: tester_lnk?))
-	
-	log(hello.count( hello.num, hello.tester_ref ))
-
-	log(hello.count( hello.num + 1 + 3, hello.tester ))
-	//log(hello.count( hello.num + 1 + "an_error", hello.tester )) //will have to check for this
+	log(hello.count( hello.num, hello.tester_opt ))
 
 	hello.tester.data = 3
 
