@@ -1412,6 +1412,9 @@ public:
 
 	void newLine()
 	{
+		unfinishedElement(nullptr);
+		currentReference = nullptr;
+
 		if(injectPointToEndParenthesis == true)
 		{
 			injectPointToEndParenthesis = false;
@@ -1611,6 +1614,31 @@ REMOVED:
 	}
 */
 
+	/*
+	//REMOVE typically I just re-created a function that already existed:
+	LangElement* createTypeType(TypeType::e set_typetype, Role::e set_role)
+	{
+		LangElement* our_ref = newDefineReference(set_typetype, set_role );
+		return our_ref;
+		
+		//if( !bracketStack.empty() ) //REMOVE
+		//{
+			//if(previous2ndElement() && previous2ndElement()->token() == Token::BRACKET_BEGIN)
+			//if( currentParentElement() && currentParentElement()->token() == Token::BRACKET_BEGIN )
+			//{
+				//previous2ndElement()->token(Token::BRACKET_DEFINE_ARRAY_BEGIN);
+				//currentParentElement()->token(Token::BRACKET_DEFINE_ARRAY_BEGIN);
+
+				//our_ref->containerType( ContainerType::ARRAY );
+			//}
+		//}
+	}
+	*/
+
+	LangElement* newDefineReference(const string& set_typetype, Role::e set_role, LangElement* maybe_found_class = nullptr, string set_type = "", string set_name = "")
+	{
+		return newDefineReference( TypeType::fromString(set_typetype), set_role, maybe_found_class, set_type, set_name );
+	}
 	
 	LangElement* newDefineReference(TypeType::e set_type_type, Role::e set_role, LangElement* maybe_found_class = nullptr, string set_type = "", string set_name = "")
 	{
@@ -1636,15 +1664,10 @@ REMOVED:
 			}
 		}
 		*/
-		if( lang_elem->parentToken() == Token::CLASS )
+		if( lang_elem->parentToken() == Token::CLASS && set_type_type != TypeType::PTR )
 		{
-			//we are inside a class definition, not a func:
-			/////////lang_elem->token(Token::DEFINE_REFERENCE_IN_CLASS);
-
-			//if( set_type_type == TypeType::REF )
-			//{
-				listOfAutoInitObjects.push_back(lang_elem);
-			//}
+			// We are inside a class definition, so we autoinit in constructors. Expect not raw pointers.
+			listOfAutoInitObjects.push_back(lang_elem);
 		}
 
 		addToUserDefinedTokens(lang_elem);
@@ -2673,7 +2696,10 @@ public:
 					//newComment(endOfLine);
 					newComment(currentComment);
 					currentComment = "";
-					newLine();
+					
+					wholeToken = "\n";
+					isWholeToken = true;
+					///////////////////////////////////////newLine();
 					//expectingToken = Token::UNDEFINED;
 					isSingleLineComment = false;
 					isEndOfLine = false;
@@ -3486,31 +3512,6 @@ public:
 		}
 	}
 
-	LangElement* createTypeType(const string& set_typetype, Role::e set_role)
-	{
-		return createTypeType( TypeType::fromString(set_typetype), set_role );
-	}
-
-	LangElement* createTypeType(TypeType::e set_typetype, Role::e set_role)
-	{
-		LangElement* our_ref = newDefineReference(set_typetype, set_role );
-		return our_ref;
-		
-		//if( !bracketStack.empty() ) //REMOVE
-		//{
-			//if(previous2ndElement() && previous2ndElement()->token() == Token::BRACKET_BEGIN)
-			//if( currentParentElement() && currentParentElement()->token() == Token::BRACKET_BEGIN )
-			//{
-				//previous2ndElement()->token(Token::BRACKET_DEFINE_ARRAY_BEGIN);
-				//currentParentElement()->token(Token::BRACKET_DEFINE_ARRAY_BEGIN);
-
-				//our_ref->containerType( ContainerType::ARRAY );
-			//}
-		//}
-
-	}
-
-
 	void handleToken(string set_token)
 	{
 		if( set_token == "" )//ignore empty tokens...
@@ -3626,18 +3627,26 @@ public:
 		{
 			if( set_token == "=" )
 			{
+				LangElement* prev_elem = previousElement();
+
 				//create a init_data element and continue waiting for the actual data!
 				LangElement* in_dat = newLangElement(Token::INIT_DATA, TypeType::UNDEFINED, set_token);
-				currentReference->initData(in_dat);
+				//currentReference->initData(in_dat);
+				if(prev_elem)
+				{
+					prev_elem->initData(in_dat);
+					#ifdef DEBUG_RAE_HUMAN
+					cout<<"= starting to receive init_data for "<<prev_elem->type()<<" "<<prev_elem->namespaceString()<<"\n";
+					#endif
+				}
+				else
+				{
+					ReportError::compilerError("There's no previous element to take hold of the coming initdata.");
+				}
 
 				isReceivingInitData = true;
 
 				expectingToken( Token::ACTUAL_INIT_DATA );
-
-				#ifdef DEBUG_RAE_HUMAN
-					cout<<"= starting to receive init_data for "<<currentReference->type()<<" "<<currentReference->namespaceString()<<"\n";
-				#endif
-
 			}
 			else if( set_token == "\n" )
 			{
@@ -3647,7 +3656,10 @@ public:
 				{
 					endInitData();//This is important. This ends our init_data being the currentParentElement (which receives the init_data.)
 				}
-				else currentReference->addDefaultInitData();
+				else if(currentReference)
+				{
+					currentReference->addDefaultInitData();
+				}
 				doReturnToExpectToken();
 				newLine();				
 			}
@@ -3782,7 +3794,7 @@ public:
 
 				if(currentParentElement() && currentParentElement()->token() == Token::INIT_DATA)
 				{
-					cout<<"And created null initdata for element: "<<currentReference->toString()<<"\n";
+					//cout<<"And created null initdata for element: "<<dang->toString()<<"\n";
 					LangElement* in_dat = newLangElement(Token::RAE_NULL, TypeType::UNDEFINED, set_token);
 				}
 				else
@@ -3790,9 +3802,9 @@ public:
 					ReportError::reportError("Got null as init_data, but there was no = before the init_data.", previousElement() );
 				}
 				
-				#ifdef DEBUG_RAE_HUMAN
-					cout<<"Set null as init_data for "<<currentReference->type()<<" "<<currentReference->namespaceString()<<"\n";
-				#endif
+				//#ifdef DEBUG_RAE_HUMAN
+				//	cout<<"Set null as init_data for "<<dang->type()<<" "<<dang->namespaceString()<<"\n";
+				//#endif
 			}
 			else
 			{
@@ -4406,11 +4418,11 @@ public:
 			{
 				if( !bracketStack.empty() )
 				{
-					createTypeType( set_token, Role::TEMPLATE_PARAMETER );
+					newDefineReference( set_token, Role::TEMPLATE_PARAMETER );
 				}
 				else
 				{
-					LangElement* our_ref = createTypeType( set_token, expectingRole() );
+					LangElement* our_ref = newDefineReference( set_token, expectingRole() );
 					unfinishedElement(our_ref);
 				}
 
@@ -6847,17 +6859,28 @@ This never gets called. Look in expecting NAME thing...
 							expectingToken(Token::DEFINE_REFERENCE_NAME);
 						}
 
+						if(currentReference == nullptr)
 						{
-							//LangElement* clob = 
-
-							if(currentReference == nullptr)
+							//ReportError::reportError("handleUserDefinedToken. currentReference was null, when we found a class. Compiler error. set_token: " + set_token, previousElement() );
+						
+							// This case is just a class name without any preceeding val or opt, so no currentReference has been created.
+							// We'll create a new reference that defaults to VAL.
+							if( !bracketStack.empty() )
 							{
-								ReportError::reportError("handleUserDefinedToken. currentReference was null, when we found a class. Compiler error.", previousElement() );
+								newDefineReference( "val", Role::TEMPLATE_PARAMETER, found_elem, set_token );
+								// Not waiting for the name as it's a template parameter.
 							}
-							
-							//expectingRole can be undefined for now. If it's set it's most likely
-							//just FUNC_RETURN or FUNC_ARGUMENT. But this remark is early days, so
-							//it might change in the future.
+							else
+							{
+								LangElement* our_ref = newDefineReference( "val", expectingRole(), found_elem, set_token );
+								unfinishedElement(our_ref); // Still waiting for the name.
+							}
+						}
+						else
+						{	
+							// expectingRole can be undefined for now. If it's set it's most likely
+							// just FUNC_RETURN or FUNC_ARGUMENT. But this remark is early days, so
+							// it might change in the future.
 
 							//our_new_element = newDefineReference(expectingTypeType(), expectingRole(), found_elem, set_token);
 							currentReference->definitionElement(found_elem);
@@ -6945,9 +6968,22 @@ This never gets called. Look in expecting NAME thing...
 			cout<<"Didn't find: "<<set_token<<" creating unknown ref.\n";
 			//rae::log("Didn't find: ", set_token, " creating unknown ref.\n");
 			#endif
-			//specifically don't do our_new_element = , because this is already unkown and will be handled later...
+			//specifically don't do our_new_element = , because this is already unknown and will be handled later...
 			//Oh well. found_elem would be null anyway...
-			newUnknownUseReference2(set_token);
+			if(currentReference == nullptr)
+			{
+				newUnknownUseReference2(set_token);
+			}
+			// We have already created a DEFINE_REFERENCE with a keyword like val opt ref. But the class is still undefined.
+			else if( currentReference->isDefinition() && currentReference->type() == "" && currentReference->name() == "" )
+			{
+				if( bracketStack.empty() ) //not in the middle of a template list.
+				{
+					expectingToken(Token::DEFINE_REFERENCE_NAME);
+				}
+				currentReference->type(set_token);
+				currentReference->isUnknownType(true);
+			}
 		}
 
 		//Hmm. We only check if it's valid here... It's kind of stupid not to be able to
@@ -6982,10 +7018,25 @@ This never gets called. Look in expecting NAME thing...
 		//handleUnknownUseReferences();
 		//handleUnknownUseMembers();
 
-		handleUnknownTokens( unknownDefinitions );
-		handleCheckForPreviousDefinitionsList();
-		handleUnknownTokens( unknownUseReferences );
-		handleUnknownTokens( unknownUseMembers );
+		for( uint i = 0; i < 4; i++ )
+		{
+			handleUnknownTokens( unknownDefinitions );
+			handleCheckForPreviousDefinitionsList();
+			handleUnknownTokens( unknownUseReferences );
+			handleUnknownTokens( unknownUseMembers );
+
+			if( unknownDefinitions.empty() && unknownUseReferences.empty() && unknownUseMembers.empty() )
+			{
+				if(i > 0)
+				ReportError::reportInfo("Parsed module " + numberToString(i+1) + " times. All unknown references found.", moduleName() );
+				return;
+			}
+		}
+
+		if( not unknownDefinitions.empty() && not unknownUseReferences.empty() && not unknownUseMembers.empty() )
+		{
+			ReportError::reportError("After parsing the source 4 times, there are still " + numberToString(unknownDefinitions.size() + unknownUseReferences.size() + unknownUseMembers.size()) + " unknown references.", 0, moduleName() );
+		}
 	}
 
 	void handleCheckForPreviousDefinitionsList()
@@ -7118,7 +7169,35 @@ This never gets called. Look in expecting NAME thing...
 					break;
 					case Token::CLASS:
 						
-						if(//REMOVED: lang_elem->token() == Token::DEFINE_FUNC_ARGUMENT
+						if(lang_elem->token() == Token::USE_REFERENCE
+							&& lang_elem->typeType() == TypeType::UNDEFINED
+							&& lang_elem->nextElement()
+							&& lang_elem->nextElement()->isUnknownType() == true
+							&& lang_elem->nextElement()->token() == Token::USE_REFERENCE)
+						{
+							cout<<"This really happened.\n";
+							// For strange reasons we can say, that this is probably a case of default val:
+							// Tester tester
+							lang_elem->token(Token::DEFINE_REFERENCE);
+							lang_elem->typeType(TypeType::VAL);
+
+							lang_elem->definitionElement(found_elem);
+							lang_elem->type( lang_elem->name() );
+
+							lang_elem->name( lang_elem->nextElement()->name() );
+
+							//if we are inside a class, we need to create auto_inits and auto_free to constructors and destructors.
+							if(lang_elem->parent() && lang_elem->parent()->token() == Token::CLASS)
+							{
+								lang_elem->parent()->createObjectAutoInitInConstructors(lang_elem);
+							}
+							
+							lang_elem->isUnknownType(false);
+							lang_elem->nextElement()->token(Token::EMPTY); // set the next element to be empty. We took the name from it.
+							lang_elem->nextElement()->isUnknownType(false);
+							addToUserDefinedTokens(lang_elem);
+						}
+						else if(//REMOVED: lang_elem->token() == Token::DEFINE_FUNC_ARGUMENT
 							lang_elem->token() == Token::DEFINE_FUNC_RETURN
 							)
 						{
@@ -7359,11 +7438,11 @@ This never gets called. Look in expecting NAME thing...
 			{
 				if(lang_elem->previousElement() && lang_elem->previousToken() == Token::REFERENCE_DOT )
 				{
-					ReportError::reportError("Didn't find definition. Does the class have a member with that name? Check spelling? Did you define it somewhere? Is it accessible in this scope?", { lang_elem, lang_elem->previousElement(), lang_elem->previous2ndElement() } );
+					ReportError::reportWarning("Didn't find definition. Does the class have a member with that name? Check spelling? Did you define it somewhere? Is it accessible in this scope?", { lang_elem, lang_elem->previousElement(), lang_elem->previous2ndElement() } );
 				}
 				else
 				{
-					ReportError::reportError("Didn't find definition. Check spelling? Did you define it somewhere? Is it accessible in this scope?", lang_elem );
+					ReportError::reportWarning("Didn't find definition. Check spelling? Did you define it somewhere? Is it accessible in this scope?", lang_elem );
 				}
 
 				#ifdef DEBUG_RAE_HUMAN

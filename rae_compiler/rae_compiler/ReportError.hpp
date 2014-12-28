@@ -37,7 +37,10 @@ public:
 	}
 	*/
 	
+	static void reportInfo(string set, LangElement* set_elem);
+	static void reportInfo(string set, string in_which_namespace);
 	static void reportWarning(string set, LangElement* set_elem);
+	static void reportWarning(string set, std::initializer_list<LangElement*> set_elems);
 	static void reportError(string set, LangElement* set_elem);
 	static void reportError(string set, std::initializer_list<LangElement*> set_elems);
 	static void reportError(string set, int set_line_number, string in_which_namespace);

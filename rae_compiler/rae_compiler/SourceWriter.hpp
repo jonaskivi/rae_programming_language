@@ -46,10 +46,13 @@
 	{
 		//int count_elem = 0;
 
-		if(set_elem.parseError() == ParseError::SYNTAX_ERROR)
+		if(set_elem.parseError() == ParseError::SYNTAX_ERROR || set_elem.parseError() == ParseError::COMPILER_ERROR)
 		{
-			//writer.writeString("/*ERROR*/");
-			writer.writeString(" RAE ERROR ");
+			writer.writeString(" RAE_ERROR: ");
+		}
+		else if(set_elem.parseError() == ParseError::SYNTAX_WARNING)
+		{
+			writer.writeString(" RAE_WARNING: ");
 		}
 
 		switch(set_elem.token())
@@ -82,6 +85,10 @@
 				}
 			break;
 			case Token::UNDEFINED:
+				writer.writeString(" RAE_UNDEFINED: ");		
+				writer.writeString( set_elem.name() );
+				iterateWrite(writer, set_elem);
+			break;
 			case Token::EMPTY: //more intentional than undefined... I guess they are the same thing...
 				//we don't write undefined. it's like empty...
 				iterateWrite(writer, set_elem);
@@ -746,35 +753,6 @@
 				{
 					writer.writeString( ".obj->" );
 				}
-				else if(set_elem.previousElement() && set_elem.previousElement()->token() == Token::BRACKET_END ) // an array
-				{
-					cout<<"interesting. ARRAYSTUFF:.\n";
-					LangElement* prev_ref = set_elem.searchClosestPreviousUseReferenceOrUseVector();
-					if(prev_ref)
-					{
-						cout<<"interesting. ARRAYSTUFF:2.\n";
-						if( prev_ref->definitionElement() )
-						{
-							cout<<"interesting. ARRAYSTUFF:3.\n";
-							cout<<prev_ref->definitionElement()->toString();
-							LangElement* temp_second_type = prev_ref->definitionElement()->templateSecondType();
-							if(temp_second_type)
-							{
-								cout<<"interesting. ARRAYSTUFF:4.\n";
-								cout<<temp_second_type->toString();
-								if(temp_second_type->typeType() == TypeType::VAL)
-								{
-									writer.writeChar( '.' );
-								}
-								else if(temp_second_type->typeType() == TypeType::LINK)
-								{
-									writer.writeString( ".obj->" );
-								}
-								else writer.writeString( "->" );
-							}
-						}
-					}
-				}
 				else
 				{
 					writer.writeChar( '-' );//we're using pointer dereferencing -> for now...
@@ -878,12 +856,42 @@
 				//else
 				//{
 
-					// Non bounds checked:
-					//writer.writeString(set_elem.name());
-					// Bounds checked:
-					writer.writeString(")");
+				// Non bounds checked:
+				//writer.writeString(set_elem.name());
+				// Bounds checked:
+				writer.writeString(")");
 
-				//}
+				if( set_elem.nextElement() && set_elem.nextElement()->token() != Token::POINT_TO ) // There are other cases where we want LINK instead of LINK.obj
+				{
+					cout<<"interesting. ARRAYSTUFF:.\n";
+					LangElement* prev_ref = set_elem.searchClosestPreviousUseReferenceOrUseVector();
+					if(prev_ref)
+					{
+						cout<<"interesting. ARRAYSTUFF:2.\n";
+						if( prev_ref->definitionElement() )
+						{
+							cout<<"interesting. ARRAYSTUFF:3.\n";
+							cout<<prev_ref->definitionElement()->toString();
+							LangElement* temp_second_type = prev_ref->definitionElement()->templateSecondType();
+							if(temp_second_type)
+							{
+								cout<<"interesting. ARRAYSTUFF:4.\n";
+								cout<<temp_second_type->toString();
+								/*if(temp_second_type->typeType() == TypeType::VAL)
+								{
+									writer.writeChar( '.' );
+								}
+								else
+								*/
+								if(temp_second_type->typeType() == TypeType::LINK)
+								{
+									writer.writeString( ".obj" );
+								}
+								//else writer.writeString( "->" );
+							}
+						}
+					}
+				}
 			break;
 			case Token::BRACKET_DEFINE_ARRAY_BEGIN:
 				if( set_elem.isInClass() )
@@ -955,7 +963,7 @@
 						}
 					}
 				}
-				else if( set_elem.typeType() == TypeType::REF || set_elem.typeType() == TypeType::OPT )
+				else if( set_elem.typeType() == TypeType::REF || set_elem.typeType() == TypeType::OPT || set_elem.typeType() == TypeType::PTR )
 				{
 					if( set_elem.isInClass() )
 					{
@@ -989,7 +997,7 @@
 								writer.writeString("()");
 							}
 						}
-						else //opt differs from ref in that it can be initialized to null with = null.
+						else //opt and ptr differs from ref in that it can be initialized to null with = null.
 						{
 							if(set_elem.nextToken() == Token::EQUALS )
 							{

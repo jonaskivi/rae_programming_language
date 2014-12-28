@@ -74,6 +74,10 @@ raehello:
 	$(CXX) $(CXXFLAGS) -I./cpp/ ./cpp/rae/examples/HelloWorld.cpp -o rae_hello
 	./rae_hello
 
+raehellocpp:
+	$(CXX) $(CXXFLAGS) -I./cpp/ ./cpp/rae/examples/HelloWorld.cpp -o rae_hello
+	./rae_hello
+
 debugraehello:
 	gdb --args ./$(EXECUTABLE) ./rae/examples/HelloWorld.rae
 	$(CXX) $(CXXFLAGS) -I./cpp/ ./cpp/rae/examples/HelloWorld.cpp -o rae_hello

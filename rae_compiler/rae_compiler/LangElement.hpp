@@ -16,6 +16,7 @@ namespace ParseError
 enum e
 {
 	UNDEFINED,
+	SYNTAX_WARNING,
 	SYNTAX_ERROR,
 	COMPILER_ERROR
 };	
@@ -1140,7 +1141,12 @@ public:
 
 	//We've moved the UNKNOWN stuff into this property:
 	public: bool isUnknownType() { return m_isUnknownType; }
-	public: void isUnknownType(bool set) { m_isUnknownType = set; }
+	public: void isUnknownType(bool set)
+	{
+		if(set == false) // Self healed from the unknown reference, so we set that there was no error either.
+			parseError(ParseError::UNDEFINED);
+		m_isUnknownType = set;
+	}
 	protected: bool m_isUnknownType;
 
 	//An important addition: a link to the element where this element is defined:

@@ -12,7 +12,6 @@ public:
 	int data = 2
 }
 
-
 class HelloWorld
 {
 public:
@@ -40,42 +39,46 @@ public:
 	}
 	
 	int num = 5 //default initializers are copied to constructors.
-
 	int no_init_data
 	double no_init_datad
-
-	[int] array_test //std::vector<int>
-
-	[int, 5] static_array_test //std::array<int, 5>
 
 	protected int anotherNumber = 42
 	float afloat = 248.52
 
-	[val Tester] testers
-
-	[link Tester] tester_links
-
-	[opt Tester] tester_opts
-
-	[ref Tester] tester_refs
-
-	val Tester tester //val is a value type
-
+	Tester tester //val is the default type
 	opt Tester tester_opt //opt is the optional type. This one is allocated automatically.
-
 	opt Tester tester_not = null //need to specify that it is null, if you want it to be empty.
-
 	link Tester tester_link //link is a pointer which can not allocate or free memory.
 	//a non-owning pointer which is also automatically set to null when the pointed object is destroyed.
+	ptr Tester tester_ptr
 
-	//int what_if_im_removed = 1
+	string name = "Hello Rae World"
+
+	[string] names
+
+	[int] array_test //std::vector<int>	
+	[int, 5] static_array_test //std::array<int, 5>
+	[val Tester] testers	
+	[Tester] defaultTesters	
+	[link Tester] tester_links	
+	[opt Tester] tester_opts	
+	[ref Tester] tester_refs
+	[ptr Tester] tester_ptrs
 }
 
 func
 (int) main (string[] args)
-//TODO: (int) main ([string] args)
+//(int) main ([string] args)
 {
+	int eger = 5
+	log(eger)
+
+	string helloRae = "Hello Rae World"
+	log(helloRae)
+
 	val HelloWorld hello; //semicolons are allowed, but not required.
+
+	HelloWorld hello2 //val is default
 	
 	//Rae does not use = for pointing to an object. Instead use -> to point.
 	//= operator will copy by value, so that the behaviour is consistent,
@@ -105,6 +108,8 @@ func
 	log("LINK in an array saying hello: ")
 	hello.tester_links[0].logMe()
 	log("Ok. Said hello.")
+	hello.tester_links[0].data = 8
+	log("an eight = ", hello.tester_links[0].data );
 
 	hello.array_test[0]
 

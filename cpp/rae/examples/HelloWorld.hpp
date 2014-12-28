@@ -169,39 +169,37 @@ public:
 public: 
 	
 	//constructor:
-	HelloWorld();//line: 22
+	HelloWorld();//line: 21
 	//destructor:
-	~HelloWorld();//line: 27
-	public: void sayHello();//line: 32
-	public: int32_t count(int32_t param1, Tester* param2);//line: 38
-	int32_t num;//line: 44
-	int32_t no_init_data;//line: 45
-	double no_init_datad;//line: 46
+	~HelloWorld();//line: 26
+	public: void sayHello();//line: 31
+	public: int32_t count(int32_t param1, Tester* param2);//line: 37
+	int32_t num;//line: 42
+	int32_t no_init_data;//line: 43
+	double no_init_datad;//line: 44
 	
-	std::vector<int32_t> array_test;//std::vector<int>
+	protected: int32_t anotherNumber;//line: 46
+	public: float afloat;//line: 47
 	
-	std::array<int32_t, 5> static_array_test;//std::array<int, 5>
-	
-	protected: int32_t anotherNumber;//line: 52
-	public: float afloat;//line: 53
-	
-	std::vector<Tester > testers;//line: 55
-	
-	std::vector<rae::link<Tester> > tester_links;//line: 57
-	
-	std::vector<Tester* > tester_opts;//line: 59
-	
-	std::vector<Tester* > tester_refs;//line: 61
-	
-	Tester tester;//val is a value type
-	
+	Tester tester;//val is the default type
 	Tester* tester_opt;//opt is the optional type. This one is allocated automatically.
-	
-	Tester* tester_not;//line: 68
+	Tester* tester_not;//line: 51
 	rae::link<Tester> tester_link;//link is a pointer which can not allocate or free memory.
 	//a non-owning pointer which is also automatically set to null when the pointed object is destroyed.
+	Tester* tester_ptr;//line: 54
 	
-	//int what_if_im_removed = 1
+	std::string name;//line: 56
+	
+	std::vector<std::string> names;//line: 58
+	
+	std::vector<int32_t> array_test;//std::vector<int>	
+	std::array<int32_t, 5> static_array_test;//std::array<int, 5>
+	std::vector<Tester > testers;//line: 62
+	std::vector<Tester > defaultTesters;//line: 63
+	std::vector<rae::link<Tester> > tester_links;//line: 64
+	std::vector<Tester* > tester_opts;//line: 65
+	std::vector<Tester* > tester_refs;//line: 66
+	std::vector<Tester* > tester_ptrs;
 };
 
 #endif // _rae_examples_HelloWorld_hpp_
