@@ -126,6 +126,10 @@ public:
 public:	
 	void create(string set_filename, bool set_is_header )
 	{
+		#ifdef DEBUG_FILEWRITER
+			cout<<"StringFileWriter.create() START."<<"\n";
+		#endif
+
 		m_isHeader = set_is_header;
 
 		//FILE* headerFile;
@@ -136,6 +140,15 @@ public:
 		{
 			m_isFileOk = true;
 		}
+		else
+		{
+			cout<<"File is not ok. "<<set_filename<<"\n";
+			m_isFileOk = false;
+		}
+
+		#ifdef DEBUG_FILEWRITER
+			cout<<"StringFileWriter.create() END."<<"\n";
+		#endif
 	}
 
 	public: bool isHeader() { return m_isHeader; }
@@ -146,7 +159,13 @@ public:
 
 	void close()
 	{
+		#ifdef DEBUG_FILEWRITER
+			cout<<"StringFileWriter.close() START."<<"\n";
+		#endif
 		fclose(outFile);
+		#ifdef DEBUG_FILEWRITER
+			cout<<"StringFileWriter.close() END."<<"\n";
+		#endif
 	}
 	
 	void writeIndents()

@@ -31,7 +31,8 @@ enum e
 	INSIDE_CLASS,
 	FUNC_RETURN,
 	FUNC_PARAMETER,
-	INSIDE_FUNCTION
+	INSIDE_FUNCTION,
+	TEMPLATE_PARAMETER
 };	
 }
 
@@ -47,11 +48,24 @@ enum e
 	PTR,
 	BUILT_IN_TYPE,
 	//ARRAY,
-	VECTOR,
-	TEMPLATE
+	VECTOR, //REMOVE
+	TEMPLATE //REMOVE
 };
 
 string toString(TypeType::e set);
+TypeType::e fromString(const string& set);
+}
+
+namespace ContainerType
+{
+enum e
+{
+	UNDEFINED, // = SINGLE
+	ARRAY,
+	STATIC_ARRAY//,
+	//TEMPLATE,
+	//DICTIONARY //MAP
+};
 }
 
 namespace Token
@@ -198,8 +212,10 @@ enum e
 
 	BRACKET_BEGIN,
 	BRACKET_END,
-	BRACKET_DEFINE_ARRAY_BEGIN, //Maybe remove these...
+	BRACKET_DEFINE_ARRAY_BEGIN,
 	BRACKET_DEFINE_ARRAY_END,
+	BRACKET_DEFINE_STATIC_ARRAY_BEGIN,
+	BRACKET_DEFINE_STATIC_ARRAY_END,
 
 	RETURN,
 
@@ -232,7 +248,9 @@ enum e
 	PRAGMA_ASM, //@asm for raw assembler code.
 	PRAGMA_ASM_END,
 	PRAGMA_ECMA, //@ecma for raw ecmascript/javascript code.
-	PRAGMA_ECMA_END
+	PRAGMA_ECMA_END,
+
+	EXPECTING_NAME
 };
 
 	string toString(Token::e set);
@@ -316,6 +334,7 @@ public:
 		m_token = Token::UNDEFINED;
 		m_typeType = TypeType::UNDEFINED;
 		m_builtInType = BuiltInType::UNDEFINED;
+		m_containerType = ContainerType::UNDEFINED;
 		m_role = Role::UNDEFINED;
 		m_parseError = ParseError::UNDEFINED;
 		m_currentElement = nullptr;//0;
@@ -342,6 +361,7 @@ public:
 
 		m_isUnknownType = false;
 		m_typeType = set_type_type;//TypeType::UNDEFINED;
+		m_containerType = ContainerType::UNDEFINED;
 		m_builtInType = BuiltInType::UNDEFINED;//must NOT be initialized after the next call to type().
 		type(set_type); //automatically tests if it is built_in_type.
 	}
@@ -398,6 +418,7 @@ public:
 		res->m_isUnknownType = m_isUnknownType;
 		res->m_builtInType = m_builtInType;//must NOT be initialized after the next call to type().
 		res->m_typeType = m_typeType;
+		res->m_containerType = m_containerType;
 		res->m_role = m_role;
 		res->m_type = m_type; //automatically tests if it is built_in_type.
 		res->m_parseError = m_parseError;
@@ -458,7 +479,18 @@ public:
 
 	string toSingleLineString()
 	{
-		string ret = " name: " + name() + " " + tokenString() + " typetype: " + typeTypeString() + " type: " + type() + " line: " + numberToString(lineNumber().line);
+		if( m_name.size() > 0 )
+		{
+			if( m_name[0] == ' ' )
+				return "SPACE";
+			else if( m_name[0] == '\n' )
+				return "RETURN";
+			else if( m_name[0] == '\t' )
+				return "TAB";
+		}
+		//else
+		//string ret = "name: " + name() + " " + tokenString() + " typetype: " + typeTypeString() + " type: " + type() + " line: " + numberToString(lineNumber().line);
+		string ret = tokenString() + " type: " + type() + " name: " + name() + " " + " typetype: " + typeTypeString() + " line: " + numberToString(lineNumber().line);
 		return ret;
 	}
 
@@ -562,6 +594,8 @@ public:
 			//|| token() == Token::DEFINE_VECTOR_IN_CLASS
 			//|| token() == Token::DEFINE_BUILT_IN_TYPE
 			//|| token() == Token::DEFINE_BUILT_IN_TYPE_IN_CLASS
+			|| token() == Token::BRACKET_DEFINE_ARRAY_BEGIN
+			|| token() == Token::BRACKET_DEFINE_STATIC_ARRAY_BEGIN
 			|| token() == Token::CLASS
 			|| token() == Token::ENUM
 			|| token() == Token::FUNC
@@ -977,11 +1011,21 @@ public:
 	//or when using it:
 	//FirstType!(SecondType) name
 
+	//This might be up to date: :)
 	public: LangElement* templateSecondType()
 	{
-		return searchFirst(Token::TEMPLATE_SECOND_TYPE);
+		if(langElements.size() > 0)
+		{
+			//if( langElements[0]->definitionElement() ) // No, we don't want the definitionElement, because that won't tell us if we're val or opt or link.
+			//	return langElements[0]->definitionElement();
+			//else
+			return langElements[0];
+		}
+		return nullptr;
+		//return searchFirst(Token::TEMPLATE_SECOND_TYPE);
 	}
 
+	//Not up to date:
 	public: void createTemplateSecondType(string set_type)
 	{
 		if( searchFirst(Token::TEMPLATE_SECOND_TYPE) != 0 )
@@ -994,6 +1038,7 @@ public:
 		}
 	}
 
+	//Not up to date:
 	public: string templateSecondTypeString()
 	{
 		//returns the type of the TEMPLATE_SECOND_TYPE
@@ -1007,22 +1052,22 @@ public:
 		return "templateError";
 	}
 
-	//this is usefull when constructing the template class
-	//in c++. It will be a normal c++ class:
-	//rae template definition:
-	//class FirstType(T)
-	//rae template use definition:
-	//FirstType!(SecondType) name
-	//in C++ we construct artificial classes from templates:
-	//This is what templateTypeCombination gives:
-	//class _FirstTypeSecondType_
-	//and use them normally:
-	//FirstTypeSecondType* name = new FirstTypeSecondType();
+	// this is usefull when constructing the template class
+	// in c++. It will be a normal c++ class:
+	// rae template definition:
+	// class FirstType(T)
+	// rae template use definition:
+	// FirstType!(SecondType) name
+	// in C++ we construct artificial classes from templates:
+	// This is what templateTypeCombination gives:
+	// class _FirstTypeSecondType_
+	// and use them normally:
+	// FirstTypeSecondType* name = new FirstTypeSecondType();
 
 	public: string templateSecondTypeStringInCpp()
 	{
-		//returns the type of the TEMPLATE_SECOND_TYPE
-		//if it has one. there should be only one child.
+		// returns the type of the TEMPLATE_SECOND_TYPE
+		// if it has one. there should be only one child.
 		foreach(LangElement* set_elem, langElements)
 		{
 			if(set_elem->token() == Token::TEMPLATE_SECOND_TYPE)
@@ -1032,18 +1077,29 @@ public:
 		return "templateError";
 	}
 
-	//We don't use the C++ type here. We use Rae types.
+	// We don't use the C++ type here. We use Rae types.
 	public: string templateTypeCombination()
 	{
 		return "_" + type() + "_" + templateSecondTypeString() + "_";
 	}
 
-	//TypeType doesn't have anything to do with templates anymore. But it is very important
-	//secondary type for e.g. DEFINE_REFERENCE.
+	// TypeType doesn't have anything to do with templates anymore. But it is very important
+	// secondary type for e.g. DEFINE_REFERENCE.
 
 	public: TypeType::e typeType() { return m_typeType; }
 	public: void typeType(TypeType::e set) { m_typeType = set; }
 	protected: TypeType::e m_typeType;
+
+	// ContainerType is an addition to TypeType and DefineReference.
+	// It tells if we're just single or an array, or something else.
+	public: ContainerType::e containerType() { return m_containerType; }
+	public: void containerType(ContainerType::e set) { m_containerType = set; }
+	protected: ContainerType::e m_containerType;
+
+	// Only used with static arrays:
+	public: int staticArraySize() { return m_staticArraySize; }
+	public: void staticArraySize(int set) { m_staticArraySize = set; }
+	protected: int m_staticArraySize;
 
 	public: Role::e role() { return m_role; }
 	public: void role(Role::e set) { m_role = set; }
@@ -1068,7 +1124,19 @@ public:
 	protected: BuiltInType::e m_builtInType;
 
 	public: string builtInTypeString() { return BuiltInType::toString(m_builtInType); }
-	public: string builtInTypeStringCpp() { return BuiltInType::toCppString(m_builtInType); }
+	public: string builtInTypeStringCpp()
+	{
+		if(containerType() == ContainerType::ARRAY )
+		{
+			return "std::vector<" + BuiltInType::toCppString(m_builtInType) + ">";
+		}
+		else if(containerType() == ContainerType::STATIC_ARRAY )
+		{
+			return "std::array<" + BuiltInType::toCppString(m_builtInType) + ", " + numberToString(staticArraySize()) + ">";
+		}
+		//else
+		return BuiltInType::toCppString(m_builtInType);
+	}
 
 	//We've moved the UNKNOWN stuff into this property:
 	public: bool isUnknownType() { return m_isUnknownType; }
@@ -1135,6 +1203,12 @@ public:
 
 	public: LangElement* addDefaultInitData()
 	{
+		// Currently only adds default data to built in types.
+		if(isBuiltInType() == false || containerType() != ContainerType::UNDEFINED)
+		{
+			return nullptr;
+		}
+
 		LangElement* lang_elem;
 
 		string init_string;
@@ -1174,20 +1248,21 @@ public:
 			break;
 
 		}
-
+		/*REMOVE
 		if( builtInType() == BuiltInType::UNDEFINED )
 		{
 			if( m_type != "" )
 			{
 				//handle SomeClass.ptr = 0
-				init_string = "0";
+				init_string = name() + "NOT_HERE";
 			}
 			else
 			{
 				//no type! just return and ignore this strange request.
 				return 0;
 			}
-		}
+		}*/
+		
 
 		lang_elem = new LangElement(lineNumber(), Token::INIT_DATA, TypeType::UNDEFINED, "=");
 
@@ -1308,14 +1383,16 @@ public:
 		//return null if not found.
 
 		//first check for reference dot. We have to have that.
-		if( previousToken() != Token::REFERENCE_DOT )
+		/*if( previousToken() != Token::REFERENCE_DOT )
 		{
 			return 0;
-		}
+		}*/
 
 		//ok we have reference_dot.
 
-		LangElement* res = previous2ndElement();
+		//LangElement* res = previous2ndElement();
+
+		LangElement* res = previousElement();
 
 		int found_a_bracket = 0;
 
@@ -1339,10 +1416,10 @@ public:
 				}
 				else if( res->token() == Token::BRACKET_END || res->token() == Token::BRACKET_DEFINE_ARRAY_END )
 				{
-					found_a_bracket = true;
+					found_a_bracket++;
 				}
 			}
-			else //there's some brackets there...
+			else //there's some brackets there... so skip everything between brackets.
 			{
 				if( res->token() == Token::BRACKET_BEGIN || res->token() == Token::BRACKET_DEFINE_ARRAY_BEGIN )
 				{

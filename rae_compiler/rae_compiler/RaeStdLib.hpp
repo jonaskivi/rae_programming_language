@@ -193,16 +193,16 @@ void injectDestructorBoilerPlate( StringFileWriter& writer, LangElement& set_ele
 			"}\n"
 			;
 		}
-		else if(which_stdlib_class == "vector")
+		else if(which_stdlib_class == "array")
 		{
 			#ifdef DEBUG_RAE_HUMAN
-			cout<<"createRaeStdLib vector!\n";
+			cout<<"createRaeStdLib array\n";
 			#endif
 
 			stringBasedSourceText =
-			"module rae.std.vector\n"
+			"module rae.std.array\n"
 			"\n"
-			"class vector\n"
+			"class array\n"
 			"{\n"
 				"\tfunc ()empty(){}\n"
 				"\tfunc ()push_back(){}\n" //void push_back (const value_type& val);

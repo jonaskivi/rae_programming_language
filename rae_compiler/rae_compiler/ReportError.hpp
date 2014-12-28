@@ -4,6 +4,8 @@
 #include <string>
 	using namespace std;
 
+#include <initializer_list>
+
 class LangElement;
 
 class ReportError
@@ -37,6 +39,7 @@ public:
 	
 	static void reportWarning(string set, LangElement* set_elem);
 	static void reportError(string set, LangElement* set_elem);
+	static void reportError(string set, std::initializer_list<LangElement*> set_elems);
 	static void reportError(string set, int set_line_number, string in_which_namespace);
 	static void compilerError(string set, LangElement* set_elem);
 	static void compilerError(string set);

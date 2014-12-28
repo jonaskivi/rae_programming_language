@@ -1,5 +1,5 @@
 //this file is automatically created from Rae programming language module:
-///Users/joonaz/Dropbox/jonas/2014/ohjelmointi/rae_programming_language/cpp/rae/examples/HelloWorld
+///home/joonaz/Dropbox/jonas/2014/ohjelmointi/rae_programming_language/cpp/rae/examples/HelloWorld
 #ifndef _rae_examples_HelloWorld_hpp_
 #define _rae_examples_HelloWorld_hpp_
 
@@ -7,6 +7,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <array>
 #include "rae/link.hpp"
 
 
@@ -174,18 +175,33 @@ public:
 	public: void sayHello();//line: 32
 	public: int32_t count(int32_t param1, Tester* param2);//line: 38
 	int32_t num;//line: 44
-	protected: int32_t anotherNumber;//line: 45
-	public: float afloat;//line: 46
+	int32_t no_init_data;//line: 45
+	double no_init_datad;//line: 46
+	
+	std::vector<int32_t> array_test;//std::vector<int>
+	
+	std::array<int32_t, 5> static_array_test;//std::array<int, 5>
+	
+	protected: int32_t anotherNumber;//line: 52
+	public: float afloat;//line: 53
+	
+	std::vector<Tester > testers;//line: 55
+	
+	std::vector<rae::link<Tester> > tester_links;//line: 57
+	
+	std::vector<Tester* > tester_opts;//line: 59
+	
+	std::vector<Tester* > tester_refs;//line: 61
 	
 	Tester tester;//val is a value type
 	
 	Tester* tester_opt;//opt is the optional type. This one is allocated automatically.
 	
-	Tester* tester_not;//line: 53
+	Tester* tester_not;//line: 68
 	rae::link<Tester> tester_link;//link is a pointer which can not allocate or free memory.
 	//a non-owning pointer which is also automatically set to null when the pointed object is destroyed.
 	
-	int32_t what_if_im_removed;
+	//int what_if_im_removed = 1
 };
 
 #endif // _rae_examples_HelloWorld_hpp_

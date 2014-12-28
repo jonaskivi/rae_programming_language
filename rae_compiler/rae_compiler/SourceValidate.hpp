@@ -184,6 +184,7 @@
 						|| set_elem.previousElement()->typeType() == TypeType::REF
 						|| set_elem.previousElement()->typeType() == TypeType::LINK
 						|| set_elem.previousElement()->typeType() == TypeType::PTR
+						|| set_elem.previousElement()->token() == Token::BRACKET_END
 					)
 					{
 						//ok.

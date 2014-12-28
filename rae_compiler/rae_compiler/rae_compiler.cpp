@@ -96,7 +96,7 @@ public:
 	void createRaeStdLib()
 	{
 		createRaeStdLibModule("string");
-		createRaeStdLibModule("vector");
+		createRaeStdLibModule("array");
 		createRaeStdLibCppSupport("link");
 	}
 

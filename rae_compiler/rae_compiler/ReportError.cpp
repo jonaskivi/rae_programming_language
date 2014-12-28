@@ -52,6 +52,47 @@
 		ReportError::m_countErrors++;
 	}
 
+	void ReportError::reportError(string set, std::initializer_list<LangElement*> set_elems)
+	{
+		rlutil::setColor(rlutil::RED);
+		cout<<"ERROR: ";
+		rlutil::setColor(rlutil::WHITE);
+		cout<<set<<"\n";
+
+		bool is_first = true;
+
+		for( LangElement* set_elem: set_elems )
+		{
+			if(set_elem)
+			{
+				if(is_first == true)
+				{
+					// Only the first one is set to be in error.
+					set_elem->parseError(ParseError::SYNTAX_ERROR);
+					is_first = false;
+				}
+				cout<<"\tname: ";
+				rlutil::setColor(rlutil::GREEN);
+				cout<<set_elem->name();
+				rlutil::setColor(rlutil::WHITE);
+				cout<<"\n\t"<<set_elem->tokenString();
+				cout<<"\n\t"<<"typetype: "<<set_elem->typeTypeString();
+				cout<<"\n\t"<<"type: "<<set_elem->type();
+				cout<<"\n\tline: ";
+				rlutil::setColor(rlutil::BROWN);
+				cout<<set_elem->lineNumber().line;
+				rlutil::setColor(rlutil::WHITE);
+				cout<<" / in: ";
+				rlutil::setColor(rlutil::BROWN);
+				cout<<set_elem->namespaceString();
+				rlutil::setColor(rlutil::WHITE);
+				cout<<"\n";
+			}
+		}
+
+		ReportError::m_countErrors++;
+	}
+
 	void ReportError::reportError(string set, int set_line_number, string in_which_namespace)
 	{
 		rlutil::setColor(rlutil::RED);

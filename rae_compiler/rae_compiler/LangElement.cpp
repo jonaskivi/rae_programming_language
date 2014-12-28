@@ -31,6 +31,24 @@ string toString(TypeType::e set)
 		return "TypeType::TEMPLATE";
 	}
 }
+
+TypeType::e fromString(const string& set)
+{
+	if( set == "val" )
+		return TypeType::VAL;
+	else if( set == "ref" )
+		return TypeType::REF;
+	else if( set == "opt" )
+		return TypeType::OPT;
+	else if( set == "link" )
+		return TypeType::LINK;
+	else if( set == "ptr" )
+		return TypeType::PTR;
+	else if( BuiltInType::isBuiltInType(set) )
+		return TypeType::BUILT_IN_TYPE;
+	//else
+	return TypeType::UNDEFINED;
+}
 }
 
 
@@ -265,6 +283,10 @@ string toString(Token::e set)
 			return "Token::BRACKET_DEFINE_ARRAY_BEGIN";
 			case Token::BRACKET_DEFINE_ARRAY_END:
 			return "Token::BRACKET_DEFINE_ARRAY_END";
+			case Token::BRACKET_DEFINE_STATIC_ARRAY_BEGIN:
+			return "Token::BRACKET_DEFINE_STATIC_ARRAY_BEGIN";
+			case Token::BRACKET_DEFINE_STATIC_ARRAY_END:
+			return "Token::BRACKET_DEFINE_STATIC_ARRAY_END";
 
 			case Token::RETURN:
 			return "Token::RETURN";
@@ -322,6 +344,9 @@ string toString(Token::e set)
 			case Token::PRAGMA_ECMA_END:
 			return "Token::PRAGMA_ECMA_END";
 			
+			case Token::EXPECTING_NAME:
+			return "Token::EXPECTING_NAME";
+
 			/*
 			case Token::BOOL:
 			return "Token::BOOL";
@@ -415,7 +440,8 @@ string toString(Token::e set)
 		switch(begin_type)
 		{
 			default:
-			return Token::ERROR;
+			//return Token::ERROR; // We might think this is an error,
+			return Token::BRACKET_END; //but we don't.
 			case Token::BRACKET_BEGIN:
 			//return Token::BRACKET_BEGIN;
 			//case Token::BRACKET_END:
@@ -424,7 +450,8 @@ string toString(Token::e set)
 			//return Token::BRACKET_DEFINE_ARRAY_BEGIN;
 			//case Token::BRACKET_DEFINE_ARRAY_END:
 			return Token::BRACKET_DEFINE_ARRAY_END;
-			
+			case Token::BRACKET_DEFINE_STATIC_ARRAY_BEGIN:
+			return Token::BRACKET_DEFINE_STATIC_ARRAY_END;			
 		}
 
 	}

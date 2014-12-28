@@ -380,6 +380,45 @@ if() else if() else
 
 }
 
+//how about parenthesis in if, for etc.
+if something == true
+{
+	doSomething
+}
+
+if something equals true
+	doSomething
+
+if not myObject.isEmpty
+{
+	doSomething
+}
+
+if myObject.isEmpty and otherObject.isEmpty
+{
+	doSomething
+}
+
+for uint i = 0, i < items.size, i++
+{
+
+}
+
+for uint i = someMonster.callMe(1,2,3,4, an_object), i < monster.sizeWhen(others), i++
+
+callFunction 1, 2, 45, an_object
+getResult, getResult2 callFunction 1, 2, 45, an_object
+
+callFunction( 1, 2, 45, an_object )
+(getResult, getResult2) callFunction (1, 2, 45, an_object)
+
+for( (uint i, ignore)callFunction(1,2, 45, an_object); i < monster.sizeWhen(others); i++ )
+{
+
+}
+
+getResult, getResult2 = callFunction (1, 2, 45, an_object)
+
 //a C-style main func:
 func
 (int) main (string[] cli)
@@ -791,13 +830,32 @@ func
 }
 
 
-alias in rae:
+alias is a bit like a link, but it is just done with string replacement:
 
 //In Rae I'd like to just write:
-//alias func_definition -> set_elem.definitionElement
+alias func_definition -> set_elem.definitionElement
 //instead of creating a temporary in these situations, we're just doing this for clarity:
 LangElement* func_definition = set_elem.definitionElement();
-		
+
+//so how about:
+[Button] buttons
+
+Button button1
+buttons.add( button1 )
+alias Button a_button -> button1 //or just alias a_button, with type inference? But we dislike type inference because it
+//destroys the idea of self documenting code!
+a_button.setSomeParameter(5)
+a_button.imagineALongListOfParameterCalls(4)
+
+Button button2
+buttons.add( button2 )
+a_button -> buttons[2]
+a_button.setSomeParameter(6)
+a_button.imagineALongListOfParameterCalls(4)
+
+buttons.emplace
+a_button -> buttons.end
+
 
 //you can place this in any file, but for Rae style:
 //you can put all your code in .rae files inside the class.

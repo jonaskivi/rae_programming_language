@@ -3,6 +3,8 @@
 
 #include "ReportError.hpp"
 
+#include "rae_helpers.hpp"
+
 /*
 Rae TODO
 -? nullable
@@ -309,7 +311,8 @@ public:
 		//m_returnToExpectToken = Token::UNDEFINED;
 		//m_expectingToken = Token::UNDEFINED;
 		expectingToken(Token::UNDEFINED);
-		m_expectingTypeType = TypeType::UNDEFINED;
+		//m_expectingTypeType = TypeType::UNDEFINED;
+		//m_expectingContainer = ContainerType::UNDEFINED;
 		m_expectingRole = Role::UNDEFINED;
 		expectingChar = 'T';
 		foundToken = Token::UNDEFINED;
@@ -339,6 +342,9 @@ public:
 		currentTemplate = 0;
 		currentReference = 0;
 		currentTempElement = 0;
+
+		m_previousElement = nullptr;
+		m_unfinishedElement = nullptr;
 
 		isReceivingInitData = false;		
 	}
@@ -377,6 +383,7 @@ public:
 		return m_expectingToken;
 		//return m_returnToExpectToken;
 	}
+
 	/*
 	public: void addReturnToExpectToken(Token::e set)
 	{
@@ -405,11 +412,47 @@ public:
 	}
 	protected: Token::e m_expectingToken;// = EDLTokenType::TITLE;
 
+	public: void setNameForExpectingName(string set)
+	{
+		setNameAndCheckForPreviousDefinitions( m_expectingNameFor, set );
+		expectingToken(Token::UNDEFINED);
+	}
+	public: LangElement* expectingNameFor(){ return m_expectingNameFor; }
+	public: void expectingNameFor(LangElement* set)
+	{
+		m_expectingNameFor = set;
+		expectingToken(Token::EXPECTING_NAME);
+	}
+	protected: LangElement* m_expectingNameFor;
+
+	/*
+	//NOT YET USED:
+	public: void setTypeForExpectingType(string set)
+	{
+		if(m_expectinTypeFor)
+			m_expectingTypeFor->type(set);
+		expectingToken(Token::UNDEFINED);
+	}
+	public: LangElement* expectingTypeFor(){ return m_expectingTypeFor; }
+	public: void expectingTypeFor(LangElement* set)
+	{
+		m_expectingTypeFor = set;
+		expectingToken(Token::EXPECTING_TYPE);
+	}
+	protected: LangElement* m_expectingTypeFor;
+	*/
+
 	//secondary expecting
+	/*
 	public: TypeType::e expectingTypeType(){ return m_expectingTypeType; }
 	public: void expectingTypeType(TypeType::e set){ m_expectingTypeType = set; }
 	protected: TypeType::e m_expectingTypeType;
-
+	*/
+/*
+	public: ContainerType::e expectingContainer(){ return m_expectingContainer; }
+	public: void expectingContainer(ContainerType::e set){ m_expectingContainer = set; }
+	protected: ContainerType::e m_expectingContainer;
+*/
 	public: Role::e expectingRole(){ return m_expectingRole; }
 	public: void expectingRole(Role::e set){ m_expectingRole = set; }
 	protected: Role::e m_expectingRole;
@@ -566,10 +609,8 @@ public:
 
 		LangElement* our_scope_elem = newLangElement(Token::SCOPE_BEGIN, TypeType::UNDEFINED, "{");
 		
-		//If we're already inside a func. Then we create a so called limiting scope, which will act as parent for
-		//it's insides.
-		//This only works if the parent is a func. Otherwise it wouldn't make any sense, or would it?
-		//if( currentParentElement() && currentParentElement()->token() == Token::FUNC )
+		// a scope element will only become a parent if it's an empty scope. Otherwise the parent will be
+		// the class, func, enum, etc. statement, which is our current parent, and we put that to the stack.
 		if( scopeElementStack.empty() == false )
 		{
 			//if( scopeElementStack.back()->token() == Token::FUNC )
@@ -579,7 +620,7 @@ public:
 		}
 
 		//put the scope or class or func, or init_data object to scope stack.
-		scopeElementStack.push_back( currentParentElement() ); //NOT true anymore: but we put the class or func (or limiting scope) in the stack. Not the actual scope object (unless it is a limiting scope.)
+		scopeElementStackPush( currentParentElement() ); //NOT true anymore: but we put the class or func (or limiting scope) in the stack. Not the actual scope object (unless it is a limiting scope.)
 		
 	}
 
@@ -763,11 +804,11 @@ public:
 							{
 								if( init_ob )
 								{
-									if( init_ob->typeType() == TypeType::LINK && init_ob->initData() == nullptr )
+									if( init_ob->typeType() == TypeType::LINK )//&& init_ob->initData() == nullptr )
 									{
 										//Don't do anything. if link and no initdata.
 									}
-									else if( init_ob->typeType() == TypeType::VAL && init_ob->initData() == nullptr )
+									else if( init_ob->typeType() == TypeType::VAL)// && init_ob->initData() == nullptr )
 									{
 										//Don't do anything. if val and no initdata.
 									}
@@ -815,13 +856,29 @@ public:
 			newLangElement(Token::SCOPE_END, TypeType::UNDEFINED, "}");
  		}
 	 	
-	 	if( scopeElementStack.empty() == false )
+	 	scopeElementStackPop();
+
+	}
+
+	void scopeElementStackPush(LangElement* set)
+	{
+		scopeElementStack.push_back(set);
+	}
+
+	void scopeElementStackPop()
+	{
+		if( scopeElementStack.empty() == false )
 		{
  			scopeElementStack.pop_back();
  		}
 		
 		//That removed an element so we have to check for empty again:
 
+		resetParentElementToCurrentScope();
+	}
+
+	void resetParentElementToCurrentScope()
+	{
 		if( scopeElementStack.empty() == false )
 		{
 			currentParentElement( scopeElementStack.back() );
@@ -850,9 +907,8 @@ public:
 		else
 		{
 			//currentParentElement(0);
-			cout<<"error in scopeEnd. no currentModule!!!!!!\n";
+			cout<<"error in scopeElementStackPop. no currentModule!!!!!!\n";
 		}
-
 	}
 
 	//this could also be be renamed to endCurrentParentElement(), but as we're
@@ -890,39 +946,7 @@ public:
 		//removed freeOwned from here.
 		//removed checking for NEWLINE_BEFORE_SCOPE_END
 		
-		//That removed an element so we have to check for empty again:
-
-		if( scopeElementStack.empty() == false )
-		{
-			//This replaces the INIT_DATA element from being the currentParentElement. Usually it will now be the class again.
-			currentParentElement( scopeElementStack.back() );
-			if( currentParentElement() )
-			{
-				if( currentParentElement()->token() == Token::CLASS )
-				{
-					//...so if the current scope is another class, we mark it again.
-					currentClass = currentParentElement();
-				}
-				else if( currentParentElement()->token() == Token::FUNC )
-				{
-					currentFunc = currentParentElement();
-				}
-				else if( currentParentElement()->token() == Token::ENUM )
-				{
-					currentEnum = currentParentElement();
-				}
-			}
-		}
-		else if( currentModule )
-		{
-			//now also the module can be the parent element.
-			currentParentElement(currentModule);
-		}
-		else
-		{
-			//currentParentElement(0);
-			cout<<"error in SourceParser.endInitData(). no currentModule!!!!!!\n";
-		}	
+		resetParentElementToCurrentScope();	
 	}
 
 	LangElement* newParenthesisBegin(Token::e set_lang_token_type, string set_token)
@@ -939,9 +963,15 @@ public:
 	//a small helper, just so we can get the token easily...
 	Token::e parenthesisStackTokenType()
 	{
+		if( parenthesisStack.empty() )
+		{
+			ReportError::reportError("SourceParser::parenthesisStackTokenType() parenthesisStack is empty.", previousElement() );
+			return Token::UNDEFINED;
+		}
+
 		LangElement* stack_elem = parenthesisStack.back();
 
-		if(stack_elem)
+		if(stack_elem != nullptr)
 		{
 			return stack_elem->token();
 		}
@@ -1000,10 +1030,33 @@ public:
  		return lang_elem;
 	}
 
+	LangElement* newDefineArray()
+	{
+		LangElement* lang_elem = newLangElement(Token::BRACKET_DEFINE_ARRAY_BEGIN, TypeType::VAL, "", "array" );
+		
+		//Brackets don't create a new scope, but they are still currentParent. That's why we don't push to scopeElementStack here.
+		currentParentElement(lang_elem);
+		//currentArray = lang_elem;
+
+		bracketStack.push_back(lang_elem);
+
+		/*if( lang_elem->parentToken() == Token::CLASS )
+		{
+			listOfAutoInitObjects.push_back(lang_elem);
+		}*/
+
+		addToUserDefinedTokens(lang_elem);
+
+		return lang_elem;
+	}
+
 	LangElement* newBracketBegin(Token::e set_lang_token_type, string set_token)
 	{
 		LangElement* lang_elem = newLangElement(set_lang_token_type, TypeType::UNDEFINED, set_token);
-		//bracketStack.push_back(currentParentElement());
+		
+		//Brackets don't create a new scope, but they are still currentParent. That's why we don't push to scopeElementStack here.
+		currentParentElement(lang_elem);
+
 		bracketStack.push_back(lang_elem);
 
 		//cout<<"bracketStack.push_back() called.\n");
@@ -1064,6 +1117,9 @@ public:
 		 	
 	 		bracketStack.pop_back();
 	 	}
+
+	 	resetParentElementToCurrentScope();
+	 	currentReference = nullptr;
 
  		return lang_elem;
 	}
@@ -1554,7 +1610,9 @@ REMOVED:
 		return lang_elem;
 	}
 */
-	LangElement* newDefineReference(TypeType::e set_type_type, Role::e set_role, LangElement* maybe_found_class, string set_type, string set_name = "")
+
+	
+	LangElement* newDefineReference(TypeType::e set_type_type, Role::e set_role, LangElement* maybe_found_class = nullptr, string set_type = "", string set_name = "")
 	{
 		LangElement* lang_elem = newLangElement(Token::DEFINE_REFERENCE, set_type_type, set_name, set_type);
 		//lang_elem->typeType(TypeType::REF);
@@ -1821,6 +1879,12 @@ REMOVED:
 
 	LangElement* currentReference;
 
+	// val, opt, ref will now create an element, that will be stored in unfinishedElement.
+	public: LangElement* unfinishedElement() { return m_unfinishedElement; }
+	public: void unfinishedElement(LangElement* set) { m_unfinishedElement = set; }
+	protected: LangElement* m_unfinishedElement;
+	
+
 	public: LangElement* previousElement() { return m_previousElement; }
 	public: void previousElement(LangElement* set) { m_previousElement = set; }
 	protected: LangElement* m_previousElement;
@@ -1872,12 +1936,11 @@ REMOVED:
 	}
 	protected: LangElement* m_currentParentElement;
 	
-	vector<LangElement*> scopeElementStack;
+	vector<LangElement*> scopeElementStack; //sort of like a parentElementStack
 
 	vector<LangElement*> parenthesisStack;
 
-	vector<LangElement*> bracketStack;
-
+	vector<LangElement*> bracketStack; // also used as a sort of templateStack and arrayDefineStack!
 
 public:
 	
@@ -2115,7 +2178,7 @@ public:
 		
 			boost::filesystem::path outputFilePath = module_filename;
 			outputFilePath.replace_extension(".cpp");
-			
+
 			//#ifdef DEBUG_RAE_HUMAN
 			//cout<<"\n\nWriting C++:\n\n";
 			rlutil::setColor(rlutil::BROWN);
@@ -2181,7 +2244,7 @@ public:
 
 			writer2.writeString("//this file is automatically created from Rae programming language module:\n//");
 			writer2.writeString( module_filename.string() );
-			writer.writeString("\n");
+			writer2.writeString("\n");
 
 				
 			//module_elem->write(writer2);
@@ -2192,6 +2255,32 @@ public:
 				//fwrite( buffer, sizeof(char), sizeof(buffer), pFile);
 				
 			writer2.close();
+
+			//debugtree:
+
+			#ifdef DEBUG_RAE_DEBUGTREE
+			boost::filesystem::path debugFilePath = module_filename;
+			debugFilePath.replace_extension(".debugtree");
+
+			if(boost::filesystem::exists(debugFilePath.parent_path()) == false)
+			{
+				if(boost::filesystem::create_directories( debugFilePath.parent_path() ) )
+					cout<<"Created folder: "<<debugFilePath.parent_path()<<"\n";
+				else
+					cout<<"Failed to create folder: "<<debugFilePath.parent_path()<<"\n";
+			}
+
+			StringFileWriter writer3;
+			writer3.create( debugFilePath.string(), /*isHeader doesn't matter here*/false );
+
+			writer3.writeString("//this file is automatically created from Rae programming language module:\n//");
+			writer3.writeString( module_filename.string() );
+			writer3.writeString("\n");
+			writeDebugTree(writer3, *module_elem);	
+			writer3.close();
+
+			#endif
+			//end debugtree
 			
 			
 			
@@ -2219,14 +2308,6 @@ public:
 			}
 
 		}//end foreach modules langElements...
-	}
-
-	bool isWhiteSpace(char set_char)
-	{
-		if( set_char == ' ' || set_char == '\n' || set_char == '\t' )
-			return true;
-		//else
-		return false;
 	}
 
 	LineNumber lineNumber;
@@ -3381,6 +3462,55 @@ public:
 		}
 	}
 
+/*
+	void checkPreviousBracketArrayDefineEtc(Token::e set_normal_case)
+	{
+		if(bracketStack.empty())
+			expectingToken(set_normal_case);
+		else
+		{
+			expectingToken(Token::ARRAY_VECTOR_STUFF);
+			if(previousElement() && previousElement()->token() == Token::BRACKET_BEGIN)
+			{
+				previousElement()->token(Token::BRACKET_DEFINE_ARRAY_BEGIN);
+			}
+		}
+	}
+*/
+
+	void setUnfinishedElementToStaticArray()
+	{
+		if( !bracketStack.empty() && unfinishedElement() != nullptr)
+		{
+			unfinishedElement()->containerType( ContainerType::STATIC_ARRAY );
+		}
+	}
+
+	LangElement* createTypeType(const string& set_typetype, Role::e set_role)
+	{
+		return createTypeType( TypeType::fromString(set_typetype), set_role );
+	}
+
+	LangElement* createTypeType(TypeType::e set_typetype, Role::e set_role)
+	{
+		LangElement* our_ref = newDefineReference(set_typetype, set_role );
+		return our_ref;
+		
+		//if( !bracketStack.empty() ) //REMOVE
+		//{
+			//if(previous2ndElement() && previous2ndElement()->token() == Token::BRACKET_BEGIN)
+			//if( currentParentElement() && currentParentElement()->token() == Token::BRACKET_BEGIN )
+			//{
+				//previous2ndElement()->token(Token::BRACKET_DEFINE_ARRAY_BEGIN);
+				//currentParentElement()->token(Token::BRACKET_DEFINE_ARRAY_BEGIN);
+
+				//our_ref->containerType( ContainerType::ARRAY );
+			//}
+		//}
+
+	}
+
+
 	void handleToken(string set_token)
 	{
 		if( set_token == "" )//ignore empty tokens...
@@ -3511,7 +3641,13 @@ public:
 			}
 			else if( set_token == "\n" )
 			{
-				//No initdata.
+				//No initdata. Set to default init_data
+				//currentReference->addDefaultInitData(); //OK. Don't do this. Adding auto-init data is dependant on not having this.
+				if(currentParentElement() && currentParentElement()->token() == Token::INIT_DATA)
+				{
+					endInitData();//This is important. This ends our init_data being the currentParentElement (which receives the init_data.)
+				}
+				else currentReference->addDefaultInitData();
 				doReturnToExpectToken();
 				newLine();				
 			}
@@ -3958,6 +4094,8 @@ public:
 		}*/
 		else if( expectingToken() == Token::ARRAY_VECTOR_STUFF )
 		{
+			//Probably REMOVE all of this...
+			assert(0);
 			if( set_token == "[" )
 			{
 				//Shouldn't happen.
@@ -3973,28 +4111,38 @@ public:
 						#ifdef DEBUG_RAE_PARSER
 						cout<<"making the previous DEFINE_REFERENCE_IN_CLASS an array.\n";
 						#endif
-						/*
-						//SomeClass[] someVector
-						//----here->------------
-						//OLD behaviour turned it into a C_ARRAY, but now it's the preferred way to use vectors.
-						previousElement()->typeType(TypeType::C_ARRAY);
-						expectingToken(Token::DEFINE_C_ARRAY_NAME);
-						*/
-						previousElement()->typeType(TypeType::VECTOR);
-						previousElement()->createTemplateSecondType( previousElement()->type() );
-						previousElement()->type("vector");
-						expectingToken(Token::VECTOR_NAME);
+						
+
+
+						//previousElement()->typeType(TypeType::VECTOR);
+						//previousElement()->createTemplateSecondType( previousElement()->type() );
+						//previousElement()->type("vector");
+						//expectingToken(Token::VECTOR_NAME);
 					}
 					else
 					{
 						ReportError::reportError("An ending array bracket ] in a strange place. The element before is not a type. It is: " + previousElement()->toString(), previousElement() );
 					}
 				}
+				
+			}
+			else if( set_token == "," )
+			{
+				assert(0);
+				// A comma usually means a static array.
+				//if(previousPreviousToken() == Token::BRACKET_DEFINE_ARRAY_BEGIN || previousPreviousToken() == Token::BRACKET_BEGIN)
+				//{
+					//A static array. TODO.
+					ReportError::reportError("Got comma after something and a [. Maybe a static array. TODO.", previousElement());	
+				//}
+			}
+			else if( isNumericChar(set_token[0]) )
+			{
+				//An array subscript.
 			}
 			else
 			{
-				//A static array. TODO.
-				ReportError::reportError("Maybe a static array. TODO.", previousElement());
+				
 			}
 		}
 		else if( expectingToken() == Token::VECTOR_STUFF )
@@ -4125,6 +4273,10 @@ public:
 			//expectingToken = Token::UNDEFINED;
 			doReturnToExpectToken();			
 		}
+		else if( expectingToken() == Token::EXPECTING_NAME )
+		{
+			setNameForExpectingName(set_token);
+		}
 		else if( expectingToken() == Token::UNDEFINED )
 		{
 			//reserved words:
@@ -4217,12 +4369,22 @@ public:
 				}
 				*/
 				
-				if( expectingRole() == Role::FUNC_RETURN )
+				if( not bracketStack.empty() )
+				{
+					//doing some kind of template type definition with brackets...
+					LangElement* our_array_definition = bracketStack.back();
+					if( our_array_definition->token() == Token::BRACKET_DEFINE_ARRAY_BEGIN )
+					{
+						our_array_definition->token( Token::BRACKET_DEFINE_STATIC_ARRAY_BEGIN );
+					}
+					newLangElement(Token::COMMA, TypeType::UNDEFINED, ",");	
+				}
+				else if( expectingRole() == Role::FUNC_RETURN )
 				{
 					//TODO: Hmm. These are the same as normal case. So we could just remove the expectingRoles here...
 					newLangElement(Token::COMMA, TypeType::UNDEFINED, ",");
 				}
-				else if( expectingRole() == Role::FUNC_PARAMETER )
+				else if( expectingRole() == Role::FUNC_PARAMETER || expectingRole() == Role::TEMPLATE_PARAMETER )
 				{
 					newLangElement(Token::COMMA, TypeType::UNDEFINED, ",");
 				}
@@ -4240,26 +4402,67 @@ public:
 					}
 				}
 			}
-			else if( set_token == "val" )
+			else if( set_token == "val" || set_token == "ref" || set_token == "opt" || set_token == "link" || set_token == "ptr")
 			{
-				expectingToken(Token::DEFINE_REFERENCE);
-				expectingTypeType(TypeType::VAL);
+				if( !bracketStack.empty() )
+				{
+					createTypeType( set_token, Role::TEMPLATE_PARAMETER );
+				}
+				else
+				{
+					LangElement* our_ref = createTypeType( set_token, expectingRole() );
+					unfinishedElement(our_ref);
+				}
+
 			}
-			else if( set_token == "ref" )
+			else if( set_token == "bool"
+				|| set_token == "byte"
+				|| set_token == "ubyte"
+				|| set_token == "char"
+				|| set_token == "wchar"
+				|| set_token == "dchar"
+				|| set_token == "int"
+				|| set_token == "uint"
+				|| set_token == "long"
+				|| set_token == "ulong"
+				|| set_token == "float"
+				|| set_token == "double"
+				//|| set_token == "real"
+				|| set_token == "string"
+				)
 			{
-				expectingToken(Token::DEFINE_REFERENCE);
-				expectingTypeType(TypeType::REF);
+				//checkPreviousBracketArrayDefineEtc(Token::DEFINE_BUILT_IN_TYPE_NAME);
+				
+				//if( currentParentElement() && currentParentElement()->token() == Token::BRACKET_DEFINE_ARRAY_BEGIN )
+				if( not bracketStack.empty() )
+				{
+					LangElement* our_ref = newDefineBuiltInType(BuiltInType::stringToBuiltInType(set_token), Role::TEMPLATE_PARAMETER, set_token);
+				}
+				else
+				{
+					expectingToken(Token::DEFINE_BUILT_IN_TYPE_NAME);
+					LangElement* our_ref = newDefineBuiltInType(BuiltInType::stringToBuiltInType(set_token), expectingRole(), set_token);
+					unfinishedElement(our_ref);
+				}
+				/*
+				if( !bracketStack.empty() )
+				{
+					if(previous2ndElement() && previous2ndElement()->token() == Token::BRACKET_BEGIN)
+					{
+						previous2ndElement()->token(Token::BRACKET_DEFINE_ARRAY_BEGIN);
+
+						our_ref->containerType( ContainerType::ARRAY );
+					}
+				}*/
+				//if(previous2ndElement() && previous2ndElement()->token() == Token::BRACKET_BEGIN)
+				//if( currentParentElement() && currentParentElement()->token() == Token::BRACKET_BEGIN )
+				//{
+					//previous2ndElement()->token(Token::BRACKET_DEFINE_ARRAY_BEGIN);
+					//currentParentElement()->token(Token::BRACKET_DEFINE_ARRAY_BEGIN);
+					//our_ref->containerType( ContainerType::ARRAY );
+				//}
 			}
-			else if( set_token == "opt" )
-			{
-				expectingToken(Token::DEFINE_REFERENCE);
-				expectingTypeType(TypeType::OPT);
-			}
-			else if( set_token == "link" )
-			{
-				expectingToken(Token::DEFINE_REFERENCE);
-				expectingTypeType(TypeType::LINK);
-			}
+			/*
 			else if( set_token == "bool" )
 			{
 				expectingToken(Token::DEFINE_BUILT_IN_TYPE_NAME);
@@ -4320,16 +4523,19 @@ public:
 				expectingToken(Token::DEFINE_BUILT_IN_TYPE_NAME);
 				newDefineBuiltInType(BuiltInType::DOUBLE, expectingRole(), set_token);
 			}
+			*/
 			/*else if( set_token == "real" )
 			{
 				expectingToken = Token::DEFINE_BUILT_IN_TYPE_NAME;
 				newDefineBuiltInType(BuiltInType::REAL, set_token);
 			}*/
+			/*
 			else if( set_token == "string" )
 			{
 				expectingToken(Token::DEFINE_BUILT_IN_TYPE_NAME);
 				newDefineBuiltInType(BuiltInType::STRING, expectingRole(), set_token);
 			}
+			*/
 			else if( set_token == "vector" )
 			{
 				expectingToken(Token::VECTOR_STUFF);
@@ -4394,23 +4600,38 @@ public:
 			{
 				//cout<<"BRACKET we got a bracket in the normal place and it is strange!\n";
 
-				cout<<"Wise people say, this should never get called. SourceParser line 3806.\n";
-				assert(0);
+				//cout<<"Wise people say, this should never get called. SourceParser line 4398.\n";
+				//assert(0);
 
+				if( previousElement() && (previousElement()->isUnknownType() || previousElement()->token() == Token::USE_REFERENCE))
+				{
+					newBracketBegin(Token::BRACKET_BEGIN, set_token);
+				}
+				else
+				{
+					newDefineArray();
+				}
+
+				
+
+				//expectingContainer( ContainerType::ARRAY );
+				//tanne not a good idea: we need to handle opt, val, bool, int etc. which are all handled in undefined.//expectingToken(Token::ARRAY_VECTOR_STUFF);
+
+				/*
 				if(previousElement())
 				{
 					if( previousElement()->token() == Token::DEFINE_REFERENCE )
-					{
+					{*/
 						/*
 !!!!!!!!!!!!!!!!!!!OK
 This never gets called. Look in expecting NAME thing...
 						*/
 
 						
-
+						/*
 						#ifdef DEBUG_RAE_PARSER
 						cout<<"bracket, make previous definition a DEFINE_VECTOR.\n";
-						#endif
+						#endif*/
 						/*
 						//SomeClass[] someVector
 						//----here->------------
@@ -4418,24 +4639,24 @@ This never gets called. Look in expecting NAME thing...
 						previousElement()->typeType(TypeType::C_ARRAY);
 						expectingToken(Token::DEFINE_C_ARRAY_NAME);
 						*/
-						cout<<"A bracket but we didn't have a DEFINE_REFERENCE? Maybe it is an error.\n";
+						//cout<<"A bracket but we didn't have a DEFINE_REFERENCE? Maybe it is an error.\n";
 						/*not up to date, as it won't be called...
 						previousElement()->typeType(TypeType::VECTOR);
 						previousElement()->createTemplateSecondType( previousElement()->type() );
 						previousElement()->type("vector");
 						expectingToken(Token::VECTOR_NAME);
 						*/
-					}
+					/*}
 					else
 					{
 						#ifdef DEBUG_RAE_PARSER
 						cout<<"normal newBracketBegin.";
 						#endif
-						newBracketBegin(Token::BRACKET_BEGIN, set_token);
+						//newBracketBegin(Token::BRACKET_BEGIN, set_token);
 					}
 				}
 				else ReportError::reportError("a bracket, but no previousElement. This is a compiler error. We'll need to fix it.", previousElement());
-				
+				*/
 			}
 			else if( set_token == "]" )
 			{
@@ -4453,7 +4674,17 @@ This never gets called. Look in expecting NAME thing...
 					#ifdef DEBUG_RAE_PARSER
 					cout<<"normal newBracketEnd.";
 					#endif
+					LangElement* our_array_definition;
+					if( not bracketStack.empty() )
+					{
+						our_array_definition = bracketStack.back();
+					}
+
 					newBracketEnd(Token::BRACKET_END, set_token);
+					if( our_array_definition && (our_array_definition->token() == Token::BRACKET_DEFINE_ARRAY_BEGIN || our_array_definition->token() == Token::BRACKET_DEFINE_STATIC_ARRAY_BEGIN) )
+					{
+						expectingNameFor( our_array_definition );
+					}
 				//}
 			}
 			else if( set_token == "->" )
@@ -4878,32 +5109,69 @@ This never gets called. Look in expecting NAME thing...
 					ReportError::reportError(") parenthesis_end - can't be a name for built in type.\n", previousElement());
 				}
 			}
-			else if( currentReference )
+			else if( set_token == "]")
 			{
-				setNameAndCheckForPreviousDefinitions(currentReference, set_token);
+				newBracketEnd(Token::BRACKET_DEFINE_ARRAY_END, set_token);
+			}
+			else if( set_token == ",")
+			{
+				//REMOVE this strange case... it's old.
+				assert(0);
+				//setUnfinishedElementToStaticArray();
+			}
+			else if( unfinishedElement() )
+			{
+				if( isNumericChar(set_token[0]) )
+				{
+					if( unfinishedElement()->containerType() != ContainerType::STATIC_ARRAY )
+					{
+						ReportError::reportError("Waiting for BUILT_IN_TYPE_NAME. Got a number, but this is not a static array.", unfinishedElement() );
+					}
+					else
+					{
+						unfinishedElement()->staticArraySize(stringToNumber<int>(set_token));
+					}
+				}
+				else
+				{
+					setNameAndCheckForPreviousDefinitions(unfinishedElement(), set_token);
 
-				/*if( checkIfNewDefinedNameIsValid(currentReference, set_token) )
-				{
-					currentReference->name(set_token);
+					/*if( checkIfNewDefinedNameIsValid(currentReference, set_token) )
+					{
+						currentReference->name(set_token);
+					}
+					else
+					{
+						ReportError::reportError("redefinition of name: " + set_token);
+					}*/
+				
+					//And now we'll see what to do next:
+					if(expectingRole() == Role::FUNC_RETURN )
+					{
+						//Back to waiting for UNDEFINED as that handles the coming ")" the best.
+						expectingToken(Token::UNDEFINED);
+					}
+					else
+					{
+						if( unfinishedElement()->containerType() == ContainerType::UNDEFINED )
+						{
+							//in the normal function body case (which is still Role::UNDEFINED
+							//because we haven't yet needed e.g. Role::FUNCTION_BODY for anything)
+							//we wait for initdata if there is some:
+							expectingToken(Token::INIT_DATA);
+						}
+						else
+						{
+							expectingToken(Token::UNDEFINED);
+							unfinishedElement(nullptr);
+						}
+
+					}
 				}
-				else
-				{
-					ReportError::reportError("redefinition of name: " + set_token);
-				}*/
-			
-				//And now we'll see what to do next:
-				if(expectingRole() == Role::FUNC_RETURN )
-				{
-					//Back to waiting for UNDEFINED as that handles the coming ")" the best.
-					expectingToken(Token::UNDEFINED);
-				}
-				else
-				{
-					//in the normal function body case (which is still Role::UNDEFINED
-					//because we haven't yet needed e.g. Role::FUNCTION_BODY for anything)
-					//we wait for initdata if there is some:
-					expectingToken(Token::INIT_DATA);
-				}
+			}
+			else
+			{
+				ReportError::reportError("Waiting for BUILT_IN_TYPE_NAME. No unfinishedElement.", previousElement());
 			}
 		}
 		else if( expectingToken() == Token::DEFINE_REFERENCE )
@@ -4950,7 +5218,13 @@ This never gets called. Look in expecting NAME thing...
 			}
 			else if( set_token == "]")
 			{
-				//newBracketEnd(Token::BRACKET_DEFINE_ARRAY_END, set_token);
+				newBracketEnd(Token::BRACKET_DEFINE_ARRAY_END, set_token);
+			}
+			else if( set_token == ",")
+			{
+				//REMOVE old.
+				assert(0);
+				//setUnfinishedElementToStaticArray();
 			}
 			else if( set_token == "*" )
 			{
@@ -5781,8 +6055,8 @@ This never gets called. Look in expecting NAME thing...
 	}	
 	
 
-	//This a func to set a name and to check if the name was used before.
-	//The source file should then contain "override" so that no errors come.
+	// This a func to set a name and to check if the name was used before.
+	// The source file should then contain "override" so that no errors come.
 	void setNameAndCheckForPreviousDefinitions(LangElement* elem_to_set, string set_token)
 	{
 		if(elem_to_set == 0)
@@ -5790,6 +6064,9 @@ This never gets called. Look in expecting NAME thing...
 			ReportError::reportError("Compiler error. setNameAndCheckForPreviousDefinitions. elem_to_set is null.", previousElement() );
 			return;
 		}
+
+		//TODO check if name is valid!
+		//if( isValidName(set) )
 
 		LangElement* prev_def = searchToken(set_token);
 		if(prev_def)
@@ -6042,7 +6319,7 @@ This never gets called. Look in expecting NAME thing...
 	{
 		#ifdef DEBUG_RAE_PARSER
 		//TEMP
-		string debug_string_con = ""; //testers
+		string debug_string_con = "tester_links"; //testers
 		if(current_context_use->name() == debug_string_con)
 		{
 			cout<<"checkIfTokenIsValid.\n";
@@ -6122,7 +6399,8 @@ This never gets called. Look in expecting NAME thing...
 				if(prev_ref)
 				{
 					//useVector[i].logMe
-					if( prev_ref->typeType() == TypeType::VECTOR || prev_ref->typeType() == TypeType::TEMPLATE )
+					//////////if( prev_ref->typeType() == TypeType::VECTOR || prev_ref->typeType() == TypeType::TEMPLATE )
+					if( prev_ref->type() == "array" )
 					{
 						if( prev_ref->definitionElement() )
 						{
@@ -6137,7 +6415,8 @@ This never gets called. Look in expecting NAME thing...
 								//OLD TODO this is still really inefficient. Maybe first check if we have templateSecondType()
 								//and then call something like: templateSecondType()->hasFunctionOrMember(). Would be faster.
 								
-								if( classHasFunctionOrValue( prev_ref->definitionElement()->templateSecondTypeString(), current_context_use->name() ) )
+								//if( classHasFunctionOrValue( prev_ref->definitionElement()->templateSecondTypeString(), current_context_use->name() ) )
+								if( classHasFunctionOrValue( temp_second_type->type(), current_context_use->name() ) )
 								{
 									//It's ok.
 									#ifdef DEBUG_RAE_PARSER
@@ -6451,6 +6730,27 @@ This never gets called. Look in expecting NAME thing...
 		//That's a case for true... but if found_elem is null, then that's just an error...
 	}
 
+	/*
+	//an array definition:
+		if( not bracketStack.empty() )
+		{
+			LangElement* our_array_definition = bracketStack.back();
+
+			#ifdef DEBUG_RAE_HUMAN
+				cout<<"setting array name to be: "<<set_token<<"\n";
+			#endif
+			
+			//setNameAndCheckForPreviousDefinitions
+
+			//our_array_definition->type( our_array_definition->name() );
+			our_array_definition->name(set_token);
+
+			///////addToUnknownDefinitions(our_array_definition);
+			
+			return;
+		}
+	*/
+
 	void handleUserDefinedToken(string set_token)
 	{
 		////rae::log("Looking for: ", set_token, "\n");
@@ -6463,8 +6763,13 @@ This never gets called. Look in expecting NAME thing...
 			//rae::log("trying to handle: ", set_token, "\n");
 		#endif
 
+		//Should we should just mark everything unknown at this point,
+		//and later handle all the unknowns in one big pass.
+		//Would it be easier? Maybe. But then again, if we only need to parse things (mostly) once
+		//it could be faster...
+
 		//if we have some typetype that we're waiting, then just jump over these checks.
-		if( expectingTypeType() != TypeType::UNDEFINED && previousElement() && previous2ndElement() )
+		if( unfinishedElement() != nullptr && previousElement() && previous2ndElement() )
 		{
 			//This is a fast check for unknown things before us.
 			//like: unknown.set_token
@@ -6516,53 +6821,6 @@ This never gets called. Look in expecting NAME thing...
 				//!!!!
 				return;
 			}
-			//an array definition:
-			else if(previousElement()->token() == Token::BRACKET_END
-				&& previous2ndElement()->token() == Token::BRACKET_BEGIN
-				//&& previous2ndElement()->token() != Token::USE_REFERENCE
-				&& previous2ndElement()->previousElement()->isUnknownType() == true
-				)
-			{
-				LangElement* our_array_definition = previous2ndElement()->previousElement();
-
-				#ifdef DEBUG_RAE_HUMAN
-					cout<<"because previousElement was unknown we set this to DEFINE_ARRAY or in_class: "<<set_token<<"\n";
-					//rae::log("because previousElement was unknown we set this to unknown too: ", set_token, "\n");
-				#endif
-				//newUnknownUseMember(set_token);
-				//Hahaaa, we don't even have to create it!
-				//previousElement()->token(Token::UNKNOWN_DEFINITION);
-				
-				//Ignore _IN_CLASS untill handleUnknownDefinitions.
-				/*if( our_array_definition->parent()->token() == Token::CLASS )
-				{
-					our_array_definition->token(Token::DEFINE_ARRAY_IN_CLASS);
-				}
-				else
-				{*/
-					//our_array_definition->token(Token::DEFINE_ARRAY);
-				
-				cout<<"Got a bracket end. TODO something with it. VECTOR\n";
-				assert(0);
-				//////////////////our_array_definition->typeType(TypeType::C_ARRAY);
-				
-				//}
-				
-				//setNameAndCheckForPreviousDefinitions
-
-				our_array_definition->type( our_array_definition->name() ); //Your name is now your type: Tester
-				our_array_definition->name(set_token); //your name is now set_token: tester
-
-				addToUnknownDefinitions(our_array_definition);
-				
-				#ifdef DEBUG_RAE_HUMAN
-					cout<<"Fixed UNKNOWN_DEFINITION is now an array: "<<previousElement()->toString()<<"\n";
-					//rae::log("because previousElement was unknown we set this to unknown too: ", set_token, "\n");
-				#endif
-
-				//!!!!
-				return;
-			}
 		}
 
 		LangElement* our_new_element;
@@ -6583,21 +6841,27 @@ This never gets called. Look in expecting NAME thing...
 					default:
 					break;
 					case Token::CLASS:
-						expectingToken(Token::DEFINE_REFERENCE_NAME);
+
+						if( bracketStack.empty() ) //not in the middle of a template list.
+						{
+							expectingToken(Token::DEFINE_REFERENCE_NAME);
+						}
 
 						{
 							//LangElement* clob = 
 
-							if(expectingTypeType() == TypeType::UNDEFINED)
+							if(currentReference == nullptr)
 							{
-								ReportError::reportError("handleUserDefinedToken. expectingTypeType was UNDEFINED, when we found a class. Compiler error.", previousElement() );
+								ReportError::reportError("handleUserDefinedToken. currentReference was null, when we found a class. Compiler error.", previousElement() );
 							}
 							
 							//expectingRole can be undefined for now. If it's set it's most likely
 							//just FUNC_RETURN or FUNC_ARGUMENT. But this remark is early days, so
 							//it might change in the future.
 
-							our_new_element = newDefineReference(expectingTypeType(), expectingRole(), found_elem, set_token);
+							//our_new_element = newDefineReference(expectingTypeType(), expectingRole(), found_elem, set_token);
+							currentReference->definitionElement(found_elem);
+							currentReference->type(set_token);
 
 							/*if( clob->parentToken() == Token::CLASS )
 							{
@@ -6622,6 +6886,8 @@ This never gets called. Look in expecting NAME thing...
 						our_new_element = newUseArray(found_elem);
 					break;
 					*/
+					case Token::BRACKET_DEFINE_ARRAY_BEGIN:
+					case Token::BRACKET_DEFINE_STATIC_ARRAY_BEGIN:
 					case Token::DEFINE_FUNC_RETURN:
 					//REMOVED: case Token::DEFINE_FUNC_ARGUMENT:
 					//case Token::DEFINE_REFERENCE_IN_CLASS:
@@ -6751,6 +7017,57 @@ This never gets called. Look in expecting NAME thing...
 		}
 
 		cleanUpUnknownTokens(checkForPreviousDefinitionsList);
+	}
+
+	void tryToConnectDefinitionToNextReferenceDot(LangElement* our_unknown_elem, LangElement* definition_elem )
+	{
+		if(our_unknown_elem && our_unknown_elem->isUnknownType() == true && definition_elem)
+		{
+			#ifdef DEBUG_RAE_HUMAN
+			cout<<"Yes another nextElement and it is unknown!!!!!\n";
+			#endif
+			LangElement* maybe_member = definition_elem->hasFunctionOrMember(our_unknown_elem->name() );
+			
+			#ifdef DEBUG_RAE_HUMAN
+			cout<<"looking for name: "<<our_unknown_elem->name()<<"\n";
+			cout<<"from: "<<definition_elem->toString()<<"\n";
+			definition_elem->printOutListOfFunctions();
+			definition_elem->printOutListOfReferences();
+			#endif
+
+			if( maybe_member )
+			{
+				if( maybe_member->token() == Token::FUNC )
+				{
+					#ifdef DEBUG_RAE_HUMAN
+					cout<<"NEWWAY found a FUNC definition "<<maybe_member->toString()<<" while looking for "<<our_unknown_elem->toString()<<"\n";
+					#endif
+					our_unknown_elem->token(Token::FUNC_CALL);
+				}
+				else if( maybe_member->token() == Token::DEFINE_REFERENCE )
+				{
+					#ifdef DEBUG_RAE_HUMAN
+					cout<<"NEWWAY found a DEFINE_REFERENCE "<<maybe_member->toString()<<" while looking for "<<our_unknown_elem->toString()<<"\n";
+					#endif
+					our_unknown_elem->token(Token::USE_REFERENCE);
+					our_unknown_elem->typeType( maybe_member->typeType() );//Umm, could it be a vector?
+				}
+				else
+				{
+					ReportError::compilerError("Found a member func or reference, but it wasn't either. Compiler is confused. maybe_member: " + maybe_member->toString(), our_unknown_elem );
+				}
+
+				our_unknown_elem->isUnknownType(false);
+				our_unknown_elem->definitionElement(maybe_member);//And this is important. The .funcCall points to func definition now.
+				//and use reference to the define reference.
+			}
+			#ifdef DEBUG_RAE_HUMAN
+			else
+			{
+				cout<<"No maybe_member in there!\n";
+			}
+			#endif
+		}
 	}
 
 	void handleUnknownTokens(vector<LangElement*>& unknown_tokens )
@@ -6899,6 +7216,8 @@ This never gets called. Look in expecting NAME thing...
 						lang_elem->isUnknownType(false);
 					break;
 					*/
+					case Token::BRACKET_DEFINE_ARRAY_BEGIN:
+					case Token::BRACKET_DEFINE_STATIC_ARRAY_BEGIN:
 					case Token::DEFINE_FUNC_RETURN:
 					//REMOVED: case Token::DEFINE_FUNC_ARGUMENT:
 					//case Token::DEFINE_REFERENCE_IN_CLASS:
@@ -6929,15 +7248,16 @@ This never gets called. Look in expecting NAME thing...
 							#endif
 						}
 
-						//And here's the optimization I was talking about: check for following FUNC_CALL and USE_REFERENCE.
-						//If we already know the class we are dealing with, which is found in lang_elem->definitionElement()->definitionElement()
-						if(lang_elem->nextElement() && lang_elem->nextElement()->token() == Token::REFERENCE_DOT
-							&& lang_elem->definitionElement()->definitionElement() )
+						/*
+						// And here's the optimization I was talking about: check for following FUNC_CALL and USE_REFERENCE.
+						// If we already know the class we are dealing with, which is found in lang_elem->definitionElement()->definitionElement()
+						if(lang_elem->nextElement() && lang_elem->definitionElement()->definitionElement()
+							&& lang_elem->nextElement()->token() == Token::REFERENCE_DOT )
 						{
 							#ifdef DEBUG_RAE_HUMAN
 							cout<<"Yes a REFERENCE_DOT!!!!!\n";
 							#endif
-							//this is our reference dot, and the element after it is unknown.
+							// this is our reference dot, and the element after it is unknown.
 							if(lang_elem->nextElement()->nextElement() && lang_elem->nextElement()->nextElement()->isUnknownType() == true )
 							{
 								#ifdef DEBUG_RAE_HUMAN
@@ -6986,6 +7306,28 @@ This never gets called. Look in expecting NAME thing...
 								#endif
 							}	
 						}
+						*/
+
+						//if(lang_elem->name() == "tester_links")
+							//cout<<"I hear you man. :)\n"<<lang_elem->name();
+
+						if(lang_elem->nextElement() && lang_elem->definitionElement()->definitionElement()
+							&& lang_elem->nextElement()->token() == Token::REFERENCE_DOT )
+						{
+							//cout<<"we did: "<<lang_elem->name()<<"\n";
+							tryToConnectDefinitionToNextReferenceDot(lang_elem->nextElement()->nextElement(), lang_elem->definitionElement()->definitionElement() );
+						}
+						else if( lang_elem->definitionElement()->definitionElement() // A case for ARRAYS!!! :) some_array[somehorriblewayto(whatthehell)].callMe
+							&& lang_elem->nextElement()
+							&& lang_elem->nextElement()->token() == Token::BRACKET_BEGIN )
+						{
+							//cout<<"looking for ref_dot after BRACKET_BEGIN.\n";
+							ReportError::reportError("Non tested BRACKET_END array code ahead.", lang_elem);
+							assert(0);
+							LangElement* bracket_end = lang_elem->nextElement()->searchFirst(Token::BRACKET_END);
+							if( bracket_end && bracket_end->nextElement() && bracket_end->nextElement()->token() == Token::REFERENCE_DOT)
+								tryToConnectDefinitionToNextReferenceDot(bracket_end->nextElement()->nextElement(), lang_elem->definitionElement()->definitionElement() );
+						}
 						#ifdef DEBUG_RAE_HUMAN
 						else //if(lang_elem->name() == "tester")
 						{
@@ -7017,7 +7359,7 @@ This never gets called. Look in expecting NAME thing...
 			{
 				if(lang_elem->previousElement() && lang_elem->previousToken() == Token::REFERENCE_DOT )
 				{
-					ReportError::reportError("Didn't find definition. Does the class have a member with that name? Check spelling? Did you define it somewhere? Is it accessible in this scope?", lang_elem );
+					ReportError::reportError("Didn't find definition. Does the class have a member with that name? Check spelling? Did you define it somewhere? Is it accessible in this scope?", { lang_elem, lang_elem->previousElement(), lang_elem->previous2ndElement() } );
 				}
 				else
 				{

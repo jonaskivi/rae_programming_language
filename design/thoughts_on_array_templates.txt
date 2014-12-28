@@ -1,5 +1,5 @@
-Thoughts on array templates, so that you'd only have to write a function once
-when it takes an array as an argument.
+//Thoughts on array templates, so that you'd only have to write a function once
+//when it takes an array as an argument.
 
 //So how can we convert VAL, OPT, LINK, REF, PTR, arrays...
 //most common case should be:
@@ -11,13 +11,50 @@ when it takes an array as an argument.
 
 //val to array //needs a converter. We create a temp array with one link?			
 //or many times they'll be links to arrays of vals or opts.
+
 //How can we make passing arrays of different types generic?
+
 //templated arrays:
-in a class somewhere: [Tester] array_val
-somewhere else: [link Tester] array_of_links
-third: link[opt Tester] link_to_array_of_opts
+//in a class somewhere:
+[Tester] array_val
+//somewhere else:
+[link Tester] array_of_links
+//third:
+link[opt Tester] link_to_array_of_opts
 
 //func_params: ref by default? So no need to mark that ref:
+
+func (any2)doStuffWithAnything( any set )
+{
+	set.mustHaveThisFunction
+	return set.mustReturnAny2
+}
+
+
+Tester a_test
+Other another = doStuffWithAnything(a_test)
+Other another
+(another)doStuffWithAnything(a_test)
+
+[Tester] an_array
+[Other] another_array = doStuffWithAnything(an_array) //just does foreach
+
+func ()doStuffWithArrays( [Tester] set_array ) // array or not, but must be of type Tester
+func ()doStuffWithArrays( [] set_array ) // array of any type.
+func ()doStuffWithArrays( [anything] set_array )
+func ()doStuffWithArrays( [any] set_array )
+
+//call with anything and automatically template it! Or maybe need to have "sic" keyword to mark "no automatic templating!" 
+doStuffWithArrays(array_of_links)
+doStuffWithArrays(array_val)
+doStuffWithArrays(link_to_array_of_opts)
+doStuffWithArrays(just_one_value) //also handle one value passed to an array.
+doStuffWithArrays(just_one_opt) //and one opt too.
+
+func ()doStuffWithArrays( [Tester] set_array ) // automatic templating.
+func ()doStuffWithArrays( tem[Tester] set_array )
+func ()doStuffWithArrays( sic[Tester] set_array ) //no automatic templating!
+
 
 func ()doStuffWithArrays( template[Tester] set_array ) //for any type of array with any type Testers.
 func ()doStuffWithArrays( template[T] set_array ) //for any array
@@ -45,6 +82,8 @@ class(T, template[B])
 	//so that if you'd use point_to, you just couldn't use the template with val types anymore. only with links and opts.
 	//But that leads us to: can we point_to with opts? we certainly can't with refs, because they must only 
 }
+
+func ()doStuffWithArrays( tem[Tester] set_array )
 
 func ()doStuffWithArrays( tmpl[Tester] set_array )
 func ()doStuffWithArrays( tml[Tester] set_array )

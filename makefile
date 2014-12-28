@@ -16,8 +16,9 @@ else
     UNAME_S := $(shell uname -s)
     ifeq ($(UNAME_S),Linux)
         #CCFLAGS += -D LINUX
-        INCLUDES += -I../boost_uusi/usr_local_include/
-		LIBS     := -L../boost_linux32/usr_local_lib/ -L/usr/lib/ -lboost_chrono -lboost_filesystem -lboost_system
+        #INCLUDES += -I../boost_uusi/usr_local_include/
+		#LIBS     := -L../boost_linux32/usr_local_lib/ -L/usr/lib/ -lboost_chrono -lboost_filesystem -lboost_system
+		LIBS     := -L/usr/lib/ -lboost_chrono -lboost_filesystem -lboost_system
     endif
     ifeq ($(UNAME_S),Darwin)
         #CCFLAGS += -D OSX

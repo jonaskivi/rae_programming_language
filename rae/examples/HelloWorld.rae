@@ -41,8 +41,23 @@ public:
 	
 	int num = 5 //default initializers are copied to constructors.
 
+	int no_init_data
+	double no_init_datad
+
+	[int] array_test //std::vector<int>
+
+	[int, 5] static_array_test //std::array<int, 5>
+
 	protected int anotherNumber = 42
 	float afloat = 248.52
+
+	[val Tester] testers
+
+	[link Tester] tester_links
+
+	[opt Tester] tester_opts
+
+	[ref Tester] tester_refs
 
 	val Tester tester //val is a value type
 
@@ -53,7 +68,7 @@ public:
 	link Tester tester_link //link is a pointer which can not allocate or free memory.
 	//a non-owning pointer which is also automatically set to null when the pointed object is destroyed.
 
-	int what_if_im_removed = 1
+	//int what_if_im_removed = 1
 }
 
 func
@@ -78,6 +93,22 @@ func
 	log(hello.count( hello.num, hello.tester_opt ))
 
 	hello.tester.data = 3
+
+	hello.array_test.push_back(9)
+	hello.array_test.push_back(7)
+	hello.array_test.push_back(4)
+
+	hello.tester_opts.push_back( hello.tester_opt )
+
+	hello.tester_links.emplace_back
+	hello.tester_links[0] -> hello.tester
+	log("LINK in an array saying hello: ")
+	hello.tester_links[0].logMe()
+	log("Ok. Said hello.")
+
+	hello.array_test[0]
+
+	log("arrays 9 + 2 = ", hello.count( hello.array_test[0], hello.tester_opts[0] ))
 
 	return(0)
 }

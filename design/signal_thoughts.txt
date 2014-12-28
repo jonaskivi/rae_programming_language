@@ -1,9 +1,9 @@
 //Signals syntax uses the func syntax:
-	signal (bool result, int other)mouseClicked(ref Tester a_tester, int a_value)
+signal (bool result, int other)mouseClicked(ref Tester a_tester, int a_value)
 
-	//Am I wrong if I think that signals can be used in all cases where you'd use a deledate?
-	//They work differently, but a signal is just more flexible.
-	delegate (bool result, int other)mouseClicked(ref Tester a_tester, int a_value)
+//Am I wrong if I think that signals can be used in all cases where you'd use a delegate?
+//They work differently, but a signal is just more flexible. Signal is kind of like an array of delegates with a single emit.
+delegate (bool result, int other)mouseClicked(ref Tester a_tester, int a_value)
 
 
 	

@@ -38,6 +38,8 @@ typedef unsigned int uint;
 //#define DEBUG_RAE2
 //#define DEBUG_RAE_DESTRUCTORS
 //#define DEBUG_RAE_RVALUE
+//#define DEBUG_FILEWRITER
+#define DEBUG_RAE_DEBUGTREE
 
 template <typename T>
   string numberToString ( T number )
@@ -47,6 +49,33 @@ template <typename T>
      return ss.str();
   }
 
+template <typename T>
+  T stringToNumber( const string& set_text )
+  {
+     istringstream ss(set_text);
+     T result;
+     return ss >> result ? result : 0;
+  }
+/*
+bool isWhiteSpace(const char& set_char)
+{
+  if( set_char == ' ' || set_char == '\n' || set_char == '\t' )
+    return true;
+  //else
+  return false;
+}
+
+bool isWhiteSpace(const string& set)
+{
+  if(set.size() == 0)
+    return false;
+
+  if( set[0] == ' ' || set[0] == '\n' || set[0] == '\t' )
+    return true;
+  //else
+  return false;
+}
+*/
 namespace PathType
 {
 enum e

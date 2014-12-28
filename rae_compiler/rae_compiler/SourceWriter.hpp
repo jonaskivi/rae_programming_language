@@ -1,10 +1,28 @@
-//This is currently just used as a mixin with a preprocessor include. :)
-//We could make it a class, but currently we don't have a need for that, so
-//let's just have it like this for a while, and see if there's any problems with
-//it. 
+// This is currently just used as a mixin with a preprocessor include. :)
+// We could make it a class, but currently we don't have a need for that, so
+// let's just have it like this for a while, and see if there's any problems with
+// it. 
+
+// Write debug tree file:
+
+	void writeDebugTree( StringFileWriter& writer, LangElement& set_elem )
+	{
+		writer.writeIndents();
+		writer.writeString( set_elem.toSingleLineString() );
+		writer.writeChar('\n');
+
+		writer.currentIndentPlus();
+
+		for(uint i = 0; i < set_elem.langElements.size(); i++)
+		{
+			writeDebugTree( writer, *set_elem.langElements[i]);
+		}
+
+		writer.currentIndentMinus();
+	}
 
 
-//Writing
+// Writing
 	
 	void iterateWrite( StringFileWriter& writer, LangElement& set_elem )
 	{
@@ -325,7 +343,7 @@
 			break;
 			case Token::AUTO_INIT:
 				//case Token::BUILT_IN_TYPE_AUTO_INIT:
-				if(set_elem.typeType() == TypeType::BUILT_IN_TYPE)
+				if(set_elem.typeType() == TypeType::BUILT_IN_TYPE && set_elem.containerType() == ContainerType::UNDEFINED)
 				{
 					writer.writeString(set_elem.name());
 					//TEMP:
@@ -336,10 +354,12 @@
 						//writer.writeString( set_elem.initData()->name() );
 						iterateWrite(writer, *set_elem.initData());
 					}
-					else //this should never happen. because initData is set every time a built in type is created.
+					else //NOPE: this should never happen. because initData is set every time a built in type is created.
 					{
-						ReportError::reportError("writeElement: built_in_type auto_init had no initData.", &set_elem);
-						writer.writeString(" = 0");
+						//ReportError::reportError("writeElement: built_in_type auto_init had no initData.", &set_elem);
+						//writer.writeString(" = 0");
+
+						// Don't write anything for now. Maybe later we need to handle ContainerType::STATIC_ARRAY etc.
 					}
 				}
 				//case Token::OBJECT_AUTO_INIT:
@@ -373,12 +393,14 @@
 				}
 				else if(set_elem.typeType() == TypeType::VAL)
 				{
+					//writer.writeString(set_elem.name());
+
 					if( set_elem.initData() )
 					{
 						ReportError::reportWarning("AUTO_INIT for VAL is TODO.", &set_elem);
-						writer.writeString(" = ");
+						//writer.writeString(" = ");
 						//writer.writeString( set_elem.initData()->name() );
-						iterateWrite(writer, *set_elem.initData());
+						//iterateWrite(writer, *set_elem.initData());
 					}
 					else
 					{
@@ -388,12 +410,14 @@
 				}
 				else if(set_elem.typeType() == TypeType::LINK)
 				{
+					//writer.writeString(set_elem.name());
+
 					if( set_elem.initData() )
 					{
 						ReportError::reportWarning("AUTO_INIT for LINK is TODO.", &set_elem);
-						writer.writeString(" = ");
+						//writer.writeString(" = ");
 						//writer.writeString( set_elem.initData()->name() );
-						iterateWrite(writer, *set_elem.initData());
+						//iterateWrite(writer, *set_elem.initData());
 					}
 					else
 					{
@@ -574,7 +598,7 @@
 					writer.writeChar( '(' );
 					//writer.writeChar( ' ' );	
 				}
-				else if( set_elem.previousToken() == Token::USE_REFERENCE )
+				else if( set_elem.previousToken() == Token::USE_REFERENCE || set_elem.previousToken() == Token::BRACKET_END )
 				{
 					writer.writeString(".linkTo(");
 				}
@@ -722,6 +746,35 @@
 				{
 					writer.writeString( ".obj->" );
 				}
+				else if(set_elem.previousElement() && set_elem.previousElement()->token() == Token::BRACKET_END ) // an array
+				{
+					cout<<"interesting. ARRAYSTUFF:.\n";
+					LangElement* prev_ref = set_elem.searchClosestPreviousUseReferenceOrUseVector();
+					if(prev_ref)
+					{
+						cout<<"interesting. ARRAYSTUFF:2.\n";
+						if( prev_ref->definitionElement() )
+						{
+							cout<<"interesting. ARRAYSTUFF:3.\n";
+							cout<<prev_ref->definitionElement()->toString();
+							LangElement* temp_second_type = prev_ref->definitionElement()->templateSecondType();
+							if(temp_second_type)
+							{
+								cout<<"interesting. ARRAYSTUFF:4.\n";
+								cout<<temp_second_type->toString();
+								if(temp_second_type->typeType() == TypeType::VAL)
+								{
+									writer.writeChar( '.' );
+								}
+								else if(temp_second_type->typeType() == TypeType::LINK)
+								{
+									writer.writeString( ".obj->" );
+								}
+								else writer.writeString( "->" );
+							}
+						}
+					}
+				}
 				else
 				{
 					writer.writeChar( '-' );//we're using pointer dereferencing -> for now...
@@ -802,7 +855,16 @@
 				//}
 				//else
 				//{
-					writer.writeString(set_elem.name());
+					
+
+					// Non bounds checked with just a bracket:
+					//writer.writeString(set_elem.name());
+					// Bounds checked with out helmet on:
+					writer.writeString(".at(");
+					iterateWrite(writer, set_elem);
+				
+
+
 				//}
 			break;
 			case Token::BRACKET_END:
@@ -815,16 +877,41 @@
 				//}
 				//else
 				//{
-					writer.writeString(set_elem.name());
+
+					// Non bounds checked:
+					//writer.writeString(set_elem.name());
+					// Bounds checked:
+					writer.writeString(")");
+
 				//}
 			break;
 			case Token::BRACKET_DEFINE_ARRAY_BEGIN:
-				//writer.writeString("*");//a dynamic array is a pointer in C/C++
-				//already written in NEW_ARRAY...
+				if( set_elem.isInClass() )
+				{
+					writeVisibilityForElement(writer, set_elem);
+				}
+
+				writer.writeString("std::vector<");
+				iterateWrite(writer, set_elem);
+				writer.writeString("> ");
+				writer.writeString( set_elem.name() );
 			break;
+			case Token::BRACKET_DEFINE_STATIC_ARRAY_BEGIN:
+				if( set_elem.isInClass() )
+				{
+					writeVisibilityForElement(writer, set_elem);
+				}
+
+				writer.writeString("std::array<");
+				iterateWrite(writer, set_elem);
+				writer.writeString("> ");
+				writer.writeString( set_elem.name() );
+			break;
+
 			case Token::BRACKET_DEFINE_ARRAY_END:
+			case Token::BRACKET_DEFINE_STATIC_ARRAY_END:
 				//writer.writeString("*");//a dynamic array is a pointer in C/C++
-				//so we write nothing here.
+				//writer.writeString(">");
 			break;
 			
 			/*case Token::DEFINE_REFERENCE_IN_CLASS:
@@ -1061,7 +1148,11 @@
 					cout<<"built_in_type.\n";
 					#endif
 
-					if( set_elem.isInClass() )
+					if(set_elem.role() == Role::TEMPLATE_PARAMETER)
+					{
+						writer.writeString(set_elem.builtInTypeStringCpp());
+					}
+					else if( set_elem.isInClass() )
 					{
 						writeVisibilityForElement(writer, set_elem);
 						
@@ -1240,8 +1331,8 @@
 
 				if(set_elem.parent() && set_elem.parent()->token() == Token::CLASS)
 				{
-					cout<<"IN SCOPE_BEGIN for class: "<<set_elem.parentClassName()<<"\n";
-					cout<<"parent: "<<set_elem.parent()->toString()<<"\n";
+					//cout<<"IN SCOPE_BEGIN for class: "<<set_elem.parentClassName()<<"\n";
+					//cout<<"parent: "<<set_elem.parent()->toString()<<"\n";
 					
 					//This is the scope that begins a class.
 					//inject class boilerplate here.
@@ -1249,15 +1340,15 @@
 				}
 				else if(set_elem.parent() && set_elem.parent()->token() == Token::CONSTRUCTOR)
 				{
-					cout<<"IN SCOPE_BEGIN for constructor: "<<set_elem.toString()<<"\n";
-					cout<<"parent: "<<set_elem.parent()->toString()<<"\n";
+					//cout<<"IN SCOPE_BEGIN for constructor: "<<set_elem.toString()<<"\n";
+					//cout<<"parent: "<<set_elem.parent()->toString()<<"\n";
 					
 					injectConstructorBoilerPlate(writer, set_elem);
 				}
 				else if(set_elem.parent() && set_elem.parent()->token() == Token::DESTRUCTOR)
 				{
-					cout<<"IN SCOPE_BEGIN for destructor: "<<set_elem.toString()<<"\n";
-					cout<<"parent: "<<set_elem.parent()->toString()<<"\n";
+					//cout<<"IN SCOPE_BEGIN for destructor: "<<set_elem.toString()<<"\n";
+					//cout<<"parent: "<<set_elem.parent()->toString()<<"\n";
 					
 					injectDestructorBoilerPlate(writer, set_elem);
 				}
@@ -2157,6 +2248,7 @@
 					writer.writeString("#include <iostream>\n");
 					writer.writeString("#include <string>\n");
 					writer.writeString("#include <vector>\n");
+					writer.writeString("#include <array>\n");
 					writer.writeString("#include \"rae/link.hpp\"\n\n");
 					//writer.writeString("using namespace std;"); //not this... I guess.
 					
