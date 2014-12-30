@@ -16,20 +16,7 @@ class Tester
 public:
 	
 	//-------------Rae boilerplate code-------------
-	/*
-	//locking
-	bool _rae_lock()
-	{
-		_m_rae_lock = true;
-	}
-	void _rae_unlock()
-	{
-		_m_rae_lock = false;
-	}
-	protected: bool _m_rae_lock;
-	*/
-public:
-	
+		
 	//link management:
 
 	void _rae_link(rae::link<Tester>& a_link)
@@ -98,20 +85,7 @@ class HelloWorld
 public:
 	
 	//-------------Rae boilerplate code-------------
-	/*
-	//locking
-	bool _rae_lock()
-	{
-		_m_rae_lock = true;
-	}
-	void _rae_unlock()
-	{
-		_m_rae_lock = false;
-	}
-	protected: bool _m_rae_lock;
-	*/
-public:
-	
+		
 	//link management:
 
 	void _rae_link(rae::link<HelloWorld>& a_link)
@@ -172,33 +146,35 @@ public:
 	HelloWorld();//line: 21
 	//destructor:
 	~HelloWorld();//line: 26
-	public: void sayHello();//line: 31
-	public: int32_t count(int32_t param1, Tester* param2);//line: 52
-	int32_t num;//line: 57
-	int32_t no_init_data;//line: 58
-	double no_init_datad;//line: 59
+	void doesnotwork(std::vector<int32_t> someints);//line: 30
+	public: void sayHello();//line: 37
+	public: int32_t count(int32_t param1, Tester* param2);//line: 59
+	int32_t num;//line: 64
+	int32_t no_init_data;//line: 65
+	double no_init_datad;//line: 66
 	
-	protected: int32_t anotherNumber;//line: 61
-	public: float afloat;//line: 62
+	protected: int32_t anotherNumber;//line: 68
+	public: float afloat;//line: 69
 	
-	Tester tester;//val is the default type
-	Tester* tester_opt;//opt is the optional type. This one is allocated automatically.
-	Tester* tester_not;//line: 66
-	rae::link<Tester> tester_link;//link is a pointer which can not allocate or free memory.
-	//a non-owning pointer which is also automatically set to null when the pointed object is destroyed.
-	Tester* tester_ptr;//line: 69
+	Tester tester;// val is the default type
+	Tester* tester_opt;// opt is the optional type. This one is allocated automatically.
+	Tester* tester_not;//line: 73
+	rae::link<Tester> tester_link;// link is a pointer which can not allocate or free memory.
+	// a non-owning pointer which is also automatically set to null 
+	// when the pointed object is destroyed.
+	Tester* tester_ptr;// Don't use raw pointers unless interfacing with C.
 	
-	std::string name;//line: 71
+	std::string name;//line: 79
 	
-	std::vector<std::string> names;//line: 73
+	std::vector<std::string> names;//line: 81
 	
 	std::vector<int32_t> array_test;//std::vector<int>	
 	std::array<int32_t, 5> static_array_test;//std::array<int, 5>
-	std::vector<Tester > testers;//line: 77
-	std::vector<Tester > defaultTesters;//line: 78
-	std::vector<rae::link<Tester> > tester_links;//line: 79
-	std::vector<Tester* > tester_opts;//line: 80
-	std::vector<Tester* > tester_refs;//line: 81
+	std::vector<Tester > testers;//line: 85
+	std::vector<Tester > defaultTesters;//line: 86
+	std::vector<rae::link<Tester> > tester_links;//line: 87
+	std::vector<Tester* > tester_opts;//line: 88
+	std::vector<Tester* > tester_refs;//line: 89
 	std::vector<Tester* > tester_ptrs;
 };
 

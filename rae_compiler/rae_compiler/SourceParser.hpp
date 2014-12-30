@@ -879,7 +879,7 @@ public:
 
 	void resetParentElementToCurrentScope()
 	{
-		if( scopeElementStack.empty() == false )
+		if( not scopeElementStack.empty() )
 		{
 			currentParentElement( scopeElementStack.back() );
 			if( currentParentElement() )
@@ -908,6 +908,40 @@ public:
 		{
 			//currentParentElement(0);
 			cout<<"error in scopeElementStackPop. no currentModule!!!!!!\n";
+		}
+	}
+
+	void resetParentElementToAboveParent()
+	{
+		if( currentParentElement() && currentParentElement()->parent() )
+		{
+			currentParentElement( currentParentElement()->parent() );
+			if( currentParentElement() )
+			{
+				if( currentParentElement()->token() == Token::CLASS )
+				{
+					//...so if the current scope is another class, we mark it again.
+					currentClass = currentParentElement();
+				}
+				else if( currentParentElement()->token() == Token::FUNC )
+				{
+					currentFunc = currentParentElement();
+				}
+				else if( currentParentElement()->token() == Token::ENUM )
+				{
+					currentEnum = currentParentElement();
+				}
+			}
+		}
+		else if( currentModule )
+		{
+			//now also the module can be the parent element.
+			currentParentElement(currentModule);
+		}
+		else
+		{
+			//currentParentElement(0);
+			cout<<"error in resetParentElementToAboveParent. no currentModule!!!!!!\n";
 		}
 	}
 
@@ -1090,11 +1124,14 @@ public:
 				//cout<<"I bet we've crashed.\n");
 
 
-				#ifdef DEBUG_RAE
-				cout<<"MATCH bracket: from: "<<Token::toString(stack_elem->token())
-					<<" to: "<<Token::toString(Token::matchBracketEnd(stack_elem->token()))
-					<<" caller: "<<Token::toString(set_lang_token_type)<<"\n";
+				#ifdef DEBUG_RAE_BRACKET
+				//cout<<"MATCH bracket: from: "<<Token::toString(stack_elem->token())
+			//		<<" to: "<<Token::toString(Token::matchBracketEnd(stack_elem->token()))
+			//		<<" caller: "<<Token::toString(set_lang_token_type)<<"\n";
 				//rae::log("match bracket.\n");
+				ReportError::reportInfo("Match bracket start: ", stack_elem);
+				ReportError::reportInfo("Match bracket end: ", lang_elem);
+
 				#endif
 
 				/*
@@ -1118,7 +1155,8 @@ public:
 	 		bracketStack.pop_back();
 	 	}
 
-	 	resetParentElementToCurrentScope();
+	 	//resetParentElementToCurrentScope();
+	 	resetParentElementToAboveParent();
 	 	currentReference = nullptr;
 
  		return lang_elem;
@@ -5343,7 +5381,7 @@ This never gets called. Look in expecting NAME thing...
 		{
 			if( set_token[0] == '\n' )
 			{
-				#ifdef DEBUG_RAE
+				#ifdef DEBUG_RAE_HUMAN
 					cout<<"Got NEWLINE. Ignore it because func.\n";
 					//rae::log("Got NEWLINE. Ignore it because func.\n");
 				#endif

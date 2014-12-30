@@ -26,6 +26,12 @@ public:
 	{
 	}
 	
+	func ()doesnotwork([int] someints)
+	{
+		someints.emplace_back(2)
+		log(someints[0])
+	}
+
 	public func
 	()sayHello()
 	{
@@ -38,11 +44,12 @@ public:
 		{
 			log(a_num)
 		}
-		
+		/*
 		for(uint i = 0; i < my_numbers.size; i++)
 		{
 			log(i, ": ", my_numbers[i])
 		}
+		*/
 		
 		tester.logMe
 		log("World!")
@@ -60,12 +67,13 @@ public:
 	protected int anotherNumber = 42
 	float afloat = 248.52
 
-	Tester tester //val is the default type
-	opt Tester tester_opt //opt is the optional type. This one is allocated automatically.
-	opt Tester tester_not = null //need to specify that it is null, if you want it to be empty.
-	link Tester tester_link //link is a pointer which can not allocate or free memory.
-	//a non-owning pointer which is also automatically set to null when the pointed object is destroyed.
-	ptr Tester tester_ptr
+		 Tester tester            // val is the default type
+	opt  Tester tester_opt        // opt is the optional type. This one is allocated automatically.
+	opt  Tester tester_not = null // need to specify that it is null, if you want it to be empty.
+	link Tester tester_link       // link is a pointer which can not allocate or free memory.
+	                      // a non-owning pointer which is also automatically set to null 
+	                      // when the pointed object is destroyed.
+	ptr  Tester tester_ptr        // Don't use raw pointers unless interfacing with C.
 
 	string name = "Hello Rae World"
 
@@ -81,9 +89,7 @@ public:
 	[ptr Tester] tester_ptrs
 }
 
-func
-(int) main () //(string[] args)
-//(int) main ([string] args)
+func (int) main ([string] args)
 {
 	string helloRae = "What? Hello Rae World"
 	log(helloRae)

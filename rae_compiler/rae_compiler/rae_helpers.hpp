@@ -40,6 +40,7 @@ typedef unsigned int uint;
 //#define DEBUG_RAE_RVALUE
 //#define DEBUG_FILEWRITER
 #define DEBUG_RAE_DEBUGTREE
+//#define DEBUG_RAE_BRACKET
 
 template <typename T>
   string numberToString ( T number )

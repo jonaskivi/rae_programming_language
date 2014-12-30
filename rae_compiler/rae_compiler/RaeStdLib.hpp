@@ -1,15 +1,4 @@
 
-void injectClassBoilerPlate( StringFileWriter& writer, LangElement& set_elem)
-{
-	//string linkHandlingBoilerplate;
-	//linkHandlingBoilerplate = 
-
-	string our_class_name = set_elem.parentClassName();
-
-	writer.writeString(R"delimITER(
-public:
-	
-	//-------------Rae boilerplate code-------------
 	/*
 	//locking
 	bool _rae_lock()
@@ -22,8 +11,20 @@ public:
 	}
 	protected: bool _m_rae_lock;
 	*/
+
+
+void injectClassBoilerPlate( StringFileWriter& writer, LangElement& set_elem)
+{
+	//string linkHandlingBoilerplate;
+	//linkHandlingBoilerplate = 
+
+	string our_class_name = set_elem.parentClassName();
+
+	writer.writeString(R"delimITER(
 public:
 	
+	//-------------Rae boilerplate code-------------
+		
 	//link management:
 
 	void _rae_link(rae::link<)delimITER");
