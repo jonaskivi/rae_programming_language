@@ -46,9 +46,13 @@
 	{
 		//int count_elem = 0;
 
-		if(set_elem.parseError() == ParseError::SYNTAX_ERROR || set_elem.parseError() == ParseError::COMPILER_ERROR)
+		if(set_elem.parseError() == ParseError::SYNTAX_ERROR)
 		{
 			writer.writeString(" RAE_ERROR: ");
+		}
+		else if(set_elem.parseError() == ParseError::COMPILER_ERROR)
+		{
+			writer.writeString(" RAE_COMPILER_ERROR: ");
 		}
 		else if(set_elem.parseError() == ParseError::SYNTAX_WARNING)
 		{
@@ -335,7 +339,7 @@
 					//REMOVED: else 
 					if( set_elem.previousToken() == Token::DEFINE_REFERENCE )
 					{
-						write_init_data = false;//Hmm. this could be set to true, but we are already writing this
+						write_init_data = true;//Hmm. this could be set to true, but we are already writing this
 						//in other places like below, so let's try not to bother.
 					}
 				}
@@ -863,21 +867,21 @@
 
 				if( set_elem.nextElement() && set_elem.nextElement()->token() != Token::POINT_TO ) // There are other cases where we want LINK instead of LINK.obj
 				{
-					cout<<"interesting. ARRAYSTUFF:.\n";
+					//REMOVE: cout<<"interesting. ARRAYSTUFF:.\n";
 					LangElement* prev_ref = set_elem.searchClosestPreviousUseReferenceOrUseVector();
 					if(prev_ref)
 					{
-						cout<<"interesting. ARRAYSTUFF:2.\n";
+						//REMOVE: cout<<"interesting. ARRAYSTUFF:2.\n";
 						if( prev_ref->definitionElement() )
 						{
-							cout<<"interesting. ARRAYSTUFF:3.\n";
-							cout<<prev_ref->definitionElement()->toString();
+							//REMOVE: cout<<"interesting. ARRAYSTUFF:3.\n";
+							//REMOVE: cout<<prev_ref->definitionElement()->toString();
 							LangElement* temp_second_type = prev_ref->definitionElement()->templateSecondType();
 							if(temp_second_type)
 							{
-								cout<<"interesting. ARRAYSTUFF:4.\n";
-								cout<<temp_second_type->toString();
-								/*if(temp_second_type->typeType() == TypeType::VAL)
+								//REMOVE: cout<<"interesting. ARRAYSTUFF:4.\n";
+								//REMOVE: cout<<temp_second_type->toString();
+								/*REMOVE: if(temp_second_type->typeType() == TypeType::VAL)
 								{
 									writer.writeChar( '.' );
 								}
@@ -1319,6 +1323,11 @@
 				}
 			break;
 			*/
+			case Token::IN:
+				writer.writeChar(' ');
+				writer.writeChar(':');
+				writer.writeChar(' ');
+			break;
 			case Token::IF:
 			case Token::FOR:
 			case Token::FOREACH:

@@ -92,7 +92,7 @@
 
 		if(set_elem)
 		{
-			set_elem->parseError(ParseError::SYNTAX_ERROR);
+			/////////////////set_elem->parseError(ParseError::SYNTAX_ERROR);
 			cout<<"\tname: ";
 			rlutil::setColor(rlutil::GREEN);
 			cout<<set_elem->name();
@@ -172,7 +172,7 @@
 				if(is_first == true)
 				{
 					// Only the first one is set to be in error.
-					set_elem->parseError(ParseError::SYNTAX_ERROR);
+					/////////////////set_elem->parseError(ParseError::SYNTAX_ERROR);
 					is_first = false;
 				}
 				cout<<"\tname: ";
@@ -218,7 +218,7 @@
 
 		if(set_elem)
 		{
-			set_elem->parseError(ParseError::COMPILER_ERROR);
+			/////////////////set_elem->parseError(ParseError::COMPILER_ERROR);
 			cout<<"\tname: ";
 			rlutil::setColor(rlutil::GREEN);
 			cout<<set_elem->name();

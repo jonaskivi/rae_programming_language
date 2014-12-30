@@ -29,6 +29,21 @@ public:
 	public func
 	()sayHello()
 	{
+		[int] my_numbers
+		my_numbers.emplace_back(5)
+		my_numbers.emplace_back(6)
+		my_numbers.emplace_back(7)
+		
+		for(int a_num in my_numbers)
+		{
+			log(a_num)
+		}
+		
+		for(uint i = 0; i < my_numbers.size; i++)
+		{
+			log(i, ": ", my_numbers[i])
+		}
+		
 		tester.logMe
 		log("World!")
 	}
@@ -67,18 +82,17 @@ public:
 }
 
 func
-(int) main (string[] args)
+(int) main () //(string[] args)
 //(int) main ([string] args)
 {
-	int eger = 5
-	log(eger)
-
-	string helloRae = "Hello Rae World"
+	string helloRae = "What? Hello Rae World"
 	log(helloRae)
 
 	val HelloWorld hello; //semicolons are allowed, but not required.
 
 	HelloWorld hello2 //val is default
+
+	log(hello2.name)
 	
 	//Rae does not use = for pointing to an object. Instead use -> to point.
 	//= operator will copy by value, so that the behaviour is consistent,

@@ -173,32 +173,32 @@ public:
 	//destructor:
 	~HelloWorld();//line: 26
 	public: void sayHello();//line: 31
-	public: int32_t count(int32_t param1, Tester* param2);//line: 37
-	int32_t num;//line: 42
-	int32_t no_init_data;//line: 43
-	double no_init_datad;//line: 44
+	public: int32_t count(int32_t param1, Tester* param2);//line: 52
+	int32_t num;//line: 57
+	int32_t no_init_data;//line: 58
+	double no_init_datad;//line: 59
 	
-	protected: int32_t anotherNumber;//line: 46
-	public: float afloat;//line: 47
+	protected: int32_t anotherNumber;//line: 61
+	public: float afloat;//line: 62
 	
 	Tester tester;//val is the default type
 	Tester* tester_opt;//opt is the optional type. This one is allocated automatically.
-	Tester* tester_not;//line: 51
+	Tester* tester_not;//line: 66
 	rae::link<Tester> tester_link;//link is a pointer which can not allocate or free memory.
 	//a non-owning pointer which is also automatically set to null when the pointed object is destroyed.
-	Tester* tester_ptr;//line: 54
+	Tester* tester_ptr;//line: 69
 	
-	std::string name;//line: 56
+	std::string name;//line: 71
 	
-	std::vector<std::string> names;//line: 58
+	std::vector<std::string> names;//line: 73
 	
 	std::vector<int32_t> array_test;//std::vector<int>	
 	std::array<int32_t, 5> static_array_test;//std::array<int, 5>
-	std::vector<Tester > testers;//line: 62
-	std::vector<Tester > defaultTesters;//line: 63
-	std::vector<rae::link<Tester> > tester_links;//line: 64
-	std::vector<Tester* > tester_opts;//line: 65
-	std::vector<Tester* > tester_refs;//line: 66
+	std::vector<Tester > testers;//line: 77
+	std::vector<Tester > defaultTesters;//line: 78
+	std::vector<rae::link<Tester> > tester_links;//line: 79
+	std::vector<Tester* > tester_opts;//line: 80
+	std::vector<Tester* > tester_refs;//line: 81
 	std::vector<Tester* > tester_ptrs;
 };
 

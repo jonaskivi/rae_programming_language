@@ -9,8 +9,9 @@
 	bool validate()
 	{
 		rlutil::setColor(rlutil::BROWN);
-		cout<<"Validating.\n";
+		cout<<"Validating: ";
 		rlutil::setColor(rlutil::WHITE);
+		cout<<moduleName()<<"\n";
 
 		foreach( LangElement* module_elem, langElements )
 		{

@@ -239,6 +239,7 @@ enum e
 	IF,
 	FOR,
 	FOREACH,
+	IN,
 
 	NEWLINE,
 	NEWLINE_BEFORE_SCOPE_END,
@@ -331,40 +332,45 @@ class LangElement
 public:
 	
 	LangElement()
+	:
+		m_token(Token::UNDEFINED),
+		m_name(""),
+		m_type(""),
+		m_typeType(TypeType::UNDEFINED),
+		m_builtInType(BuiltInType::UNDEFINED),
+		m_containerType(ContainerType::UNDEFINED),
+		m_role(Role::UNDEFINED),
+		m_parseError(ParseError::UNDEFINED),
+		m_currentElement(nullptr),
+		m_parent(nullptr),
+		m_initData(nullptr),
+		m_definitionElement(nullptr),
+		m_previousElement(nullptr),
+		m_nextElement(nullptr),
+		m_isUnknownType(false)
 	{
-		m_token = Token::UNDEFINED;
-		m_typeType = TypeType::UNDEFINED;
-		m_builtInType = BuiltInType::UNDEFINED;
-		m_containerType = ContainerType::UNDEFINED;
-		m_role = Role::UNDEFINED;
-		m_parseError = ParseError::UNDEFINED;
-		m_currentElement = nullptr;//0;
-		m_parent = nullptr;//0;
-		m_initData = nullptr;//0;
-		m_definitionElement = nullptr;//0;
-		m_previousElement = nullptr;//0;
-		m_nextElement = nullptr;//0;
-		m_isUnknownType = false;
 	}
 	
 	LangElement(LineNumber& set_line_number, Token::e set_lang_token_type, TypeType::e set_type_type, string set_name = "", string set_type = "")
+	:
+		m_token(set_lang_token_type),
+		m_name(set_name),	
+		m_typeType(set_type_type),
+		m_builtInType(BuiltInType::UNDEFINED),
+		m_containerType(ContainerType::UNDEFINED),
+		m_role(Role::UNDEFINED),
+		m_parseError(ParseError::UNDEFINED),
+		m_currentElement(nullptr),
+		m_parent(nullptr),
+		m_initData(nullptr),
+		m_definitionElement(nullptr),
+		m_previousElement(nullptr),
+		m_nextElement(nullptr),
+		m_isUnknownType(false)
 	{
 		lineNumber(set_line_number);
-		m_token = set_lang_token_type;
-		m_currentElement = nullptr;//0;
-		m_parent = nullptr;//0;
-		m_initData = nullptr;//0;
-		m_definitionElement = nullptr;//0;
-		m_previousElement = nullptr;//0;
-		m_nextElement = nullptr;//0;
-
-		m_name = set_name;
-
-		m_isUnknownType = false;
-		m_typeType = set_type_type;//TypeType::UNDEFINED;
-		m_containerType = ContainerType::UNDEFINED;
-		m_builtInType = BuiltInType::UNDEFINED;//must NOT be initialized after the next call to type().
-		type(set_type); //automatically tests if it is built_in_type.
+		
+		type(set_type); // must be initialized after m_builtInType.
 	}
 
 	//copying
@@ -405,24 +411,23 @@ public:
 		LangElement* res = new LangElement();
 
 		res->m_token = m_token;
-		res->m_lineNumber.copyFrom( m_lineNumber );
+		res->m_name = m_name;
+		res->m_type = m_type;
+		res->m_typeType = m_typeType;
+		res->m_builtInType = m_builtInType;
+		res->m_containerType = m_containerType;
+		res->m_role = m_role;
+		res->m_parseError = m_parseError;
 		res->m_currentElement = m_currentElement;
 		res->m_parent = m_parent;
 		if(m_initData)
 			res->m_initData = m_initData->copy();
+		else res->m_initData = nullptr;
 		res->m_definitionElement = m_definitionElement;
 		res->m_previousElement = m_previousElement;
 		res->m_nextElement = m_nextElement;
-
-		res->m_name = m_name;
-
 		res->m_isUnknownType = m_isUnknownType;
-		res->m_builtInType = m_builtInType;//must NOT be initialized after the next call to type().
-		res->m_typeType = m_typeType;
-		res->m_containerType = m_containerType;
-		res->m_role = m_role;
-		res->m_type = m_type; //automatically tests if it is built_in_type.
-		res->m_parseError = m_parseError;
+		res->m_lineNumber.copyFrom( m_lineNumber );
 
 		foreach(LangElement* an_elem, langElements)
 		{

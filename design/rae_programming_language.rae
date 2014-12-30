@@ -837,13 +837,28 @@ alias func_definition -> set_elem.definitionElement
 //instead of creating a temporary in these situations, we're just doing this for clarity:
 LangElement* func_definition = set_elem.definitionElement();
 
+Rectangle rect1
+alias reca -> rect1
+reca.x1 = 5.0
+reca.x2 = 2.6
+reca.y1 = 3.0
+
+Rectangle rect2
+reca -> rect2
+reca.x1 = 8.7
+reca.x2 = 6.6
+reca.y1 = 0.1
+
+alias up -> m_selectedCamera.getProperties.upVector
+calculate( up, down, up, left, up, forward )
+
 //so how about:
 [Button] buttons
 
 Button button1
 buttons.add( button1 )
-alias Button a_button -> button1 //or just alias a_button, with type inference? But we dislike type inference because it
-//destroys the idea of self documenting code!
+alias a_button -> button1 //This used to be alias Button a_button, and I thought: or just alias a_button, with type inference? But we dislike type inference because it
+//destroys the idea of self documenting code! BUT in this case it is good!
 a_button.setSomeParameter(5)
 a_button.imagineALongListOfParameterCalls(4)
 

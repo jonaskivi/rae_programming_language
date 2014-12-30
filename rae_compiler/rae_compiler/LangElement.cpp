@@ -321,6 +321,8 @@ string toString(Token::e set)
 			return "Token::FOR";
 			case Token::FOREACH:
 			return "Token::FOREACH";
+			case Token::IN:
+			return "Token::IN";
 			
 			case Token::NEWLINE:
 			return "Token::NEWLINE";

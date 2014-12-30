@@ -3707,6 +3707,12 @@ public:
 					ReportError::reportError("unexpected , COMMA while waiting for initdata for built in type.\n", previousElement() );	
 				}
 			}
+			else
+			{
+				//No initdata.
+				expectingToken( Token::UNDEFINED );
+				handleToken(set_token); // Oh, we're heading to the recursive territory here... re-handleToken.
+			}
 		}
 		else if( expectingToken() == Token::ACTUAL_INIT_DATA )
 		{
@@ -3729,6 +3735,23 @@ public:
 					ReportError::reportError("A strange dot while waiting for INIT_DATA. Floating point numbers are written: 0.0", previousElement() );
 					newLangElement(Token::REFERENCE_DOT, TypeType::UNDEFINED, set_token);
 				}
+			}
+			else if( set_token == ";" )
+			{
+				if(currentParentElement() && currentParentElement()->token() == Token::INIT_DATA)
+				{
+					endInitData();//This is important. This ends our init_data being the currentParentElement (which receives the init_data.)
+				}
+				else
+				{
+					ReportError::reportError("Waiting for INIT_DATA: Got NEWLINE but there was no INIT_DATA element.", previousElement() );
+					//TODO ReportError::additionalInfo("currentParentElement: ", currentParentElement() );
+					cout<<"currentParentElement: ";
+					if(currentParentElement()) cout<<currentParentElement()->toString()<<"\n"; else cout<<"nullptr"<<"\n";
+				}	
+
+				doReturnToExpectToken();
+				newLangElement(Token::SEMICOLON, TypeType::UNDEFINED, set_token);
 			}
 			else if( set_token == "\n" )
 			{
@@ -3790,7 +3813,9 @@ public:
 			}
 			else if( set_token == "null" )
 			{
-				cout<<"Got null initdata.\n";
+				#ifdef DEBUG_RAE_HUMAN
+					cout<<"ACTUAL_INIT_DATA: Got null initdata.\n";
+				#endif
 
 				if(currentParentElement() && currentParentElement()->token() == Token::INIT_DATA)
 				{
@@ -4753,9 +4778,14 @@ This never gets called. Look in expecting NAME thing...
 			{
 				newLangElement(Token::FOR, TypeType::UNDEFINED, set_token);
 			}
+			/*
 			else if( set_token == "foreach" )
 			{
 				newLangElement(Token::FOREACH, TypeType::UNDEFINED, set_token);
+			}*/
+			else if( set_token == "in" )
+			{
+				newLangElement(Token::IN, TypeType::UNDEFINED, set_token);
 			}
 			else if( set_token == "log_s" )
 			{
