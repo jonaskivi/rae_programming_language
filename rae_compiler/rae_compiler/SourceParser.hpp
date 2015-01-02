@@ -1064,10 +1064,12 @@ public:
  		return lang_elem;
 	}
 
-	LangElement* newDefineArray()
+	LangElement* newDefineArray(TypeType::e set_type_type = TypeType::VAL)
 	{
-		LangElement* lang_elem = newLangElement(Token::BRACKET_DEFINE_ARRAY_BEGIN, TypeType::VAL, "", "array" );
+		LangElement* lang_elem = newLangElement(Token::BRACKET_DEFINE_ARRAY_BEGIN, set_type_type, "", "array" );
 		
+		lang_elem->containerType( ContainerType::ARRAY );
+
 		//Brackets don't create a new scope, but they are still currentParent. That's why we don't push to scopeElementStack here.
 		currentParentElement(lang_elem);
 		//currentArray = lang_elem;
@@ -4681,6 +4683,15 @@ public:
 				if( previousElement() && (previousElement()->isUnknownType() || previousElement()->token() == Token::USE_REFERENCE))
 				{
 					newBracketBegin(Token::BRACKET_BEGIN, set_token);
+				}
+				else if( previousElement() && previousElement()->token() == Token::DEFINE_REFERENCE )
+				{
+					//convert to array:
+					previousElement()->token(Token::BRACKET_DEFINE_ARRAY_BEGIN);
+					currentParentElement(previousElement());
+					previousElement()->containerType( ContainerType::ARRAY );
+					previousElement()->type("array");
+					bracketStack.push_back(previousElement());
 				}
 				else
 				{

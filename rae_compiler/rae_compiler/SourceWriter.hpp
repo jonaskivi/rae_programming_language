@@ -380,8 +380,17 @@
 					//writer.writeString("* ");
 					writer.writeString(set_elem.name());
 					writer.writeString(" = new ");
-					writer.writeString(set_elem.typeInCpp());
-					writer.writeString("()");
+					if(set_elem.containerType() == ContainerType::ARRAY)
+					{
+						writer.writeString("std::vector<");
+						iterateWrite(writer, set_elem);
+						writer.writeString(">");
+					}
+					else
+					{
+						writer.writeString(set_elem.typeInCpp());
+						writer.writeString("()");
+					}
 				}
 				else if(set_elem.typeType() == TypeType::OPT)
 				{
@@ -398,8 +407,17 @@
 						//writer.writeString(m_type);
 						//writer.writeString("* ");
 						writer.writeString(" = new ");
-						writer.writeString(set_elem.typeInCpp());
-						writer.writeString("()");
+						if(set_elem.containerType() == ContainerType::ARRAY)
+						{
+							writer.writeString("std::vector<");
+							iterateWrite(writer, set_elem);
+							writer.writeString(">");
+						}
+						else
+						{
+							writer.writeString(set_elem.typeInCpp());
+							writer.writeString("()");
+						}
 					}
 				}
 				else if(set_elem.typeType() == TypeType::VAL)
@@ -439,6 +457,9 @@
 				//case Token::TEMPLATE_AUTO_INIT:
 				else if(set_elem.typeType() == TypeType::TEMPLATE)
 				{
+					//REMOVE
+					assert(0);
+
 					//writer.writeString(m_type);
 					//writer.writeString("* ");
 				
@@ -461,6 +482,9 @@
 				//case Token::VECTOR_AUTO_INIT:
 				else if(set_elem.typeType() == TypeType::VECTOR)
 				{
+					//REMOVE
+					assert(0);
+
 					//writer.writeString(m_type);
 					//writer.writeString("* ");
 				
@@ -765,7 +789,7 @@
 			break;
 			case Token::USE_MEMBER:
 			case Token::USE_REFERENCE:
-				if( set_elem.typeType() == TypeType::VECTOR )
+				/*if( set_elem.typeType() == TypeType::VECTOR )
 				{
 					if( writer.nextToken() == Token::BRACKET_BEGIN )
 					{
@@ -779,6 +803,16 @@
 					{
 						writer.writeString( set_elem.name() );
 					}
+				}*/
+				if( set_elem.definitionElement()
+					&& set_elem.definitionElement()->containerType() == ContainerType::ARRAY
+					&& set_elem.definitionElement()->typeType() != TypeType::VAL)
+				{
+					//Um, C++ is so weird. We need to dereference a pointer to vector to be able to use operator[]. But I guess it makes sense...
+					//since operator[] is sort of like a function call, and otherwise it would think we're using a dynamic array of vectors...
+					writer.writeString("(*");
+					writer.writeString( set_elem.name() );
+					writer.writeChar(')');
 				}
 				else
 				{
@@ -903,9 +937,24 @@
 					writeVisibilityForElement(writer, set_elem);
 				}
 
+				if(set_elem.typeType() == TypeType::LINK)
+				{
+					writer.writeString("rae::link<");
+				}
 				writer.writeString("std::vector<");
 				iterateWrite(writer, set_elem);
-				writer.writeString("> ");
+				writer.writeString(">");
+				if(set_elem.typeType() == TypeType::OPT
+					or set_elem.typeType() == TypeType::REF
+					or set_elem.typeType() == TypeType::PTR)
+				{
+					writer.writeString("* ");
+				}
+				else if(set_elem.typeType() == TypeType::LINK)
+				{
+					writer.writeString("> ");
+				}
+				else writer.writeChar(' '); //VAL
 				writer.writeString( set_elem.name() );
 			break;
 			case Token::BRACKET_DEFINE_STATIC_ARRAY_BEGIN:

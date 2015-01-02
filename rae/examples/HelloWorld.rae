@@ -26,24 +26,34 @@ public:
 	{
 	}
 	
-	func ()doesnotwork([int] someints)
+	func ()logIntArray(ref[int] someints)
 	{
-		someints.emplace_back(2)
-		log(someints[0])
+		for(int a_num in someints)
+		{
+			log(a_num)
+		}
 	}
 
 	public func
 	()sayHello()
 	{
 		[int] my_numbers
+		my_numbers.emplace_back(1)
+		my_numbers.emplace_back(2)
+		my_numbers.emplace_back(3)
+		my_numbers.emplace_back(4)
 		my_numbers.emplace_back(5)
 		my_numbers.emplace_back(6)
 		my_numbers.emplace_back(7)
+		my_numbers.emplace_back(129874234985)
 		
+		logIntArray(my_numbers)
+		/*
 		for(int a_num in my_numbers)
 		{
 			log(a_num)
 		}
+		*/
 		/*
 		for(uint i = 0; i < my_numbers.size; i++)
 		{
@@ -67,18 +77,22 @@ public:
 	protected int anotherNumber = 42
 	float afloat = 248.52
 
-		 Tester tester            // val is the default type
-	opt  Tester tester_opt        // opt is the optional type. This one is allocated automatically.
-	opt  Tester tester_not = null // need to specify that it is null, if you want it to be empty.
-	link Tester tester_link       // link is a pointer which can not allocate or free memory.
-	                      // a non-owning pointer which is also automatically set to null 
-	                      // when the pointed object is destroyed.
-	ptr  Tester tester_ptr        // Don't use raw pointers unless interfacing with C.
+	Tester tester // val is the default type
+	opt Tester tester_opt // opt is the optional type. This one is allocated automatically.
+	opt Tester tester_not = null // need to specify that it is null, if you want it to be empty.
+	link Tester tester_link // link is a pointer which can not allocate or free memory.
+	// a non-owning pointer which is also automatically set to null 
+	// when the pointed object is destroyed.
+	ptr Tester tester_ptr // Don't use raw pointers unless interfacing with C.
 
 	string name = "Hello Rae World"
 
 	[string] names
 
+	opt[int] opt_array_test
+	ref[int] ref_array_test
+	ptr[int] ptr_array_test
+	//TODO link[int] link_array_test
 	[int] array_test //std::vector<int>	
 	[int, 5] static_array_test //std::array<int, 5>
 	[val Tester] testers	
@@ -113,7 +127,7 @@ func (int) main ([string] args)
 
 	log_s("5 + 2 = ")
 
-	log(hello.count( hello.num, hello.tester_opt ))
+	log(hello.count( hello.num, hello.tester ))
 
 	hello.tester.data = 3
 
