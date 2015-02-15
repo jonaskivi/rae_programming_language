@@ -222,24 +222,41 @@ enum e
 
 	COMMA,//,
 	SEMICOLON,//;
-	PLUS,//+
-	MINUS,//-
-	EQUALS,//= //TODO rename to assignment. EQUALS is ==
-	DIVIDE,// /
-	STAR,// *
-	SMALLER_THAN,// <
-	BIGGER_THAN,// >
+
+	// Arithmetic operators
+	ASSIGNMENT, // =
+	PLUS, // + addition
+	MINUS, // - subtraction
+	MULTIPLY, // * multiplication
+	DIVIDE, // / division
+	MODULO, // % 
+	OPERATOR_INCREMENT, // ++
+	OPERATOR_DECREMENT, // --
+
+	// Comparison operators
+	EQUALS, // == equals keyword
+	NOT_EQUAL, // != not equals keyword pair
+	GREATER_THAN, // >
+	LESS_THAN, // <
+	GREATER_THAN_OR_EQUAL, // >=
+	LESS_THAN_OR_EQUAL, // <=
+
+	NOT, // not, !
+	AND, // and, &&
+	OR, // or, ||
 
 	POINT_TO,// -> used instead of = to point references to objects etc.
 	POINT_TO_END_PARENTHESIS, //we use the link<Object> a_link(arguments); to create links, so we need the closing parenthesis in C++.
 	//these are injected in SourceParser::newPointToElement() and SourceParser::newLine().
-	//TODO IS_POINT_TO, // is
-	//TODO EQUALS, //== <= etc. now they are just passed through as single chars.
-
+	IS, // is pointing to
+	
 	IF,
 	FOR,
 	FOREACH,
 	IN,
+
+	TRUE_TRUE,
+	FALSE_FALSE,
 
 	NEWLINE,
 	NEWLINE_BEFORE_SCOPE_END,
@@ -489,14 +506,26 @@ public:
 		{
 			if( m_name[0] == ' ' )
 				return "SPACE";
+			else if( m_name[0] == '\n' && (token() == Token::NEWLINE || token() == Token::NEWLINE_BEFORE_SCOPE_END) )
+				return "NEWLINE";
 			else if( m_name[0] == '\n' )
-				return "RETURN";
+				return "RETURN WHICH IS NOT NEWLINE.";
 			else if( m_name[0] == '\t' )
 				return "TAB";
 		}
 		//else
 		//string ret = "name: " + name() + " " + tokenString() + " typetype: " + typeTypeString() + " type: " + type() + " line: " + numberToString(lineNumber().line);
-		string ret = tokenString() + " type: " + type() + " name: " + name() + " " + " typetype: " + typeTypeString() + " line: " + numberToString(lineNumber().line);
+		string ret = tokenString();
+		if(type() != "")
+			ret += " type: " + type();
+
+		if(name() != "")
+			ret += " name: " + name();
+
+		if(typeType() != TypeType::UNDEFINED)
+			ret += " typetype: " + typeTypeString();
+		ret += " line: " + numberToString(lineNumber().line);
+
 		return ret;
 	}
 
@@ -590,6 +619,16 @@ public:
 
 	public: string typeTypeString() { return TypeType::toString(m_typeType); }
 	
+	public: bool isOperator()
+	{
+		if( token() == Token::PLUS
+			|| token() == Token::MINUS
+			)
+			return true;
+		//else
+		return false;
+	}
+
 	public: bool isDefinition()
 	{
 		if( token() == Token::DEFINE_REFERENCE
@@ -832,12 +871,33 @@ public:
 
 
 
-		//no return type.
+		// no return type.
 		return 0;
 	}
-	
-	
-	//We return by value vector, but we hope move semantics get rid of the copy and just move the vector.
+	/*
+	void validateCompatibleTypesInStatement(LangElement& from_elem)
+	{
+		// iterate forward
+		// check for comma, newline and casts.
+		// and all operators
+
+		LangElement* iter = from_elem.nextElement();
+		while iter != nullptr && iter->token() != Token::COMMA
+		{
+			if( iter->isOperator() )
+			{
+				//Is operator compatible with from_elem and next elem?
+
+			}
+		}
+
+		
+
+		
+	}
+*/
+
+	// We return by value vector, but we hope move semantics get rid of the copy and just move the vector.
 	vector<LangElement*> funcParameterList()
 	{
 		if( token() != Token::FUNC && token() != Token::FUNC_CALL )
@@ -858,7 +918,7 @@ public:
 				assert(0);
 			}
 		}
-		//else it's a FUNC:
+		// else it's a FUNC:
 
 		vector<LangElement*> ret;
 
@@ -873,14 +933,15 @@ public:
 					found_begin_func_param_types = true;
 				}
 			}
-			else //already found it.
+			else // already found it.
 			{
 				if( elem->token() == Token::PARENTHESIS_END_FUNC_PARAM_TYPES )
 				{
-					break;//break the for when the param_types end.
+					break; // break the for when the param_types end.
 				}
 
-				if( elem->token() == Token::DEFINE_REFERENCE )
+				//if( elem->token() == Token::DEFINE_REFERENCE )
+				if( elem->isDefinition() )
 				{
 					ret.push_back(elem);
 				}
@@ -889,7 +950,7 @@ public:
 
 		return ret;
 	}
-	
+
 /*
 	vector<LangElement*> funcCallArgumentList()
 	{

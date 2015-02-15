@@ -39,8 +39,22 @@ public:
 	public: bool isFileOk(){ return m_isFileOk; }
 	protected: bool m_isFileOk;
 
-	public: int currentIndentPlus() { m_currentIndent++; return m_currentIndent; }
-	public: int currentIndentMinus() { m_currentIndent--; return m_currentIndent; }
+	public: int currentIndentPlus()
+	{
+		#ifdef DEBUG_RAE_INDENTS
+			cout<<"currentIndentPlus(): "<<(m_currentIndent + 1)<<"\n";
+			writeChar('#');
+		#endif
+		m_currentIndent++; return m_currentIndent;
+	}
+	public: int currentIndentMinus()
+	{
+		#ifdef DEBUG_RAE_INDENTS
+			cout<<"currentIndentMinus(): "<<(m_currentIndent - 1)<<"\n";
+			writeChar('@');
+		#endif 
+		m_currentIndent--; return m_currentIndent;
+	}
 	public: int currentIndent() { return m_currentIndent; }
 	public: void currentIndent(int set) { m_currentIndent = set; }
 	protected: int m_currentIndent;
@@ -170,6 +184,9 @@ public:
 	
 	void writeIndents()
 	{
+		#ifdef DEBUG_RAE_INDENTS
+			cout<<"writeIndents(): "<<m_currentIndent<<"\n";
+		#endif
 		for( int i = 0; i < currentIndent(); i++ )
 		{
 			//TODO optional spaces for indentation... :)

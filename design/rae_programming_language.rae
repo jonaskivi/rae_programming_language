@@ -773,11 +773,121 @@ func
 	free button
 	delete button
 	
+	// Thinking about multiple return values syntax:
+
+	(res, a_tester) someFunc ()
+
+	res, a_tester : someFunc ()
+
+	: res, a_tester : someFunc ()
+
+	func ref Tester, int, float : doSomethingImportant( float relative_mass, Tester an_object, name : "default name")
+	{
+		return test1, res1, res2
+	}
+
+	func ref Tester some_result, int ret1, float ret2 : doSomethingImportant( float relative_mass, Tester an_object, name : "default name")
+	{
+		return test1, res1, res2
+	}
+
+	func ref Tester some_result, int ret1, float ret2 : doSomethingImportant( float relative_mass, Tester an_object, name : "default name")
+	{
+		some_result : test1
+		ret1 : res1
+		ret2 : res2
+	}
+
+	// name all parameters: 
+	func int sum_of_values : sumOfValues( int value_one, int value_two )
+	{
+		sum_of_values : value_one + value_two
+	}
+
+	// anonymous return value
+	func int : sumOfValues( int value_one, int value_two )
+	{
+		//return : value_one + value_two // maybe not because return is a keyword, not a variable.
+		return value_one + value_two
+	}
+
+	// anonymous return value simplified form. Hmm there's a parsing issue here. sumOfValues can be confused to name of return value!
+	func int sumOfValues( int value_one, int value_two )
+	{
+		return value_one + value_two
+	}
+
+	// void return type
+	func nothingIsReturned( int value_one, int value_two )
+	{
+		internalState += value_one + value_two
+	}
+
+	// void return type
+	func : nothingIsReturned( int value_one, int value_two )
+	{
+		internalState += value_one + value_two
+	}
+
+	// p
+	public func (int) number () { return(m_number) }
+	public func () number (int set) { m_number : set }
+	protected int m_number : 5
+
+	public func int : number() { return m_number }
+	public func : number(int set) { m_number : set }
+	protected int m_number : 5
+
+	public func int : number() { return m_number }
+	public func number(int set) { m_number : set }
+	protected int m_number : 5
+
+	public func int number() { return m_number }
+	public func number(int set) { m_number : set }
+	protected int m_number : 5
+
+	func number : int () public { return m_number }
+	func number(int set) public { m_number : set }
+	int m_number : 5 protected
+
+
+
+
+	// Casting:
+
+	Rectangle rect
+	opt Tester a_test
+	a_test -> rect
+
+	someOtherOb.callMe( cast(Rectangle, a_test) )
+
+	someOtherOb.callMe( Rectangle(a_test) )
+
+	res : cast(float, m_windowWidth) * cast(float, m_windowHeight)
+	
+	res = float(m_windowWidth) * float(m_windowHeight) // C-style cast comparison
+
+
 
 	//call a func like this:
 	int we_needs_it
 	float we_wants_it
-	button.(ret1: we_needs_it, ret2: we_wants_it)doSomethingImportant(param1: 0.4, param2: 254.39384, param3: "a string")
+	
+	we_needs_it, we_wants_it : button.doSomethingImportant( relative_mass : 0.4, ourObject, name : "a string" ) // This looks good on 4.1.2014 (4th of January 2014 :)
+
+	we_needs_it = button.doSomethingImportant( we_wants_it, relative_mass : 0.4, ourObject, name : "a string" ) // in C-style it would be.
+
+	button.(we_needs_it: ret1, we_wants_it: ret2) doSomethingImportant (param1: 0.4, param2: ourObject, param3: 254.39384, param4: "a string")
+
+	we_needs_it : ret1, we_wants_it : ret2 : button.doSomethingImportant( 0.4, ourObject, "a string" )
+	
+	we_needs_it : ret1, we_wants_it : ret2 in button.doSomethingImportant( 0.4, ourObject, "a string" )
+
+	button.doSomethingImportant( 0.4, ourObject, "a string" )( we_needs_it: ret1, we_wants_it: ret2 )
+
+	(we_needs_it, we_wants_it) button.doSomethingImportant ( 0.4, ourObject, "a string" )
+	
+	button.(we_needs_it, we_wants_it) doSomethingImportant ( 0.4, ourObject, "a string" )
 
 	//if you want the same value as parameter and return value you could do this:
 	button.(param1: we_wants_it, param2: we_wants_it, param3: "a string")doSomethingImportant(ret1: we_needs_it, ret2: we_wants_it)
@@ -827,6 +937,68 @@ func
 	
 	
 	return(0) //return is used just like a func call!
+}
+
+// inheritance uses the assignment operator!
+class Tester : public Rectangle
+{
+
+}
+
+class Tester = public Rectangle
+{
+
+}
+
+class Tester -> public Rectangle
+{
+
+}
+
+hello.tester.data = 3
+
+hello.tester.data <- 3
+
+hello.tester.data : 3 // The new assignment operator from Oberon (I checked again, and it seems Oberon uses := just like Pascal...)
+
+data : 2
+data +: 5
+data *: 2
+data -: 8
+data /: 8
+
+
+// Thoughts on parentheses on operators : no parentheses:
+if hello.tester.data = 3
+{
+	hello.array_test.push_back(9)
+	hello.array_test.push_back(7)
+	hello.array_test.push_back(4)
+}
+
+while hello.tester.data <= 5
+{
+	doSomething
+}
+
+for ref Tester in hello.array_test
+{
+
+}
+
+for( int i : 0; i < hello.array_test.size; i++ )
+{
+	
+}
+
+for int i : 0; i < hello.array_test.size; i++
+{
+	
+}
+
+for int i : 0, i < hello.array_test.size, i++
+{
+
 }
 
 

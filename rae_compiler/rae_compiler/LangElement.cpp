@@ -295,26 +295,51 @@ string toString(Token::e set)
 			return "Token::COMMA";
 			case Token::SEMICOLON:
 			return "Token::SEMICOLON";
+
+			case Token::ASSIGNMENT:
+			return "Token::ASSIGNMENT";
 			case Token::PLUS:
 			return "Token::PLUS";
 			case Token::MINUS:
 			return "Token::MINUS";
-			case Token::EQUALS:
-			return "Token::EQUALS";
+			case Token::MULTIPLY:
+			return "Token::MULTIPLY";
 			case Token::DIVIDE:
 			return "Token::DIVIDE";
-			case Token::STAR:
-			return "Token::STAR";
-			case Token::SMALLER_THAN:
-			return "Token::SMALLER_THAN";
-			case Token::BIGGER_THAN:
-			return "Token::BIGGER_THAN";
+			case Token::MODULO:
+			return "Token::MODULO";
+			case Token::OPERATOR_INCREMENT:
+			return "Token::OPERATOR_INCREMENT";
+			case Token::OPERATOR_DECREMENT:
+			return "Token::OPERATOR_DECREMENT";
+
+			case Token::EQUALS:
+			return "Token::EQUALS";
+			case Token::NOT_EQUAL:
+			return "Token::NOT_EQUAL";
+			case Token::GREATER_THAN:
+			return "Token::GREATER_THAN";
+			case Token::LESS_THAN:
+			return "Token::LESS_THAN";
+			case Token::GREATER_THAN_OR_EQUAL:
+			return "Token::GREATER_THAN_OR_EQUAL";
+			case Token::LESS_THAN_OR_EQUAL:
+			return "Token::LESS_THAN_OR_EQUAL";
+
+			case Token::NOT:
+			return "Token::NOT";
+			case Token::AND:
+			return "Token::AND";
+			case Token::OR:
+			return "Token::OR";
 
 			case Token::POINT_TO:
 			return "Token::POINT_TO";
 			case Token::POINT_TO_END_PARENTHESIS:
 			return "Token::POINT_TO_END_PARENTHESIS";
-			
+			case Token::IS:
+			return "Token::IS";
+
 			case Token::IF:
 			return "Token::IF";
 			case Token::FOR:
@@ -323,6 +348,11 @@ string toString(Token::e set)
 			return "Token::FOREACH";
 			case Token::IN:
 			return "Token::IN";
+
+			case Token::TRUE_TRUE:
+			return "Token::TRUE_TRUE";
+			case Token::FALSE_FALSE:
+			return "Token::FALSE_FALSE";
 			
 			case Token::NEWLINE:
 			return "Token::NEWLINE";

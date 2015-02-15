@@ -47,7 +47,7 @@ public:
 		my_numbers.emplace_back(7)
 		my_numbers.emplace_back(129874234985)
 		
-		logIntArray(my_numbers)
+		//logIntArray(my_numbers)
 		/*
 		for(int a_num in my_numbers)
 		{
@@ -55,9 +55,9 @@ public:
 		}
 		*/
 		/*
-		for(uint i = 0; i < my_numbers.size; i++)
+		for(uint i = 0, i < my_numbers.size, i++)
 		{
-			log(i, ": ", my_numbers[i])
+			log(i, "= ", my_numbers[i])
 		}
 		*/
 		
@@ -67,10 +67,21 @@ public:
 	
 	func (int result) count (int param1, ref Tester param2) public
 	{
+		if(param2 is null) //TODO oneliner if handling:
+			return(0)
+
+		if(param1 > 0 )// TODO is not: and param2 is not null)
+		{
+			log("whoa.")
+		}
+
 		return(param1 + param2.data)
 	}
 	
-	int num = 5 //default initializers are copied to constructors.
+	public func (int) number () { return(m_number) }
+	public func () number (int set) { m_number = set }
+	protected int m_number = 5 // default initializers are copied to constructors.
+	
 	int no_init_data
 	double no_init_datad
 
@@ -79,7 +90,7 @@ public:
 
 	Tester tester // val is the default type
 	opt Tester tester_opt // opt is the optional type. This one is allocated automatically.
-	opt Tester tester_not = null // need to specify that it is null, if you want it to be empty.
+	opt Tester tester_not -> null // need to specify that it is null, if you want it to be empty.
 	link Tester tester_link // link is a pointer which can not allocate or free memory.
 	// a non-owning pointer which is also automatically set to null 
 	// when the pointed object is destroyed.
@@ -127,13 +138,9 @@ func (int) main ([string] args)
 
 	log_s("5 + 2 = ")
 
-	log(hello.count( hello.num, hello.tester ))
+	log(hello.count( hello.number, hello.tester_opt ))
 
 	hello.tester.data = 3
-
-	hello.array_test.push_back(9)
-	hello.array_test.push_back(7)
-	hello.array_test.push_back(4)
 
 	hello.tester_opts.push_back( hello.tester_opt )
 
@@ -145,9 +152,21 @@ func (int) main ([string] args)
 	hello.tester_links[0].data = 8
 	log("an eight = ", hello.tester_links[0].data );
 
-	hello.array_test[0]
+	if(true == 1)
+	{
+		log("true")
+	}
 
-	log("arrays 9 + 2 = ", hello.count( hello.array_test[0], hello.tester_opts[0] ))
+	bool isWhat = false
+	bool isOther = true
+
+	if(isWhat == true or isOther == true)
+	{
+		log("false")
+	}
+
+	//hello.array_test[0]
+	//log("arrays 9 + 2 = ", hello.count( hello.array_test[0], hello.tester_opts[0] ))
 
 	return(0)
 }

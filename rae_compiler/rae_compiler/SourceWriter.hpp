@@ -127,6 +127,10 @@
 					&& writer.previousToken() != Token::VISIBILITY_DEFAULT*/
 				)
 				{
+					//REMOVE assert(writer.previousElement() != nullptr);
+					//cout<<"NEWLINE previousElement: "<<writer.previousElement()->toSingleLineString();
+					//cout<<"\nlineNeedsSemicolon: "<<writer.lineNeedsSemicolon()<<"\n";
+
 					/*if( parentToken() == Token::CLASS || parentToken() == Token::ENUM )
 					{
 						//rae::log("NEWLINESTRANGE. This thing has parent CLASS and not func.", "\n");
@@ -218,6 +222,10 @@
 					*/
 				)
 				{
+					//REMOVE assert(writer.previousElement() != nullptr);
+					//cout<<"NEWLINE previousElement: "<<writer.previousElement()->toSingleLineString();
+					//cout<<"\nlineNeedsSemicolon: "<<writer.lineNeedsSemicolon()<<"\n";
+
 					writer.writeChar(';');
 				}
 				writer.lineNeedsSemicolon(true);
@@ -601,7 +609,23 @@
 				writer.writeString(m_name);
 			break;
 			*/
-			case Token::EQUALS:
+			case Token::COMMA:
+				writer.writeChar( ',' );
+				writer.writeChar( ' ' );
+			break;
+			case Token::SEMICOLON:
+				if( writer.nextToken() == Token::NEWLINE || writer.nextToken() == Token::NEWLINE_BEFORE_SCOPE_END )
+				{
+					writer.writeChar( ';' );
+				}
+				else
+				{
+					//otherwise with a space please.
+					writer.writeChar( ';' );
+					writer.writeChar( ' ' );
+				}
+			break;
+			case Token::ASSIGNMENT:
 				/*
 				if( writer.previousToken() == Token::DEFINE_BUILT_IN_TYPE_IN_CLASS )
 				{
@@ -624,6 +648,88 @@
 					writer.writeChar( '=' );
 					writer.writeChar( ' ' );
 				//}
+			break;
+			case Token::PLUS:
+				writer.writeChar( ' ' );
+				writer.writeChar( '+' );
+				writer.writeChar( ' ' );
+			break;
+			case Token::MINUS:
+				writer.writeChar( ' ' );
+				writer.writeChar( '-' );
+				writer.writeChar( ' ' );
+			break;
+			case Token::MULTIPLY:
+				writer.writeChar( ' ' );
+				writer.writeChar( '*' );
+				writer.writeChar( ' ' );
+			break;
+			case Token::DIVIDE:
+				writer.writeChar( ' ' );
+				writer.writeChar( '/' );
+				writer.writeChar( ' ' );
+			break;
+			case Token::MODULO:
+				writer.writeChar( ' ' );
+				writer.writeChar( '%' );
+				writer.writeChar( ' ' );
+			break;
+			case Token::OPERATOR_INCREMENT:
+				writer.writeChar( '+' );
+				writer.writeChar( '+' );
+			break;
+			case Token::OPERATOR_DECREMENT:
+				writer.writeChar( '-' );
+				writer.writeChar( '-' );
+			break;
+			case Token::EQUALS:
+				writer.writeChar( ' ' );
+				writer.writeChar( '=' );
+				writer.writeChar( '=' );
+				writer.writeChar( ' ' );
+			break;
+			case Token::NOT_EQUAL:
+				writer.writeChar( ' ' );
+				writer.writeChar( '!' );
+				writer.writeChar( '=' );
+				writer.writeChar( ' ' );
+			break;
+			case Token::GREATER_THAN:
+				writer.writeChar( ' ' );
+				writer.writeChar( '>' );
+				writer.writeChar( ' ' );
+			break;
+			case Token::LESS_THAN:
+				writer.writeChar( ' ' );
+				writer.writeChar( '<' );
+				writer.writeChar( ' ' );
+			break;
+			case Token::GREATER_THAN_OR_EQUAL:
+				writer.writeChar( ' ' );
+				writer.writeChar( '>' );
+				writer.writeChar( '=' );
+				writer.writeChar( ' ' );
+			break;
+			case Token::LESS_THAN_OR_EQUAL:
+				writer.writeChar( ' ' );
+				writer.writeChar( '<' );
+				writer.writeChar( '=' );
+				writer.writeChar( ' ' );
+			break;
+			case Token::NOT:
+				writer.writeChar( '!' );
+			break;
+			case Token::AND:
+				writer.writeChar( ' ' );
+				writer.writeChar( '&' );
+				writer.writeChar( '&' );
+				writer.writeChar( ' ' );
+			break;
+			case Token::OR:
+				writer.writeChar( ' ' );
+				writer.writeChar( '|' );
+				writer.writeChar( '|' );
+				writer.writeChar( ' ' );
 			break;
 			case Token::POINT_TO: //Umm. Point to in C++ is = and maybe = &.
 			//but now we're using link, so it is usually a function call.
@@ -708,65 +814,6 @@
 						#endif
 					}
 				}
-			break;
-			case Token::COMMA:
-				writer.writeChar( ',' );
-				writer.writeChar( ' ' );
-			break;
-			case Token::PLUS:
-				if( writer.previousToken() == Token::PLUS || writer.nextToken() == Token::PLUS )
-				{
-					//if it's a ++ operator, then no spaces...
-					writer.writeChar( '+' );
-				}
-				else
-				{
-					//otherwise with spaces please.
-					writer.writeChar( ' ' );
-					writer.writeChar( '+' );
-					writer.writeChar( ' ' );
-				}
-			break;
-			case Token::MINUS:
-				if( writer.previousToken() == Token::MINUS || writer.nextToken() == Token::MINUS )
-				{
-					//if it's a -- operator, then no spaces...
-					writer.writeChar( '-' );
-				}
-				else
-				{
-					//otherwise with spaces please.
-					writer.writeChar( ' ' );
-					writer.writeChar( '-' );
-					writer.writeChar( ' ' );
-				}
-			break;
-			case Token::SEMICOLON:
-				if( writer.nextToken() == Token::NEWLINE || writer.nextToken() == Token::NEWLINE_BEFORE_SCOPE_END )
-				{
-					writer.writeChar( ';' );
-				}
-				else
-				{
-					//otherwise with a space please.
-					writer.writeChar( ';' );
-					writer.writeChar( ' ' );
-				}
-			break;
-			case Token::DIVIDE:
-				writer.writeChar( ' ' );
-				writer.writeChar( '/' );
-				writer.writeChar( ' ' );
-			break;
-			case Token::BIGGER_THAN:
-				writer.writeChar( ' ' );
-				writer.writeChar( '>' );
-				writer.writeChar( ' ' );
-			break;
-			case Token::SMALLER_THAN:
-				writer.writeChar( ' ' );
-				writer.writeChar( '<' );
-				writer.writeChar( ' ' );
 			break;
 			case Token::REFERENCE_DOT:
 				if( writer.previousToken() == Token::NUMBER )
@@ -1052,7 +1099,7 @@
 						}
 						else //opt and ptr differs from ref in that it can be initialized to null with = null.
 						{
-							if(set_elem.nextToken() == Token::EQUALS )
+							if(set_elem.nextToken() == Token::ASSIGNMENT )
 							{
 								writer.writeString(set_elem.typeInCpp());
 								writer.writeString("* ");
@@ -1099,7 +1146,7 @@
 					}
 					else
 					{	
-						if(set_elem.nextToken() == Token::EQUALS )
+						if(set_elem.nextToken() == Token::ASSIGNMENT )
 						{
 							writer.writeString("rae::link<");
 							writer.writeString(set_elem.typeInCpp());
@@ -1145,7 +1192,7 @@
 					}
 					else
 					{	
-						if(set_elem.nextToken() == Token::EQUALS )
+						if(set_elem.nextToken() == Token::ASSIGNMENT )
 						{
 							writer.writeString("std::shared_ptr<");
 							writer.writeString(set_elem.typeInCpp());
@@ -1231,7 +1278,7 @@
 						}
 						else if(set_elem.role() != Role::FUNC_RETURN && set_elem.role() != Role::FUNC_PARAMETER)
 						{
-							if( writer.nextToken() == Token::EQUALS )
+							if( writer.nextToken() == Token::ASSIGNMENT )
 							{
 								//don't write initdata. it should come...
 							}
@@ -1377,11 +1424,23 @@
 				writer.writeChar(':');
 				writer.writeChar(' ');
 			break;
+			case Token::IS:
+				writer.writeChar(' ');
+				writer.writeChar('=');
+				writer.writeChar('=');
+				writer.writeChar(' ');
+			break;
 			case Token::IF:
 			case Token::FOR:
 			case Token::FOREACH:
 				writer.lineNeedsSemicolon(false);
 				writer.writeString(set_elem.name());
+			break;
+			case Token::TRUE_TRUE:
+				writer.writeString("true");
+			break;
+			case Token::FALSE_FALSE:
+				writer.writeString("false");
 			break;
 			case Token::FUNC_CALL:
 				writer.writeString(set_elem.name());
@@ -1392,9 +1451,15 @@
 				//writer.writeIndents();
 				writer.lineNeedsSemicolon(false);
 				writer.writeString( set_elem.name() );
-				///////writer.writeChar( '\n' );
-				writer.currentIndentPlus();
 
+				if(set_elem.nextToken() != Token::NEWLINE)
+				{
+					writer.writeChar(' '); // Extra space for oneliners. But I bet newline checking here is broken and it's done in ::FUNC
+				}
+				
+				//if(writer.previousToken() == Token::NEWLINE) // Can't get this to work...  supposed to check for oneliners.
+					writer.currentIndentPlus();
+				
 				if(set_elem.parent() && set_elem.parent()->token() == Token::CLASS)
 				{
 					//cout<<"IN SCOPE_BEGIN for class: "<<set_elem.parentClassName()<<"\n";
@@ -1430,6 +1495,14 @@
 				//writer.currentIndentMinus();
 				//writer.writeIndents();
 				writer.lineNeedsSemicolon(false);
+				/* REMOVE this didn't seem to contribute too much:
+				if(set_elem.previousToken() != Token::NEWLINE
+					&& set_elem.previousToken() != Token::NEWLINE_BEFORE_SCOPE_END
+					&& set_elem.previousToken() != Token::SEMICOLON)
+				{
+					writer.writeString("; "); // Extra semicolon and a space for oneliners.
+				}*/
+
 				writer.writeString( set_elem.name() );
 				if( set_elem.parentToken() == Token::CLASS || set_elem.parentToken() == Token::ENUM )
 				{
@@ -1441,7 +1514,8 @@
 
 					//rae::log("writing }; SCOPE_END for class or enum.");
 				}
-				else if( set_elem.parentToken() == Token::FUNC || set_elem.parentToken() == Token::CONSTRUCTOR || set_elem.parentToken() == Token::DESTRUCTOR )
+				//REMOVE else if( set_elem.parentToken() == Token::FUNC || set_elem.parentToken() == Token::CONSTRUCTOR || set_elem.parentToken() == Token::DESTRUCTOR )
+				else if( set_elem.parent() && set_elem.parent()->isFunc() )
 				{
 					////writer.writeChar( '\n' );//one line break after func
 					////writer.writeChar( '\n' );
@@ -1810,6 +1884,7 @@
 									writer.nextElement( set_elem.langElements[i+1] );
 								}
 
+								/*CAN REMOVE:
 								if( set_elem.langElements[i]->token() == Token::DEFINE_FUNC_RETURN )
 								{
 									//do nothing
@@ -1818,6 +1893,7 @@
 								{
 									//do nothing
 								}
+								*/
 								//REMOVED: else if( set_elem.langElements[i]->token() == Token::DEFINE_FUNC_ARGUMENT )
 								//REMOVED: {
 									//DON'T WANT THESE FOR MAIN, FOR NOW...
@@ -1827,6 +1903,15 @@
 									//writer.writeString( elem->name() );
 									
 								//REMOVED: }
+								/*REMOVE
+								else if( set_elem.langElements[i]->token() == Token::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES )
+								{
+									//already written for main
+								}
+								else if( set_elem.langElements[i]->token() == Token::PARENTHESIS_END_FUNC_RETURN_TYPES )
+								{
+									//already written for main
+								}
 								else if( set_elem.langElements[i]->token() == Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES )
 								{
 									//already written for main
@@ -1839,9 +1924,11 @@
 									//writer.writeChar( ')' );
 									//writer.writeChar( '\n' );
 								}
+
 								else if(set_elem.langElements[i]->token() == Token::DEFINE_REFERENCE
 									&& (set_elem.langElements[i]->role() == Role::FUNC_RETURN || set_elem.langElements[i]->role() == Role::FUNC_PARAMETER))
 								{
+									*/
 									//Don't want these for MAIN for now. Maybe later TODO.
 
 									//just to check that the first return type doesn't get written twice.
@@ -1855,24 +1942,31 @@
 										writeElement(writer, *set_elem.langElements[i]);
 										cout<<"TODO multiple return types handling.\n";
 									}*/
-								}
-								else if( set_elem.langElements[i]->token() == Token::SCOPE_BEGIN )
-								{
-									got_first_scope = true;
-									writer.writeChar('\n'); //one extra newline, because we missed it.
-									writeElement(writer, *set_elem.langElements[i]);
+								//}
+								//else
+
+								//don't write anything until first scope.
+								if(got_first_scope == false)
+								{ 
+									if( set_elem.langElements[i]->token() == Token::SCOPE_BEGIN )
+									{
+										got_first_scope = true;
+										writer.writeChar('\n'); //one extra newline, because we missed it.
+										writeElement(writer, *set_elem.langElements[i]);
+									}
 								}
 								else
-								{
-									//don't write anything until first scope.
-									if(got_first_scope == true)
-										writeElement(writer, *set_elem.langElements[i]);
+								{									
+									writeElement(writer, *set_elem.langElements[i]);
 								}
 							}
 						}
 					}
 				}//end isHeader cpp
 				
+				bool is_a_oneliner = true; // We presume the worst case scenario... :)
+
+
 					if( set_elem.token() == Token::MAIN )
 					{
 						//do nothing for main, it's already been written...
@@ -1973,6 +2067,8 @@
 								else if( set_elem.langElements[i]->token() == Token::NEWLINE)
 								{
 									//handle this separately because of isHeader.
+
+									is_a_oneliner = false; // Not a oneliner.
 									
 									//set_elem.langElements[i]->write(writer);
 									writeElement(writer, *set_elem.langElements[i]);
@@ -1983,6 +2079,48 @@
 										i = set_elem.langElements.size();
 									}
 
+								}
+								else if( set_elem.langElements[i]->token() == Token::SCOPE_BEGIN)
+								{
+									if( writer.isHeader() == true )//hpp
+									{
+										if(is_a_oneliner == true) // If we are a oneliner the automatic semicolon won't happen, because there is no newline.
+										{
+											writer.writeChar(';');
+										}
+										//end loop. Write only one line to the header.
+										i = set_elem.langElements.size();
+									}
+									else //cpp
+									{
+										if(is_a_oneliner == true)
+										{
+											writer.writeChar(' '); // Some extra spaces for oneliners.
+										}
+										writeElement(writer, *set_elem.langElements[i]);
+									}
+								}
+								else if( set_elem.langElements[i]->token() == Token::SCOPE_END)
+								{
+									// This will actually never happen at all, because SCOPE_ENDs are children of SCOPE_BEGIN,
+									// and they will be handled in normal case.
+									if( writer.isHeader() == true )//hpp
+									{
+										//This should never happen, because we've already bailed out in header.
+										//end loop. Write only one line to the header.
+										assert(0);
+										i = set_elem.langElements.size();	
+									}
+									else //cpp
+									{
+										if(is_a_oneliner == true)
+										{
+											writer.writeChar(';');
+											writer.writeChar(' ');
+											writer.currentIndentMinus();
+										}
+										writeElement(writer, *set_elem.langElements[i]);
+									}
 								}
 								/*
 								else if( set_elem.langElements[i]->token() == Token::PARENTHESIS_BEGIN
@@ -2025,11 +2163,11 @@
 
 									//if( writer.isHeader() == false )//cpp
 									//{
-									//ok, we don't need this isHeader here, because
-									//now we check for newline and end the loop.
+										//ok, we don't need this isHeader here, because
+										//now we check for newline and end the loop.
 										//set_elem.langElements[i]->write(writer);
 
-									writeElement(writer, *set_elem.langElements[i]);
+										writeElement(writer, *set_elem.langElements[i]);
 									//}
 								}
 							}

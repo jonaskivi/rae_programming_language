@@ -611,12 +611,24 @@ public:
 		
 		// a scope element will only become a parent if it's an empty scope. Otherwise the parent will be
 		// the class, func, enum, etc. statement, which is our current parent, and we put that to the stack.
-		if( scopeElementStack.empty() == false )
+		//if( scopeElementStack.empty() == false )
+		//if( currentParentElement() && currentParentElement()->token() == Token::SCOPE_BEGIN )
+		//if( shouldNewestScopeBeAParentElement() == true )
+		LangElement* iter = our_scope_elem->previousElement();
+		while(iter)
 		{
-			//if( scopeElementStack.back()->token() == Token::FUNC )
-			//{
+			if( iter->isFunc() || iter->token() == Token::ENUM || iter->token() == Token::CLASS )
+			{
+				// if we get here, we are the first SCOPE_BEGIN in this func, enum or class.
+				break;
+			}
+			else if( iter->token() == Token::SCOPE_BEGIN )
+			{
+				// We are not the first SCOPE_BEGIN so this is an empty scope which will be a parent then.
 				currentParentElement(our_scope_elem);
-			//}
+				break;
+			}
+			iter = iter->previousElement();
 		}
 
 		//put the scope or class or func, or init_data object to scope stack.
@@ -670,7 +682,7 @@ public:
 
 				//class ends, do stuff:
 
-				//if there are no constructors then add one.
+				//if there are no constructors then add one. create constructor. create default constructor.
 				if( listOfDestructors.empty() == true )
 				{
 					
@@ -679,9 +691,10 @@ public:
 					a_con->newLangElement(lineNumber, Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES);
 					a_con->newLangElement(lineNumber, Token::PARENTHESIS_END_FUNC_PARAM_TYPES);
 					a_con->newLangElement(lineNumber, Token::NEWLINE);
-					LangElement* a_scop = a_con->newLangElement(lineNumber, Token::SCOPE_BEGIN, TypeType::UNDEFINED, "{");
-					a_scop->newLangElement(lineNumber, Token::NEWLINE_BEFORE_SCOPE_END);
-					a_scop->newLangElement(lineNumber, Token::SCOPE_END, TypeType::UNDEFINED, "}");
+					//LangElement* a_scop = 
+					a_con->newLangElement(lineNumber, Token::SCOPE_BEGIN, TypeType::UNDEFINED, "{");
+					a_con->newLangElement(lineNumber, Token::NEWLINE_BEFORE_SCOPE_END);
+					a_con->newLangElement(lineNumber, Token::SCOPE_END, TypeType::UNDEFINED, "}");
 					//a_con->newLangElement(lineNumber, Token::NEWLINE);
 					//a_con->newLangElement(lineNumber, Token::NEWLINE);
 				
@@ -699,10 +712,11 @@ public:
 					a_con->newLangElement(lineNumber, Token::PARENTHESIS_END_FUNC_RETURN_TYPES);
 					a_con->newLangElement(lineNumber, Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES);
 					a_con->newLangElement(lineNumber, Token::PARENTHESIS_END_FUNC_PARAM_TYPES);
-					a_con->newLangElement(lineNumber, Token::NEWLINE);
-					LangElement* a_scop = a_con->newLangElement(lineNumber, Token::SCOPE_BEGIN, TypeType::UNDEFINED, "{");
-					a_scop->newLangElement(lineNumber, Token::NEWLINE_BEFORE_SCOPE_END);
-					a_scop->newLangElement(lineNumber, Token::SCOPE_END, TypeType::UNDEFINED, "}");
+					a_con->newLangElement(lineNumber, Token::NEWLINE, TypeType::UNDEFINED, "\n");
+					//LangElement* a_scop = 
+					a_con->newLangElement(lineNumber, Token::SCOPE_BEGIN, TypeType::UNDEFINED, "{");
+					a_con->newLangElement(lineNumber, Token::NEWLINE_BEFORE_SCOPE_END, TypeType::UNDEFINED, "\n");
+					a_con->newLangElement(lineNumber, Token::SCOPE_END, TypeType::UNDEFINED, "}");
 					//a_con->newLangElement(lineNumber, Token::NEWLINE);
 					//a_con->newLangElement(lineNumber, Token::NEWLINE);
 					
@@ -832,18 +846,18 @@ public:
 
 				//class ends with this }. So we mark that we are not inside a class definition now.
 				//Ok, but we might have classes inside classes so we check later when we pop, if it's another class...
-				currentClass = 0;
+				currentClass = nullptr;
 			}
 			else if( scope_elem->token() == Token::FUNC )
 			{
 				#ifdef DEBUG_RAE_HUMAN
 				cout<<"end of function.\n\n";
 				#endif
-				currentFunc = 0;
+				currentFunc = nullptr;
 			}
 			else if( scope_elem->token() == Token::ENUM )
 			{
-				currentEnum = 0;
+				currentEnum = nullptr;
 			}
 
 			#ifdef DEBUG_RAE
@@ -3665,7 +3679,7 @@ public:
 		
 		if( expectingToken() == Token::INIT_DATA )
 		{
-			if( set_token == "=" )
+			if( set_token == "=" || set_token == "->" ) //TODO better checking for point to only pointing to pointer types like null...
 			{
 				LangElement* prev_elem = previousElement();
 
@@ -4778,38 +4792,70 @@ This never gets called. Look in expecting NAME thing...
 				//newLangElement(Token::POINT_TO, TypeType::UNDEFINED, set_token);
 				newPointToElement();
 			}
+			//operators:
+			else if( set_token == "=" )
+			{
+				if(previousElement() && previousElement()->name() == "=")
+					previousElement()->token(Token::EQUALS);
+				else if(previousElement() && previousElement()->name() == "!")
+					previousElement()->token(Token::NOT_EQUAL);
+				else if(previousElement() && previousElement()->name() == ">")
+					previousElement()->token(Token::GREATER_THAN_OR_EQUAL);
+				else if(previousElement() && previousElement()->name() == "<")
+					previousElement()->token(Token::LESS_THAN_OR_EQUAL);
+				else
+					newLangElement(Token::ASSIGNMENT, TypeType::UNDEFINED, set_token);
+			}
+			else if( set_token == "!" || set_token == "not" )
+			{
+				newLangElement(Token::NOT, TypeType::UNDEFINED, set_token);
+			}
+			else if( set_token == "&&" || set_token == "and" )
+			{
+				newLangElement(Token::AND, TypeType::UNDEFINED, set_token);
+			}
+			else if( set_token == "||" || set_token == "or" )
+			{
+				newLangElement(Token::OR, TypeType::UNDEFINED, set_token);
+			}
 			else if( set_token == "+" )
 			{
-				newLangElement(Token::PLUS, TypeType::UNDEFINED, set_token);
+				if(previousElement() && previousElement()->name() == "+")
+					previousElement()->token(Token::OPERATOR_INCREMENT);
+				else
+					newLangElement(Token::PLUS, TypeType::UNDEFINED, set_token);
 			}
 			else if( set_token == "-" )
 			{
-				newLangElement(Token::MINUS, TypeType::UNDEFINED, set_token);
-			}
-			else if( set_token == "=" )
-			{
-				newLangElement(Token::EQUALS, TypeType::UNDEFINED, set_token);
+				if(previousElement() && previousElement()->name() == "-")
+					previousElement()->token(Token::OPERATOR_DECREMENT);
+				else
+					newLangElement(Token::MINUS, TypeType::UNDEFINED, set_token);
 			}
 			else if( set_token == "*" )
 			{
-				newLangElement(Token::STAR, TypeType::UNDEFINED, set_token);
+				newLangElement(Token::MULTIPLY, TypeType::UNDEFINED, set_token);
 			}
 			else if( set_token == "/" )
 			{
 				newLangElement(Token::DIVIDE, TypeType::UNDEFINED, set_token);
 			}
+			else if( set_token == "%" )
+			{
+				newLangElement(Token::MODULO, TypeType::UNDEFINED, set_token);
+			}
 			else if( set_token == "<" )
 			{
-				newLangElement(Token::SMALLER_THAN, TypeType::UNDEFINED, set_token);
+				newLangElement(Token::LESS_THAN, TypeType::UNDEFINED, set_token);
 			}
 			else if( set_token == ">" )
 			{
-				newLangElement(Token::BIGGER_THAN, TypeType::UNDEFINED, set_token);
+				newLangElement(Token::GREATER_THAN, TypeType::UNDEFINED, set_token);
 			}
 			else if( set_token == "\"" )
 			{
 				//shouldn't happen.
-				//newLangElement(Token::STAR, set_token);
+				//newLangElement(Token::MULTIPLY, set_token);
 			}
 			else if( set_token == "*/" )
 			{
@@ -4848,6 +4894,22 @@ This never gets called. Look in expecting NAME thing...
 				//isInsideLogStatement = true;
 				newLangElement(Token::LOG, TypeType::UNDEFINED, set_token);
 				expectingToken(Token::PARENTHESIS_BEGIN_LOG);
+			}
+			else if( set_token == "true" )
+			{
+				newLangElement(Token::TRUE_TRUE, TypeType::UNDEFINED, set_token);
+			}
+			else if( set_token == "false" )
+			{
+				newLangElement(Token::FALSE_FALSE, TypeType::UNDEFINED, set_token);
+			}
+			else if( set_token == "null" )
+			{
+				newLangElement(Token::RAE_NULL, TypeType::UNDEFINED, set_token);
+			}
+			else if( set_token == "is" )
+			{
+				newLangElement(Token::IS, TypeType::UNDEFINED, set_token);
 			}
 			/*
 			//These don't work anymore as : is now it's own token. We must wait for it...
@@ -4904,6 +4966,7 @@ This never gets called. Look in expecting NAME thing...
 					}
 				}
 			}
+			/*
 			else if( set_token == "!" )
 			{
 				cout<<"Got template!\n";
@@ -4921,6 +4984,7 @@ This never gets called. Look in expecting NAME thing...
 				}
 				expectingToken(Token::TEMPLATE_STUFF);
 			}
+			*/
 			else if( set_token == "return" )
 			{
 				#ifdef DEBUG_RAE
@@ -5082,7 +5146,7 @@ This never gets called. Look in expecting NAME thing...
 			}
 			else if( set_token == "=" )
 			{
-				newLangElement(Token::EQUALS, set_token);
+				newLangElement(Token::ASSIGNMENT, set_token);
 			}
 			else if( set_token == "/" )
 			{
@@ -5242,7 +5306,7 @@ This never gets called. Look in expecting NAME thing...
 						//Back to waiting for UNDEFINED as that handles the coming ")" the best.
 						expectingToken(Token::UNDEFINED);
 					}
-					else
+					else if( currentClass != nullptr && currentFunc == nullptr && currentEnum == nullptr )//INSIDE_CLASS doesn't work currently: if(expectingRole() == Role::INSIDE_CLASS)
 					{
 						if( unfinishedElement()->containerType() == ContainerType::UNDEFINED )
 						{
@@ -5256,7 +5320,20 @@ This never gets called. Look in expecting NAME thing...
 							expectingToken(Token::UNDEFINED);
 							unfinishedElement(nullptr);
 						}
+					}
+					else
+					{
+						if(currentFunc == nullptr)
+							cout<<"currentFunc is null.\n";
+						else ReportError::reportInfo("currentFunc: ", currentFunc);
+						if(currentEnum == nullptr)
+							cout<<"currentEnum is null.\n";
+						if(currentClass == nullptr)
+							cout<<"currentClass is null.\n";
 
+						ReportError::reportInfo("No initdata in not inside class: ", unfinishedElement() );
+						expectingToken(Token::UNDEFINED);
+						unfinishedElement(nullptr);
 					}
 				}
 			}
@@ -5321,14 +5398,15 @@ This never gets called. Look in expecting NAME thing...
 			{
 				//TODO pointer type...
 				ReportError::reportError("TODO pointer type.", previousElement());
-				newLangElement(Token::STAR, TypeType::UNDEFINED, set_token);
+				newLangElement(Token::MULTIPLY, TypeType::UNDEFINED, set_token);
 			}
 			else if( set_token == "?" )
 			{
 				//A huge TODO.
 				ReportError::reportError("Huge todo on line 4535. handle null pointers: ????.", previousElement());
-				//newLangElement(Token::STAR, set_token);
+				//newLangElement(Token::MULTIPLY, set_token);
 			}
+			/*REMOVE
 			else if( set_token == "!" )
 			{
 				cout<<"Got template!\n";
@@ -5346,6 +5424,7 @@ This never gets called. Look in expecting NAME thing...
 				}
 				expectingToken(Token::TEMPLATE_STUFF);
 			}
+			*/
 			else if( currentReference )
 			{
 				//currentReference->name(set_token);
@@ -5356,11 +5435,15 @@ This never gets called. Look in expecting NAME thing...
 					//Back to waiting for UNDEFINED as that handles the coming ")" the best.
 					expectingToken(Token::UNDEFINED);
 				}
-				else
+				else if( currentClass != nullptr && currentFunc == nullptr && currentEnum == nullptr )//INSIDE_CLASS doesn't work currently: if(expectingRole() == Role::INSIDE_CLASS)
 				{	
 					expectingToken(Token::INIT_DATA);
 					//expectingToken = Token::UNDEFINED;
 					//doReturnToExpectToken();
+				}
+				else
+				{
+					expectingToken(Token::UNDEFINED);	
 				}
 			}
 			
@@ -7045,23 +7128,35 @@ This never gets called. Look in expecting NAME thing...
 		{
 			#ifdef DEBUG_RAE_HUMAN
 			cout<<"Didn't find: "<<set_token<<" creating unknown ref.\n";
-			//rae::log("Didn't find: ", set_token, " creating unknown ref.\n");
 			#endif
 			//specifically don't do our_new_element = , because this is already unknown and will be handled later...
 			//Oh well. found_elem would be null anyway...
 			if(currentReference == nullptr)
 			{
+				#ifdef DEBUG_RAE_HUMAN
+				cout<<"newUnknownUseReference2: "<<set_token<<" creating unknown ref.\n";
+				#endif
 				newUnknownUseReference2(set_token);
 			}
 			// We have already created a DEFINE_REFERENCE with a keyword like val opt ref. But the class is still undefined.
 			else if( currentReference->isDefinition() && currentReference->type() == "" && currentReference->name() == "" )
 			{
+				#ifdef DEBUG_RAE_HUMAN
+				cout<<"NOPE...: "<<set_token<<" there was some currentReference so we set it to type of that thing.\n";
+				#endif
 				if( bracketStack.empty() ) //not in the middle of a template list.
 				{
 					expectingToken(Token::DEFINE_REFERENCE_NAME);
 				}
 				currentReference->type(set_token);
 				currentReference->isUnknownType(true);
+			}
+			else
+			{
+				#ifdef DEBUG_RAE_HUMAN
+					cout<<"Umm: "<<set_token<<" oh no. This is some strange thing that happens on oneliners. Let's still create an unknown ref.\n";
+				#endif
+				newUnknownUseReference2(set_token);
 			}
 		}
 

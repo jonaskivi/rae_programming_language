@@ -40,7 +40,9 @@ endif
 SRC_DIR := ./rae_compiler/rae_compiler/
 OBJECTS  := rae_compiler.o LangElement.o ReportError.o
 
-all: $(OBJECTS)
+all: compile raehello
+
+compile: $(OBJECTS)
 	$(CXX) $(OBJECTS) $(LIBS) -o $(EXECUTABLE)
 
 rae_compiler.o: $(SRC_DIR)rae_compiler.cpp $(SRC_DIR)RaeStdLib.hpp $(SRC_DIR)ReportError.hpp $(SRC_DIR)SourceParser.hpp $(SRC_DIR)SourceValidate.hpp $(SRC_DIR)SourceWriter.hpp $(SRC_DIR)LangElement.hpp $(SRC_DIR)StringFileWriter.hpp $(SRC_DIR)rae_helpers.hpp

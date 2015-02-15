@@ -69,7 +69,7 @@
 		//instead of creating a temporary in these situations, we're just doing this for clarity:
 		LangElement* func_definition = set_elem.definitionElement();
 
-		if(func_definition == nullptr)
+		if( func_definition == nullptr )
 		{
 			ReportError::compilerError("Trying to validateFuncCall but the function was not found and set to definitionElement yet.", &set_elem);
 			return;
@@ -79,29 +79,35 @@
 		
 		vector<LangElement*> func_params = func_definition->funcParameterList();
 
-		//cout<<"Params for function: "<<func_definition->name()<<"\n";
+		cout<<"Params for function: "<<func_definition->parentClassName()<<"."<<func_definition->name()<<" : params size: "<<func_params.size()<<"\n";
+
+		if(func_definition->parentClassName() == "array")
+		{
+			cout<<"skip array for now.\n";
+			return;
+		}
 
 		/*
 		//nice debugging of funcParameterList:
 		for(LangElement* elem: func_params)
 		{
-			cout<<"param: "<<elem->toSingleLineString()<<"\n";
+			cout<<"\tparam: "<<elem->toSingleLineString()<<"\n";
 			if(elem->definitionElement())
 			{
 				cout<<"TYPE definitionElement: "<<elem->definitionElement()->toSingleLineString()<<"\n";
 			}
-			else cout<<"types DON'T have definitionElements.\n"; //this mostly happens only for built_in_types.
+			//else cout<<"types DON'T have definitionElements.\n"; //this mostly happens only for built_in_types.
 			//and I'm happy to tell you that we seem to have definitionElements for user defined types!
 		}
 		*/
 
-		/*
+/*		
 		vector<LangElement*> func_call_args = set_elem.funcCallArgumentList();		
 		for(LangElement* elem: func_call_args)
 		{
 			cout<<"func_call_args: "<<elem->toSingleLineString()<<"\n";
 		}
-		*/
+*/		
 
 		/*
 		if(func_call_args.size() > func_params.size() )
@@ -169,6 +175,20 @@
 		switch(set_elem.token())
 		{
 			default:
+			break;
+			case Token::ASSIGNMENT:
+				if( set_elem.previous2ndElement() )
+				{
+					if(set_elem.previous2ndElement()->token() == Token::NEWLINE
+					|| set_elem.previous2ndElement()->token() == Token::SCOPE_BEGIN)
+					{
+						// Ok.
+					}
+					else
+					{
+						ReportError::reportError("Assignment operator = is not allowed inside other statements. You can't put it inside a while, if or function call.", { &set_elem, set_elem.previous2ndElement() } );
+					}
+				}
 			break;
 			case Token::FUNC_CALL:
 				validateFuncCall(set_elem);
