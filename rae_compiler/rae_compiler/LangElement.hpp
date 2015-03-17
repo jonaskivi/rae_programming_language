@@ -67,6 +67,8 @@ enum e
 	//TEMPLATE,
 	//DICTIONARY //MAP
 };
+
+string toString(ContainerType::e set);
 }
 
 namespace Token
@@ -157,6 +159,9 @@ enum e
 	VISIBILITY_DEFAULT,
 	VISIBILITY,
 	VISIBILITY_PARENT_CLASS,
+
+	LET, // C++ const
+	MUT, // mutable, not used very often...
 
 	OVERRIDE, //for the override keyword, that let's you redefine stuff with a same name.
 
@@ -275,6 +280,8 @@ enum e
 	string toString(Token::e set);
 	Token::e matchParenthesisEnd(Token::e parenthesis_begin_type);
 	Token::e matchBracketEnd(Token::e begin_type);
+
+	bool isNewline(Token::e set);
 }
 
 
@@ -348,6 +355,7 @@ class LangElement
 {
 public:
 	
+	//init
 	LangElement()
 	:
 		m_token(Token::UNDEFINED),
@@ -364,10 +372,12 @@ public:
 		m_definitionElement(nullptr),
 		m_previousElement(nullptr),
 		m_nextElement(nullptr),
-		m_isUnknownType(false)
+		m_isUnknownType(false),
+		m_isLet(false)
 	{
 	}
 	
+	//init2
 	LangElement(LineNumber& set_line_number, Token::e set_lang_token_type, TypeType::e set_type_type, string set_name = "", string set_type = "")
 	:
 		m_token(set_lang_token_type),
@@ -383,7 +393,8 @@ public:
 		m_definitionElement(nullptr),
 		m_previousElement(nullptr),
 		m_nextElement(nullptr),
-		m_isUnknownType(false)
+		m_isUnknownType(false),
+		m_isLet(false)
 	{
 		lineNumber(set_line_number);
 		
@@ -454,7 +465,7 @@ public:
         return res;
 	}
 
-	
+	//free
 	~LangElement()
 	{
 		#ifdef DEBUG_RAE_DESTRUCTORS
@@ -496,7 +507,7 @@ public:
 	
 	string toString()
 	{
-		string ret = "\tname: " + name() + "\n\t" + tokenString() + "\n\t" + "typetype: " + typeTypeString() + "\n\t" + "type: " + type() + "\n\t" + "line: " + numberToString(lineNumber().line) + "\n";
+		string ret = "\tname: " + name() + "\n\t" + tokenString() + "\n\t" + "typetype: " + typeTypeString() + "\n\t" + "type: " + type() + "containerType: " + ContainerType::toString(containerType()) + "\n\t" + "line: " + numberToString(lineNumber().line) + "\n";
 		return ret;
 	}
 
@@ -654,6 +665,14 @@ public:
 			return true;
 		}
 		//else
+		return false;
+	}
+
+	public: bool isNewline()
+	{
+		if( token() == Token::NEWLINE
+			|| token() == Token::NEWLINE_BEFORE_SCOPE_END)
+			return true;
 		return false;
 	}
 
@@ -1039,6 +1058,15 @@ public:
 	//and can contain all the user defined types.
 	public: string type()
 	{
+		#ifdef DEBUG_RAE_VALIDATE
+			// Validate:
+			if( m_type == "array" && m_containerType != ContainerType::ARRAY && namespaceString() != "rae.std.array.array" )
+			{	
+				ReportError::reportError("Array and ContainerType::ARRAY mismatch in debug mode." + m_name + " " + namespaceString(), nullptr);
+				assert(0);
+			}
+		#endif
+
 		if( builtInType() == BuiltInType::UNDEFINED )
 		{
 			return m_type;
@@ -1176,6 +1204,10 @@ public:
 	public: void parseError(ParseError::e set) { m_parseError = set; }
 	protected: ParseError::e m_parseError;
 
+	public: bool isLet() { return m_isLet; }
+	public: void isLet(bool set) { m_isLet = set; }
+	protected: bool m_isLet;	
+
 	//the type is here, if it's a built_in_type, NOW:
 	//The reason for this separate builtIntype thing is that
 	//we want to be able to change from e.g rae-type long to c++-type
@@ -1193,16 +1225,20 @@ public:
 	public: string builtInTypeString() { return BuiltInType::toString(m_builtInType); }
 	public: string builtInTypeStringCpp()
 	{
+		string is_let = "";
+		if(isLet())
+			is_let = "const ";
+
 		if(containerType() == ContainerType::ARRAY )
 		{
-			return "std::vector<" + BuiltInType::toCppString(m_builtInType) + ">";
+			return "std::vector<" + is_let + BuiltInType::toCppString(m_builtInType) + ">";
 		}
 		else if(containerType() == ContainerType::STATIC_ARRAY )
 		{
-			return "std::array<" + BuiltInType::toCppString(m_builtInType) + ", " + numberToString(staticArraySize()) + ">";
+			return "std::array<" + is_let + BuiltInType::toCppString(m_builtInType) + ", " + numberToString(staticArraySize()) + ">";
 		}
 		//else
-		return BuiltInType::toCppString(m_builtInType);
+		return is_let + BuiltInType::toCppString(m_builtInType);
 	}
 
 	//We've moved the UNKNOWN stuff into this property:
@@ -1526,16 +1562,16 @@ public:
 
 	static string getVisibilityNameInCpp(string set)
 	{
-		if(set == "public")
+		if(set == "pub")
 			return "public: ";
-		else if(set == "protected")
-			return "protected: ";
-		else if(set == "private")
-			return "private: ";
-		else if(set == "library")
+		//REMOVED else if(set == "protected")
+			//return "protected: ";
+		else if(set == "priv")
+			return "protected: "; // priv -> protected !!!!!!!!!
+		else if(set == "lib")
 			return "/*library*/public: ";
-		else if(set == "hidden")
-			return "/*hidden*/protected: ";
+		//TODO or REMOVED else if(set == "hidden")
+		//	return "/*hidden*/protected: ";
 		//else
 		return "";
 	}
@@ -1661,7 +1697,7 @@ public:
 				LangElement* auto_init_elem = init_ob->copy();
 				auto_init_elem->definitionElement(init_ob);//our init_ob can be found through the definitionElement.
 				auto_init_elem->token(Token::AUTO_INIT);
-				elem->addElementToTopOfFunc(auto_init_elem);
+				elem->addAutoInitElementToFunc(auto_init_elem);
 			}
 		}		
 	}
@@ -1881,6 +1917,100 @@ public:
 	}
 */
 
+	void addAutoInitElementToFunc(LangElement* set)
+	{
+		bool to_debug = false;
+		if( token() == Token::CLASS )
+		{
+			cout<<"CLASS addAutoInitElementToFunc: "<<toString()<<"\n";
+			to_debug = true;
+			cout<<"we are adding: "<<set->toString();
+		}
+
+		LangElement* elem_newline = new LangElement( set->lineNumber(), Token::NEWLINE, TypeType::UNDEFINED, "\n" );
+
+		for( uint i = 0; i < langElements.size(); ++i )
+		{
+			if( langElements[i]->token() == Token::NEWLINE )
+			{
+				if( i+1 < langElements.size() )
+				{
+					if( langElements[i+1]->token() == Token::SCOPE_BEGIN )
+					{
+						langElements.insert( langElements.begin() + i, set);
+						langElements.insert( langElements.begin() + i, elem_newline);
+						return;
+					}
+				}
+			}
+		}
+
+		/*
+		vector<LangElement*>::iterator my_it;
+
+		for( my_it = langElements.begin(); my_it < langElements.end(); my_it++ )
+		{
+			#ifdef DEBUG_RAE2
+				cout<<"addAutoInitElementToFunc elem: "<<(*my_it)->toString();
+				//rae::log("elem: ",(*my_it)->toString());
+			#endif
+
+			if( (*my_it) && (*my_it)->token() == Token::NEWLINE_BEFORE_SCOPE_BEGIN )
+			{
+				if(to_debug)
+					cout<<"CLASS found newline on class.\n";
+				
+				#ifdef DEBUG_RAE2
+				cout<<"found newline.\n";
+				//rae::log("found SCOPE_BEGIN.\n");
+				#endif
+
+				(*my_it)->token(Token::NEWLINE); // it is not before a scope anymore.
+				LangElement* elem_newline = new LangElement( set->lineNumber(), Token::NEWLINE_BEFORE_SCOPE_BEGIN, TypeType::UNDEFINED, "\n" );
+
+				//if( my_it < langElements.end() )
+				{
+					#ifdef DEBUG_RAE2
+					cout<<"We found it! iterator and stuff worked. ITERATOR!!!\n";
+					//rae::log("We found it! iterator and stuff worked. ITERATOR!!!\n");
+					#endif
+					langElements.insert(my_it, set);
+					//langElements.insert(my_it, elem_newline );
+				}
+
+				//I believe our iterator is not valid anymore...
+
+
+				//vector<LangElement*>::const_iterator my_it2;
+
+				//Then we'll search again for our set, because the iterators were messed up by our last insert.
+				for( my_it2 = langElements.begin(); my_it < langElements.end(); my_it2++ )
+				{
+					#ifdef DEBUG_RAE2
+					cout<<"elem2: "<<(*my_it2)->toString();
+					//rae::log("elem2: ",(*my_it)->toString());
+					#endif
+
+					if( (*my_it2) && (*my_it2) == set )
+					{
+						break;
+					}
+				}
+
+				//And insert our newline.
+				langElements.insert(my_it2, elem_newline );
+				
+				break;//We break here.
+			}
+			else
+			{
+				if(to_debug)
+					cout<<"CLASS not a scope_begin: "<<(*my_it)->toString()<<".\n";
+			}
+		}
+		*/
+	}
+
 	//Use this with a func element:
 	//void addElementToTopAfterScopeWithNewline(LangElement* set)
 	void addElementToTopOfFunc(LangElement* set)
@@ -1919,7 +2049,7 @@ public:
 
 				(*my_it)->addElementToTopAfterNewlineWithNewline(set);
 
-				if(to_debug) cout<<"shouldve called addElementToTopAfterNewlineWithNewline.\n";
+				if(to_debug) cout<<"should've called addElementToTopAfterNewlineWithNewline.\n";
 				
 				break;//We break here.
 			}

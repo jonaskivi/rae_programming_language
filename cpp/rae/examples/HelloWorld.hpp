@@ -71,11 +71,12 @@ public:
 	//-------------end Rae boilerplate code-------------
 
 
-	public: Tester();//line: 13
-	~Tester();//line: 13
+	Tester(); // line: 12
+	~Tester(); // line: 13
 public: 
 	
-	void logMe();//line: 8
+	void log_me();
+	
 	int32_t data;
 };
 
@@ -143,45 +144,50 @@ public:
 public: 
 	
 	//constructor:
-	HelloWorld();//line: 21
+	HelloWorld();
+	
 	//destructor:
-	~HelloWorld();//line: 26
-	void logIntArray(std::vector<int32_t>* someints);//line: 30
-	public: void sayHello();//line: 39
-	public: int32_t count(int32_t param1, Tester* param2);//line: 69
+	~HelloWorld();
+	
+	void log_int_array(std::vector<int32_t>* someints) const; // line: 30
+	
+	public: void say_hello(); // line: 46
+	public: int32_t count(const int32_t param1,  const Tester* param2); // line: 76
 	public: int32_t number();
 	public: void number(int32_t set);
-	protected: int32_t m_number;//line: 84
+	protected: int32_t m_number; // default initializers are copied to constructors.
 	
-	public: int32_t no_init_data;//line: 86
-	double no_init_datad;//line: 87
 	
-	protected: int32_t anotherNumber;//line: 89
-	public: float afloat;//line: 90
+	public: const int32_t let_init_data; // line: 99
+	int32_t no_init_data; // line: 100
+	double no_init_datad; // line: 101
 	
-	Tester tester;// val is the default type
-	Tester* tester_opt;// opt is the optional type. This one is allocated automatically.
-	Tester* tester_not;//line: 94
-	rae::link<Tester> tester_link;// link is a pointer which can not allocate or free memory.
+	protected: int32_t anotherNumber; // line: 103
+	public: float afloat; // line: 104
+	
+	Tester tester; // val is the default type
+	Tester* tester_opt; // opt is the optional type. This one is allocated automatically.
+	Tester* tester_not; // need to specify that it is null, if you want it to be empty.
+	rae::link<Tester> tester_link; // link is a pointer which can not allocate or free memory.
 	// a non-owning pointer which is also automatically set to null 
 	// when the pointed object is destroyed.
-	Tester* tester_ptr;// Don't use raw pointers unless interfacing with C.
+	Tester* tester_ptr; // Don't use raw pointers unless interfacing with C.
 	
-	std::string name;//line: 100
+	std::string name; // line: 114
 	
-	std::vector<std::string> names;//line: 102
+	std::vector<std::string> names; // line: 116
 	
-	std::vector<int32_t>* opt_array_test;//line: 104
-	std::vector<int32_t>* ref_array_test;//line: 105
-	std::vector<int32_t>* ptr_array_test;//line: 106
+	std::vector<int32_t>* opt_array_test; // line: 118
+	std::vector<int32_t>* ref_array_test; // line: 119
+	std::vector<int32_t>* ptr_array_test; // line: 120
 	//TODO link[int] link_array_test
-	std::vector<int32_t> array_test;//std::vector<int>	
-	std::array<int32_t, 5> static_array_test;//std::array<int, 5>
-	std::vector<Tester > testers;//line: 110
-	std::vector<Tester > defaultTesters;//line: 111
-	std::vector<rae::link<Tester> > tester_links;//line: 112
-	std::vector<Tester* > tester_opts;//line: 113
-	std::vector<Tester* > tester_refs;//line: 114
+	std::vector<int32_t> array_test; //std::vector<int>	
+	std::array<int32_t, 5> static_array_test; //std::array<int, 5>
+	std::vector<Tester > testers; // line: 124
+	std::vector<Tester > defaultTesters; // line: 125
+	std::vector<rae::link<Tester> > tester_links; // line: 126
+	std::vector<Tester* > tester_opts; // line: 127
+	std::vector<Tester* > tester_refs; // line: 128
 	std::vector<Tester* > tester_ptrs;
 };
 

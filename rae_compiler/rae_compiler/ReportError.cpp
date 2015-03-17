@@ -68,6 +68,7 @@
 			cout<<"\n\t"<<set_elem->tokenString();
 			cout<<"\n\t"<<"typetype: "<<set_elem->typeTypeString();
 			cout<<"\n\t"<<"type: "<<set_elem->type();
+			cout<<"\n\t"<<"containerType: "<<ContainerType::toString( set_elem->containerType() );
 			cout<<"\n\tline: ";
 			rlutil::setColor(rlutil::BROWN);
 			cout<<set_elem->lineNumber().line;
@@ -100,6 +101,7 @@
 			cout<<"\n\t"<<set_elem->tokenString();
 			cout<<"\n\t"<<"typetype: "<<set_elem->typeTypeString();
 			cout<<"\n\t"<<"type: "<<set_elem->type();
+			cout<<"\n\t"<<"containerType: "<<ContainerType::toString( set_elem->containerType() );
 			cout<<"\n\tline: ";
 			rlutil::setColor(rlutil::BROWN);
 			cout<<set_elem->lineNumber().line;
@@ -141,6 +143,7 @@
 				cout<<"\n\t"<<set_elem->tokenString();
 				cout<<"\n\t"<<"typetype: "<<set_elem->typeTypeString();
 				cout<<"\n\t"<<"type: "<<set_elem->type();
+				cout<<"\n\t"<<"containerType: "<<ContainerType::toString( set_elem->containerType() );
 				cout<<"\n\tline: ";
 				rlutil::setColor(rlutil::BROWN);
 				cout<<set_elem->lineNumber().line;
@@ -182,6 +185,7 @@
 				cout<<"\n\t"<<set_elem->tokenString();
 				cout<<"\n\t"<<"typetype: "<<set_elem->typeTypeString();
 				cout<<"\n\t"<<"type: "<<set_elem->type();
+				cout<<"\n\t"<<"containerType: "<<ContainerType::toString( set_elem->containerType() );
 				cout<<"\n\tline: ";
 				rlutil::setColor(rlutil::BROWN);
 				cout<<set_elem->lineNumber().line;
@@ -226,6 +230,7 @@
 			cout<<"\n\t"<<set_elem->tokenString();
 			cout<<"\n\t"<<"typetype: "<<set_elem->typeTypeString();
 			cout<<"\n\t"<<"type: "<<set_elem->type();
+			cout<<"\n\t"<<"containerType: "<<ContainerType::toString( set_elem->containerType() );
 			cout<<"\n\tline: ";
 			rlutil::setColor(rlutil::BROWN);
 			cout<<set_elem->lineNumber().line;

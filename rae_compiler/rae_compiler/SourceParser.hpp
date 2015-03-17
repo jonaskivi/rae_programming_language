@@ -780,7 +780,7 @@ public:
 									{
 										LangElement* auto_init_elem = init_ob->copy();
 										auto_init_elem->token(Token::AUTO_INIT);
-										elem->addElementToTopOfFunc(auto_init_elem);
+										elem->addAutoInitElementToFunc(auto_init_elem);
 									}
 								}
 							}
@@ -797,7 +797,7 @@ public:
 								
 								LangElement* auto_init_elem = init_ob->copy();
 								auto_init_elem->token(Token::AUTO_INIT);
-								elem->addElementToTopOfFunc(auto_init_elem);
+								elem->addAutoInitElementToFunc(auto_init_elem);
 								//THIS is not needed, as the init_ob->copy() already does this:
 								//auto_init_elem->initData( init_ob->initData() );//Copy initdata!!
 								
@@ -975,7 +975,7 @@ public:
 		else
 		{
 			#ifdef DEBUG_RAE
-			cout<<"End init_data.\n" );
+			cout<<"End init_data.\n";
 			//rae::log("End scope for: ",Token::toString( scope_elem->token() ));
 			#endif
 		}
@@ -994,7 +994,8 @@ public:
 		//removed freeOwned from here.
 		//removed checking for NEWLINE_BEFORE_SCOPE_END
 		
-		resetParentElementToCurrentScope();	
+		resetParentElementToCurrentScope();
+		doReturnToExpectToken(); // Note that we set expectingtoken already here.
 	}
 
 	LangElement* newParenthesisBegin(Token::e set_lang_token_type, string set_token)
@@ -1453,6 +1454,12 @@ public:
 			//rae::log("newComment: ",set_name,"\n");
 		#endif
 
+		if( isReceivingInitData == true )
+		{
+			// We must end initdata if there's any end of the line comments coming in.
+			endInitData();
+		}
+
 		return newLangElement(Token::COMMENT, TypeType::UNDEFINED, set_name);
 	}
 
@@ -1741,6 +1748,7 @@ REMOVED:
 
 		LangElement* lang_elem = newLangElement(Token::USE_REFERENCE, set_definition_elem->typeType(), set_definition_elem->name(), set_definition_elem->type() );
 		
+		lang_elem->containerType( set_definition_elem->containerType() );
 		lang_elem->definitionElement(set_definition_elem);
 
 		#ifdef DEBUG_RAE_HUMAN
@@ -1851,6 +1859,9 @@ REMOVED:
 	{
 		if( set_elem == 0 )
 			return 0;
+
+		assert(0); //REMOVE THIS FUNC?
+
 		//LangElement* lang_elem = newLangElement(Token::USE_VECTOR, set_elem->name(), set_elem->type() );
 		LangElement* lang_elem = newLangElement(Token::USE_REFERENCE, TypeType::VECTOR, set_elem->name(), set_elem->type() );
 		//lang_elem->typeType(TypeType::VECTOR);
@@ -3772,7 +3783,6 @@ public:
 		{
 			//we should make a expectingToken() == Token::ACTUAL_INIT_DATA that we wait after we get 
 			//the =. And also to handle //comments /**/ as not being init_data, or can they be initDATA? or passed with it?
-
 			
 			if( set_token == "." )
 			{
@@ -3798,13 +3808,14 @@ public:
 				}
 				else
 				{
-					ReportError::reportError("Waiting for INIT_DATA: Got NEWLINE but there was no INIT_DATA element.", previousElement() );
+					ReportError::reportError("Waiting for INIT_DATA: Got SEMICOLON but there was no INIT_DATA element.", previousElement() );
 					//TODO ReportError::additionalInfo("currentParentElement: ", currentParentElement() );
 					cout<<"currentParentElement: ";
 					if(currentParentElement()) cout<<currentParentElement()->toString()<<"\n"; else cout<<"nullptr"<<"\n";
+
+					doReturnToExpectToken();
 				}	
 
-				doReturnToExpectToken();
 				newLangElement(Token::SEMICOLON, TypeType::UNDEFINED, set_token);
 			}
 			else if( set_token == "\n" )
@@ -3833,9 +3844,10 @@ public:
 					//TODO ReportError::additionalInfo("currentParentElement: ", currentParentElement() );
 					cout<<"currentParentElement: ";
 					if(currentParentElement()) cout<<currentParentElement()->toString()<<"\n"; else cout<<"nullptr"<<"\n";
+
+					doReturnToExpectToken();
 				}	
 
-				doReturnToExpectToken();
 				newLine();				
 			}
 			else if( set_token == "\"" )
@@ -4525,16 +4537,29 @@ public:
 				//checkPreviousBracketArrayDefineEtc(Token::DEFINE_BUILT_IN_TYPE_NAME);
 				
 				//if( currentParentElement() && currentParentElement()->token() == Token::BRACKET_DEFINE_ARRAY_BEGIN )
+				
+				bool is_let = false;
+
+				if( previousToken() == Token::LET )
+				{
+					is_let = true;
+					previousElement()->token(Token::EMPTY);
+				}
+
+				LangElement* our_ref;
 				if( not bracketStack.empty() )
 				{
-					LangElement* our_ref = newDefineBuiltInType(BuiltInType::stringToBuiltInType(set_token), Role::TEMPLATE_PARAMETER, set_token);
+					our_ref = newDefineBuiltInType(BuiltInType::stringToBuiltInType(set_token), Role::TEMPLATE_PARAMETER, set_token);
 				}
 				else
 				{
 					expectingToken(Token::DEFINE_BUILT_IN_TYPE_NAME);
-					LangElement* our_ref = newDefineBuiltInType(BuiltInType::stringToBuiltInType(set_token), expectingRole(), set_token);
+					our_ref = newDefineBuiltInType(BuiltInType::stringToBuiltInType(set_token), expectingRole(), set_token);
 					unfinishedElement(our_ref);
 				}
+
+				our_ref->isLet(is_let);
+
 				/*
 				if( !bracketStack.empty() )
 				{
@@ -4869,9 +4894,13 @@ This never gets called. Look in expecting NAME thing...
 			{
 				newLangElement(Token::IF, TypeType::UNDEFINED, set_token);
 			}
-			else if( set_token == "for" )
+			else if( set_token == "loop" )
 			{
 				newLangElement(Token::FOR, TypeType::UNDEFINED, set_token);
+			}
+			else if( set_token == "for" )
+			{
+				cout<<"ERROR for is deprecated!\n";
 			}
 			/*
 			else if( set_token == "foreach" )
@@ -4930,6 +4959,7 @@ This never gets called. Look in expecting NAME thing...
 				newLangElement(Token::VISIBILITY_DEFAULT, set_token);
 			}
 			*/
+			/*//TODO errors for these old LONG visibility keywords:
 			else if( set_token == "public" )
 			{
 				newLangElement(Token::VISIBILITY, TypeType::UNDEFINED, set_token );
@@ -4949,6 +4979,28 @@ This never gets called. Look in expecting NAME thing...
 				newLangElement(Token::VISIBILITY, TypeType::UNDEFINED, set_token);
 			}
 			else if( set_token == "private" )//what's the real use of private, anyway?
+			{
+				newLangElement(Token::VISIBILITY, TypeType::UNDEFINED, set_token);
+			}
+			*/
+			else if( set_token == "let" )
+			{
+				newLangElement(Token::LET, TypeType::UNDEFINED, set_token );
+			}
+			else if( set_token == "mut" )
+			{
+				newLangElement(Token::MUT, TypeType::UNDEFINED, set_token );
+			}
+			else if( set_token == "pub" )
+			{
+				newLangElement(Token::VISIBILITY, TypeType::UNDEFINED, set_token );
+			}
+			else if( set_token == "lib" )
+			{
+				//TODO
+				newLangElement(Token::VISIBILITY, TypeType::UNDEFINED, set_token);
+			}
+			else if( set_token == "priv" ) // -> protected
 			{
 				newLangElement(Token::VISIBILITY, TypeType::UNDEFINED, set_token);
 			}
@@ -6154,7 +6206,7 @@ This never gets called. Look in expecting NAME thing...
 				//if(moduleName() == "rae.examples.Tester")
 				//{
 					#ifdef DEBUG_RAE_PARSER
-					cout<<"it is not: "<<elem->toString()<<"\n";
+					cout<<"looking: " << set_elem->name() << " it is not: "<<elem->toString()<<"\n";
 					#endif
 				//}
 			}
@@ -7276,6 +7328,7 @@ This never gets called. Look in expecting NAME thing...
 					#endif
 					our_unknown_elem->token(Token::USE_REFERENCE);
 					our_unknown_elem->typeType( maybe_member->typeType() );//Umm, could it be a vector?
+					our_unknown_elem->containerType( maybe_member->containerType() );
 				}
 				else
 				{
@@ -7486,6 +7539,7 @@ This never gets called. Look in expecting NAME thing...
 						lang_elem->token(Token::USE_REFERENCE);
 						lang_elem->type( found_elem->type() );//copy the class type etc.
 						lang_elem->typeType( found_elem->typeType() );//copy the typetype. ref, built_in, array, vector etc.
+						lang_elem->containerType( found_elem->containerType() );
 						lang_elem->isUnknownType(false);
 
 						//mark that we found the definition for future use:

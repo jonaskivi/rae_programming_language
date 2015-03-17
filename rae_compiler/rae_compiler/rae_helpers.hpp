@@ -32,7 +32,10 @@ typedef unsigned int uint;
 
 //#include "rae_log.hpp"
 
-//#define DEBUG_RAE_HUMAN
+#define DEBUG_RAE_DEBUGTREE
+#define DEBUG_RAE_VALIDATE
+#define DEBUG_RAE_HUMAN
+
 //#define DEBUG_RAE_PARSER
 //#define DEBUG_RAE
 //#define DEBUG_RAE2
@@ -40,7 +43,6 @@ typedef unsigned int uint;
 //#define DEBUG_RAE_RVALUE
 //#define DEBUG_FILEWRITER
 //#define DEBUG_RAE_INDENTS
-#define DEBUG_RAE_DEBUGTREE
 //#define DEBUG_RAE_BRACKET
 
 template <typename T>

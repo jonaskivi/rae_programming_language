@@ -1,0 +1,425 @@
+// Casting:
+
+cast[float](int_value)
+cast_to_float(int_value)
+float(int_value) // NO, impossible to find.
+int_value.float // NO, impossible to find.
+
+// Multiple return values:
+
+func one_thing (float param1, Actor param2) {}
+func (float ret1, Actor ret2) another_thing (int param1, Actor actor) // The Actor here defaults to mut ref.
+{
+	actor.move(0.0f, 12.0f * m_time_delta, 0.0f)
+	return ( cast[float](param1), m_some_actor ) // optional parentheses in multiple return statement.
+}
+
+Actor actor_value(52, 32)
+float what_to_do, ref Actor act = another_thing(48, actor_value) // auto convert actor_value to ref
+
+// Chain like this:
+one_thing( another_thing(12, actor_value) )
+
+
+// Test const styles and variable creation:
+
+pub ref Tester param2 // Tester& param2, we are going to change this
+pro ref!Tester param3 // const Tester& param2, we can't change this
+pub func (string ret) tester_to_string (ref!Tester set, int! somevalue)
+pri func (string ret) tester_to_string (ref!Tester[] set, int![] somevalue)!
+
+pub ref Tester param2
+pro let ref Tester param3
+pro cons ref Tester param3
+pro stay ref Tester param3
+func (string ret) tester_to_string (let ref Tester[] set, let int somevalue) let
+
+
+// There is some reason why const should be a sigil like "!"
+
+int param1   = 52
+float num2   = 45.03f
+double num3  = 0.008
+long num4    = 728
+bool is_that = true
+ref Tester param2 = init( par, par2, par3 ) // init is a keyword like new!
+opt Tester param3
+ref!Tester param3
+opt Tester m_member -> null
+link Tester m_other
+link Tester m_other -> m_parent.original
+
+// The searchability of the def (or var) solution is beyond compare
+def Actor : class : ParentClass
+{
+
+}
+def another_thing : func (float ret, Actor ret2)( int param1, Actor actor) {}
+def param1 : int = 52
+def num2 : float = 45.03f
+def num3 : double = 0.008
+def num4 : long = 728
+def is_that : bool = true
+def param2 : ref Tester( par, par2, par3 ) // But it's three more letters to type each time.
+def param3 : opt Tester
+def param3 : let ref Tester
+def m_member : opt Tester -> null
+def m_other : link Tester
+def m_other : link Tester -> m_parent.original
+
+// Removing the def is also possible, and it is still easy to search "param_name :"
+param1 : int = 52
+num2 : float = 45.03f
+num3 : double = 0.008
+num4 : long = 728
+is_that : bool = true
+param2 : ref Tester( par, par2, par3 )
+param3 : opt Tester
+param3 : ref!Tester
+m_member : opt Tester -> null
+m_other : link Tester
+m_other : link Tester -> m_parent.original
+
+// How about that in classes:
+
+ParentClass : class
+{
+}
+
+Actor : class : ParentClass
+{
+	tctype_to_string : func = (string) (set : val!TCType, somevalue : int = 3)
+	{
+		switch set
+		{
+			case TCType.TC24
+				return "TC24"
+			case TCType.TC25
+				return "TC25"
+			case TCType.TC29_97
+				return "TC29_97"
+		}
+	}
+}
+
+// My eyes bleed.
+
+// How about wihout the colon, you can't search for anything now.
+Actor class : ParentClass
+{
+
+}
+another_thing func (float ret, Actor ret2)( int param1, Actor actor) {}
+param1 int = 52
+num2 float = 45.03f
+num3 double = 0.008
+num4 long = 728
+is_that bool = true
+param2 Tester ref( par, par2, par3 )
+param3 Tester opt
+param3 Tester let ref
+m_member Tester opt -> null
+m_other Tester link
+m_other Tester link -> m_parent.original
+
+
+// The following experiment tells me that it is hard to remember gazillion three letter words,
+// they just look the same.
+int param1  = 52
+flo num2    = 45.03f
+dou num3    = 0.008
+lon num4    = 728
+bol is_that = true
+ref param2  = Tester(par, par2, par3)
+opt param3  = Tester
+ref param3  = Tester!
+opt m_member = Tester(null)
+lin m_other = Tester
+lin m_other = Tester -> m_parent.original
+
+// property tests:
+
+fun (vec3) position { return m_position } pub!
+fun position (vec3 set) { m_position = set } pub
+pro vec3 m_position
+
+pub property position : vec3
+{
+	get { return m_data } !
+	set { m_data = set }
+}
+
+pub property position : vec3
+{
+	get	{ compute_aabb; return m_data }!
+	set { m_data = set; update_matrix }
+}
+
+pub property position : vec3
+{
+	get
+	{
+		compute_aabb
+		return m_data
+	} !
+	
+	set
+	{
+		m_data = set
+		update_matrix
+	}
+}
+
+
+
+
+
+
+// A quick test with dot as the terminating char and colon as hierarchical separator
+// (like in C++ namespaces you have two colons Class::func).
+// It seems that "." dot is better because it has mathematical decimal connotation, which
+// also has hierarchy. Numbers before the decimal dot are bigger in hierarchy than numbers after it.
+ref DebuggerObject = someObject:do_something:getSomeOtherThing:justDoIt(param1, param2).
+
+ref DebuggerObject = someObject.do_something.getSomeOtherThing.justDoIt(param1, param2).
+
+ref DebuggerObject = some_object:do_something:get_some_other_thing:just_do_it(param1, param2).
+
+ref DebuggerObject = some_object.do_something.get_some_other_thing.just_do_it(param1, param2);
+
+// That was also a style test with camelCase vs underscore_style. Currently I believe in the
+// nicely retro and IMHO more readable underscore_style. Back to C. Back to 80's.
+// An exception: User defined Classes should be CamelCase. Built in types are underscore_style.
+// m_class_members start with an m_.
+
+
+// A style test without curly braces {}.
+
+module rae.Actor
+
+class Actor                                      {} // the curly braces are just to break the syntax highlighter.
+	func (string) tctype_to_string (val!TCType set, int somevalue = 3)
+		switch set
+			case TCType.TC24
+				return "TC24"
+			case TCType.TC25
+				return "TC25"
+			case TCType.TC29_97
+				return "TC29_97"
+		end switch
+	end func
+
+	func loops_and_if_statements
+		if something == value
+			do_something
+		end if
+
+		if something == value
+			do_something
+			do_something2
+		end if
+
+		// for loop, 3 statements separated by ;, optional parentheses
+		loop int i = 0; i < m_objects.size; ++i
+			ref DebuggerObject obj = m_objects[i]
+			obj.scale = m_scale
+		end loop
+
+		// foreach loop, 2 statements separate by ;
+		loop ref DebuggerObject obj in m_objects
+			obj.scale = m_scale
+		end loop
+
+		// while loop, 1 statement separated by emptiness
+		loop something == value
+
+		end loop
+
+		// loop forever
+		loop
+
+		end loop
+	end func
+end class                                       {}
+
+
+// A different style test. Look at the alignment benefits!
+
+module rae.Actor
+
+class Actor                                      {}
+	func (string) tctype_to_string (val!TCType set, int somevalue = 3)
+		switch set
+			case TCType.TC24
+				return "TC24"
+			case TCType.TC25
+				return "TC25"
+			case TCType.TC29_97
+				return "TC29_97"
+		switch end
+	func end
+
+	func loops_and_if_statements
+		if something == value
+			do_something
+		if end
+
+		if something == value
+			do_something
+			do_something2
+		if end
+
+		// for loop, 3 statements separated by ;, optional parentheses
+		loop int i = 0; i < m_objects.size; ++i
+			ref DebuggerObject obj = m_objects[i]
+			obj.scale = m_scale
+		loop end
+
+		// foreach loop, 2 statements separate by in
+		loop ref DebuggerObject obj in m_objects
+			obj.scale = m_scale
+		loop end
+
+		// while loop, 1 statement separated by emptiness
+		loop something == value
+
+		loop end
+
+		// loop forever
+		loop
+
+		loop end
+	func end
+class end                                                      {}
+
+
+// No parentheses style
+
+module rae.Actor
+
+class Actor
+{
+	func (string) tctype_to_string (val!TCType set, int somevalue = 3)
+	{
+		switch set
+		{
+			case TCType.TC24
+				return "TC24"
+			case TCType.TC25
+				return "TC25"
+			case TCType.TC29_97
+				return "TC29_97"
+		}
+	}
+
+	func loops_and_if_statements
+	{
+		if something == value
+			do_something
+
+		if something == value
+		{
+			do_something
+			do_something2
+		}
+
+		// for loop, 3 statements separated by ;, optional parentheses
+		loop int i = 0; i < m_objects.size; ++i
+		{
+			ref DebuggerObject obj = m_objects[i]
+			obj.scale = m_scale
+		}
+
+		// foreach loop, 2 statements separate by in
+		loop ref DebuggerObject obj in m_objects
+		{
+			obj.scale = m_scale
+		}
+
+		// while loop, 1 statement separated by emptiness
+		loop something == value
+		{
+
+		}
+
+		// loop forever
+		loop
+		{
+
+		}
+	}
+}
+
+
+// Lots of parentheses style
+
+module rae.Actor
+
+class Actor
+{
+	func (string) tctype_to_string (val!TCType set, int somevalue = 3)
+	{
+		switch(set)
+		{
+			case(TCType.TC24)
+				return("TC24")
+			case(TCType.TC25)
+				return("TC25")
+			case(TCType.TC29_97)
+				return("TC29_97")
+		}
+	}
+
+	func loops_and_if_statements
+	{
+		if(something == value)
+			do_something
+
+		if(something == value)
+		{
+			do_something
+			do_something2
+		}
+
+		loop(int i = 0; i < m_objects.size; ++i)
+		{
+			ref DebuggerObject obj = m_objects[i]
+			obj.scale = m_scale
+		}
+	}
+
+	// Parentheses and space style
+
+	func (string ret) tctype_to_string (val!TCType set, int somevalue = 3)
+	{
+		switch (set)
+		{
+			case (TCType.TC24)
+				return ("TC24")
+			case (TCType.TC25)
+				return ("TC25")
+			case (TCType.TC29_97)
+				return ("TC29_97")
+		}
+	}
+
+	func () loops_and_if_statements ()
+	{
+		if (something == value)
+			do_something
+
+		if (something == value)
+		{
+			do_something
+			do_something2
+		}
+
+		loop (int i = 0; i < m_objects.size; ++i)
+		{
+			ref DebuggerObject obj = m_objects[i]
+			obj.scale = m_scale
+		}
+	}
+}
+
+

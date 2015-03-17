@@ -16,6 +16,7 @@ class StringFileWriter
 {
 public:
 	StringFileWriter()
+	: m_lineNeedsEnding("")
 	{
 		m_isFileOk = false;
 		m_currentIndent = 0;
@@ -103,9 +104,59 @@ public:
 	public: void nextToken(Token::e set) { m_nextToken = set; }
 	protected: Token::e m_nextToken;
 */
+
+	public: bool writeLineEnding()
+	{
+		bool did_we_write_it = false;
+		if( m_lineNeedsEnding != "" )
+		{
+			writeString( m_lineNeedsEnding );
+			did_we_write_it = true;
+			m_lineNeedsEnding = "";
+		}
+		return did_we_write_it;	
+	}
+
+	public: bool writeSemicolon()
+	{
+		bool did_we_write_it = false;
+		if( lineNeedsSemicolon() == true
+			&& previousToken() != Token::SEMICOLON
+			&& previousToken() != Token::NEWLINE
+			&& previousToken() != Token::NEWLINE_BEFORE_SCOPE_END
+			&& previousToken() != Token::CONSTRUCTOR
+			&& previousToken() != Token::DESTRUCTOR
+			&& previousToken() != Token::FUNC
+			&& previousToken() != Token::MAIN
+			//&& previousToken() != Token::SCOPE_BEGIN
+			//&& previousToken() != Token::SCOPE_END
+			//&& previousToken() != Token::FUNC
+			//&& previousToken() != Token::DEFINE_FUNC_ARGUMENT
+			//&& previousToken() != Token::DEFINE_FUNC_RETURN //not actually needed...
+			//&& previousToken() != Token::CLASS
+			//&& previousToken() != Token::COMMENT
+			////&& previousToken() != Token::STAR_COMMENT
+			//&& previousToken() != Token::VISIBILITY_DEFAULT
+		)
+		{
+			//REMOVE assert(writer.previousElement() != nullptr);
+			//cout<<"NEWLINE previousElement: "<<writer.previousElement()->toSingleLineString();
+			//cout<<"\nlineNeedsSemicolon: "<<writer.lineNeedsSemicolon()<<"\n";
+
+			writeChar(';');
+			did_we_write_it = true;
+		}
+		lineNeedsSemicolon(true);
+		return did_we_write_it;
+	}
+
 	public: bool lineNeedsSemicolon() { return m_lineNeedsSemicolon; }
 	public: void lineNeedsSemicolon(bool set) { m_lineNeedsSemicolon = set; }
 	protected: bool m_lineNeedsSemicolon;// = true;
+
+	public: string lineNeedsEnding() { return m_lineNeedsEnding; }
+	public: void lineNeedsEnding(string set) { m_lineNeedsEnding = set; }
+	protected: string m_lineNeedsEnding;
 
 	public: string& currentDefaultVisibility() { return m_currentDefaultVisibility; }
 	public: void currentDefaultVisibility(string set) { m_currentDefaultVisibility = set; }

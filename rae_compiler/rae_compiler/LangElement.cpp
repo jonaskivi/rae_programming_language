@@ -8,27 +8,27 @@ string toString(TypeType::e set)
 	switch(set)
 	{
 		default:
-		return "ERROR TypeType:: not recognized.";
+			return "ERROR TypeType:: not recognized.";
 		case TypeType::UNDEFINED:
-		return "TypeType::UNDEFINED";
+			return "TypeType::UNDEFINED";
 		case TypeType::VAL:
-		return "TypeType::VAL";
+			return "TypeType::VAL";
 		case TypeType::REF:
-		return "TypeType::REF";
+			return "TypeType::REF";
 		case TypeType::OPT:
-		return "TypeType::OPT";
+			return "TypeType::OPT";
 		case TypeType::LINK:
-		return "TypeType::LINK";
+			return "TypeType::LINK";
 		case TypeType::PTR:
-		return "TypeType::PTR";
+			return "TypeType::PTR";
 		case TypeType::BUILT_IN_TYPE:
-		return "TypeType::BUILT_IN_TYPE";
+			return "TypeType::BUILT_IN_TYPE";
 		//case TypeType::ARRAY:
-		//return "TypeType::ARRAY";
+			//return "TypeType::ARRAY";
 		case TypeType::VECTOR:
-		return "TypeType::VECTOR";
+			return "TypeType::VECTOR";
 		case TypeType::TEMPLATE:
-		return "TypeType::TEMPLATE";
+			return "TypeType::TEMPLATE";
 	}
 }
 
@@ -51,6 +51,23 @@ TypeType::e fromString(const string& set)
 }
 }
 
+namespace ContainerType
+{
+string toString(ContainerType::e set)
+{
+	switch(set)
+	{
+		default:
+			return "ERROR ContainerType:: not recognized.";
+		case ContainerType::UNDEFINED:
+			return "ContainerType::UNDEFINED";
+		case ContainerType::ARRAY:
+			return "ContainerType::ARRAY";
+		case ContainerType::STATIC_ARRAY:
+			return "ContainerType::STATIC_ARRAY";
+	}
+}
+}
 
 namespace Token
 {
@@ -195,6 +212,11 @@ string toString(Token::e set)
 			case Token::VISIBILITY_PARENT_CLASS:
 			return "Token::VISIBILITY_PARENT_CLASS";
 			
+			case Token::LET:
+			return "Token::LET";
+			case Token::MUT:
+			return "Token::MUT";
+
 			case Token::OVERRIDE:
 			return "Token::OVERRIDE";
 
@@ -486,6 +508,14 @@ string toString(Token::e set)
 			return Token::BRACKET_DEFINE_STATIC_ARRAY_END;			
 		}
 
+	}
+
+	bool isNewline(Token::e set)
+	{
+		if( set == Token::NEWLINE
+			|| set == Token::NEWLINE_BEFORE_SCOPE_END)
+			return true;
+		return false;
 	}
 /*
 	Token::e matchBuiltIntTypesToInClass(Token::e lang_token_type)

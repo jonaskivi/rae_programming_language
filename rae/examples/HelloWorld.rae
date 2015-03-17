@@ -2,9 +2,9 @@ module rae.examples.HelloWorld
 
 class Tester
 {
-public:
+pub:
 
-	func ()logMe()
+	func log_me
 	{
 		log_s("Hello ")
 	}
@@ -14,31 +14,38 @@ public:
 
 class HelloWorld
 {
-public:
+pub:
 
 	//constructor:
-	func ()init()
+	func init
 	{
 	}
 	
 	//destructor:
-	func ()free()
+	func free
 	{
 	}
 	
-	func ()logIntArray(ref[int] someints)
+	func log_int_array (ref[int] someints) let
 	{
-		for(int a_num in someints)
+		// foreach loop
+		loop( int a_num in someints )
 		{
-			log(a_num)
+			log("foreach: ", a_num)
+		}
+
+		// for loop
+		loop( uint i = 0; i < someints.size; ++i )
+		{
+			log("for: ", someints[i])
 		}
 	}
 
-	public func
-	()sayHello()
+	pub func
+	()say_hello()
 	{
 		[int] my_numbers
-		my_numbers.emplace_back(1)
+		my_numbers.emplace_back(1) // TODO rename emplace_back(1) to create(1)
 		my_numbers.emplace_back(2)
 		my_numbers.emplace_back(3)
 		my_numbers.emplace_back(4)
@@ -47,7 +54,7 @@ public:
 		my_numbers.emplace_back(7)
 		my_numbers.emplace_back(129874234985)
 		
-		//logIntArray(my_numbers)
+		//NEXT TODO log_int_array(my_numbers)
 		/*
 		for(int a_num in my_numbers)
 		{
@@ -61,31 +68,38 @@ public:
 		}
 		*/
 		
-		tester.logMe
+		tester.log_me
 		log("World!")
 	}
 	
-	func (int result) count (int param1, ref Tester param2) public
+	func (int result) count (let int param1, let ref Tester param2) pub
 	{
 		if(param2 is null) //TODO oneliner if handling:
-			return(0)
+			return 0
 
 		if(param1 > 0 )// TODO is not: and param2 is not null)
 		{
 			log("whoa.")
 		}
 
-		return(param1 + param2.data)
+		if param1 > 0 // TODO no parentheses
+		{
+			log("whoa.")
+		}
+
+		return param1 + param2.data
 	}
 	
-	public func (int) number () { return(m_number) }
-	public func () number (int set) { m_number = set }
-	protected int m_number = 5 // default initializers are copied to constructors.
+	pub func (int) number { return m_number }
+	pub func number (int set) { m_number = set }
+	priv int m_number = 5 // default initializers are copied to constructors.
 	
+
+	let int let_init_data = 42
 	int no_init_data
 	double no_init_datad
 
-	protected int anotherNumber = 42
+	priv int anotherNumber = 42
 	float afloat = 248.52
 
 	Tester tester // val is the default type
@@ -116,8 +130,8 @@ public:
 
 func (int) main ([string] args)
 {
-	string helloRae = "What? Hello Rae World"
-	log(helloRae)
+	string hello_rae = "What? Hello Rae World"
+	log(hello_rae)
 
 	val HelloWorld hello; //semicolons are allowed, but not required.
 
@@ -132,9 +146,9 @@ func (int) main ([string] args)
 	tester_lnk -> hello.tester
 
 	log("LINK saying hello:")
-	tester_lnk.logMe()
+	tester_lnk.log_me()
 
-	hello.sayHello()
+	hello.say_hello()
 
 	log_s("5 + 2 = ")
 
@@ -147,20 +161,20 @@ func (int) main ([string] args)
 	hello.tester_links.emplace_back
 	hello.tester_links[0] -> hello.tester
 	log("LINK in an array saying hello: ")
-	hello.tester_links[0].logMe()
+	hello.tester_links[0].log_me()
 	log("Ok. Said hello.")
 	hello.tester_links[0].data = 8
 	log("an eight = ", hello.tester_links[0].data );
 
-	if(true == 1)
+	if true == 1  // parentheses also allowed.
 	{
 		log("true")
 	}
 
-	bool isWhat = false
-	bool isOther = true
+	bool is_what = false
+	bool is_other = true
 
-	if(isWhat == true or isOther == true)
+	if is_what == true or is_other == true
 	{
 		log("false")
 	}
@@ -168,6 +182,6 @@ func (int) main ([string] args)
 	//hello.array_test[0]
 	//log("arrays 9 + 2 = ", hello.count( hello.array_test[0], hello.tester_opts[0] ))
 
-	return(0)
+	return 0
 }
 

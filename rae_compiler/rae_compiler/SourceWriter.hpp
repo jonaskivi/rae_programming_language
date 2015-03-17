@@ -108,6 +108,7 @@
 			case Token::NEWLINE:
 
 			{
+				/*
 				if( writer.lineNeedsSemicolon() == true
 					&& writer.previousToken() != Token::SEMICOLON
 					&& writer.previousToken() != Token::NEWLINE
@@ -116,36 +117,47 @@
 					&& writer.previousToken() != Token::DESTRUCTOR
 					&& writer.previousToken() != Token::FUNC
 					&& writer.previousToken() != Token::MAIN
-					/*&& writer.previousToken() != Token::SCOPE_BEGIN
-					&& writer.previousToken() != Token::SCOPE_END
-					&& writer.previousToken() != Token::FUNC
-					&& writer.previousToken() != Token::DEFINE_FUNC_ARGUMENT
-					&& writer.previousToken() != Token::DEFINE_FUNC_RETURN //not actually needed...
-					&& writer.previousToken() != Token::CLASS
-					&& writer.previousToken() != Token::COMMENT
-					//&& writer.previousToken() != Token::STAR_COMMENT
-					&& writer.previousToken() != Token::VISIBILITY_DEFAULT*/
+					//&& writer.previousToken() != Token::SCOPE_BEGIN
+					//&& writer.previousToken() != Token::SCOPE_END
+					//&& writer.previousToken() != Token::FUNC
+					//&& writer.previousToken() != Token::DEFINE_FUNC_ARGUMENT
+					//&& writer.previousToken() != Token::DEFINE_FUNC_RETURN //not actually needed...
+					//&& writer.previousToken() != Token::CLASS
+					//&& writer.previousToken() != Token::COMMENT
+					////&& writer.previousToken() != Token::STAR_COMMENT
+					//&& writer.previousToken() != Token::VISIBILITY_DEFAULT
 				)
 				{
 					//REMOVE assert(writer.previousElement() != nullptr);
 					//cout<<"NEWLINE previousElement: "<<writer.previousElement()->toSingleLineString();
 					//cout<<"\nlineNeedsSemicolon: "<<writer.lineNeedsSemicolon()<<"\n";
 
-					/*if( parentToken() == Token::CLASS || parentToken() == Token::ENUM )
-					{
+					//if( parentToken() == Token::CLASS || parentToken() == Token::ENUM )
+					//{
 						//rae::log("NEWLINESTRANGE. This thing has parent CLASS and not func.", "\n");
 						//rae::log("previousToken: ", Token::toString(writer.previousToken());
 						//rae::log(" nextToken: ", Token::toString(writer.nextToken()), "\n");
-					}*/
+					//}
 
 					writer.writeChar(';');
 
 					if(debugWriteLineNumbers == true)
 					{
-						writer.writeString("//line: " + numberToString( set_elem.lineNumber().line) );
+						writer.writeString(" // line: " + numberToString( set_elem.lineNumber().line) );
 					}
 				}
 				writer.lineNeedsSemicolon(true);
+				*/
+
+				writer.writeLineEnding();
+
+				if( writer.writeSemicolon() )
+				{
+					if(debugWriteLineNumbers == true)
+					{
+						writer.writeString(" // line: " + numberToString( set_elem.lineNumber().line) );
+					}	
+				}
 
 				bool so_do_we_write_newline = true;
 
@@ -202,6 +214,7 @@
 			break;
 			case Token::NEWLINE_BEFORE_SCOPE_END:
 
+				/*
 				if( writer.lineNeedsSemicolon() == true
 					&& writer.previousToken() != Token::SEMICOLON
 					&& writer.previousToken() != Token::NEWLINE
@@ -210,16 +223,15 @@
 					&& writer.previousToken() != Token::DESTRUCTOR
 					&& writer.previousToken() != Token::FUNC
 					&& writer.previousToken() != Token::MAIN
-					/*&& writer.previousToken() != Token::SCOPE_BEGIN
-					&& writer.previousToken() != Token::SCOPE_END
-					&& writer.previousToken() != Token::FUNC
-					&& writer.previousToken() != Token::DEFINE_FUNC_ARGUMENT
-					&& writer.previousToken() != Token::DEFINE_FUNC_RETURN //not actually needed...
-					&& writer.previousToken() != Token::CLASS
-					&& writer.previousToken() != Token::COMMENT
-					//&& writer.previousToken() != Token::STAR_COMMENT
-					&& writer.previousToken() != Token::VISIBILITY_DEFAULT
-					*/
+					//&& writer.previousToken() != Token::SCOPE_BEGIN
+					//&& writer.previousToken() != Token::SCOPE_END
+					//&& writer.previousToken() != Token::FUNC
+					//&& writer.previousToken() != Token::DEFINE_FUNC_ARGUMENT
+					//&& writer.previousToken() != Token::DEFINE_FUNC_RETURN //not actually needed...
+					//&& writer.previousToken() != Token::CLASS
+					//&& writer.previousToken() != Token::COMMENT
+					////&& writer.previousToken() != Token::STAR_COMMENT
+					//&& writer.previousToken() != Token::VISIBILITY_DEFAULT
 				)
 				{
 					//REMOVE assert(writer.previousElement() != nullptr);
@@ -229,6 +241,11 @@
 					writer.writeChar(';');
 				}
 				writer.lineNeedsSemicolon(true);
+				*/
+
+				writer.writeLineEnding();
+
+				writer.writeSemicolon();
 
 				writer.writeChar( '\n' );
 				//we need one less indent on SCOPE_END.
@@ -305,7 +322,17 @@
 				}
 			break;
 			case Token::OVERRIDE:
-				writer.writeString("/*override:*/");
+				writer.writeString("override");
+			break;
+			case Token::MUT:
+				writer.writeString("mutable");
+			break;
+			case Token::LET:
+				if( Token::isNewline(set_elem.previousToken()) == false )
+					writer.writeChar(' ');
+				writer.writeString("const");
+				if( Token::isNewline(set_elem.nextToken()) == false )
+					writer.writeChar(' ');
 			break;
 				/*
 			case Token::DEFINE_BUILT_IN_TYPE_IN_CLASS:
@@ -361,6 +388,9 @@
 							
 			break;
 			case Token::AUTO_INIT:
+
+				writer.lineNeedsSemicolon(false); // We need commas, but those are inserted before the lines in FUNC and CONSTRUCTOR special handling.
+
 				//case Token::BUILT_IN_TYPE_AUTO_INIT:
 				if(set_elem.typeType() == TypeType::BUILT_IN_TYPE && set_elem.containerType() == ContainerType::UNDEFINED)
 				{
@@ -369,9 +399,10 @@
 					//writer.writeString(" = 0");
 					if( set_elem.initData() )
 					{
-						writer.writeString(" = ");
+						writer.writeChar('(');
 						//writer.writeString( set_elem.initData()->name() );
 						iterateWrite(writer, *set_elem.initData());
+						writer.writeChar(')');
 					}
 					else //NOPE: this should never happen. because initData is set every time a built in type is created.
 					{
@@ -387,17 +418,17 @@
 					//writer.writeString(m_type);
 					//writer.writeString("* ");
 					writer.writeString(set_elem.name());
-					writer.writeString(" = new ");
+					writer.writeString("( new ");
 					if(set_elem.containerType() == ContainerType::ARRAY)
 					{
 						writer.writeString("std::vector<");
 						iterateWrite(writer, set_elem);
-						writer.writeString(">");
+						writer.writeString("> )");
 					}
 					else
 					{
 						writer.writeString(set_elem.typeInCpp());
-						writer.writeString("()");
+						writer.writeString("() )");
 					}
 				}
 				else if(set_elem.typeType() == TypeType::OPT)
@@ -406,25 +437,26 @@
 
 					if( set_elem.initData() )
 					{
-						writer.writeString(" = ");
+						writer.writeChar('(');
 						//writer.writeString( set_elem.initData()->name() );
 						iterateWrite(writer, *set_elem.initData());
+						writer.writeChar(')');
 					}
 					else
 					{
 						//writer.writeString(m_type);
 						//writer.writeString("* ");
-						writer.writeString(" = new ");
+						writer.writeString("( new ");
 						if(set_elem.containerType() == ContainerType::ARRAY)
 						{
 							writer.writeString("std::vector<");
 							iterateWrite(writer, set_elem);
-							writer.writeString(">");
+							writer.writeString("> )");
 						}
 						else
 						{
 							writer.writeString(set_elem.typeInCpp());
-							writer.writeString("()");
+							writer.writeString("() )");
 						}
 					}
 				}
@@ -828,8 +860,20 @@
 				{
 					writer.writeString( ".obj->" );
 				}
+				else if( writer.previousElement()
+					&& writer.previousElement()->containerType() == ContainerType::ARRAY
+					&& writer.previousElement()->typeType() != TypeType::VAL)
+				{
+					writer.writeChar( '.' ); // we use this strange thing for arrays: (*our_array_ptr).size()
+				}
 				else
 				{
+					if( writer.previousElement() && writer.previousElement()->name() == "someints" )
+					{
+						//debug:
+						ReportError::reportError("someints: containerType: ", writer.previousElement() );
+					}
+
 					writer.writeChar( '-' );//we're using pointer dereferencing -> for now...
 					writer.writeChar( '>' );
 				}
@@ -1263,7 +1307,6 @@
 					else if( set_elem.isInClass() )
 					{
 						writeVisibilityForElement(writer, set_elem);
-						
 						writer.writeString( set_elem.builtInTypeStringCpp() );
 						writer.writeChar(' ');
 						writer.writeString(set_elem.name());
@@ -1430,11 +1473,22 @@
 				writer.writeChar('=');
 				writer.writeChar(' ');
 			break;
+			case Token::RETURN:
+				writer.writeString("return ");
+			break;
 			case Token::IF:
+				writer.lineNeedsSemicolon(false);
+				writer.writeString("if ");
+				if( writer.nextToken() != Token::PARENTHESIS_BEGIN)
+				{
+					writer.writeString("(");
+					writer.lineNeedsEnding(")");
+				}
+			break;
 			case Token::FOR:
 			case Token::FOREACH:
 				writer.lineNeedsSemicolon(false);
-				writer.writeString(set_elem.name());
+				writer.writeString("for ");
 			break;
 			case Token::TRUE_TRUE:
 				writer.writeString("true");
@@ -1537,24 +1591,33 @@
 				//writer.writeChar('\"');
 			break;
 			case Token::COMMENT:
+				/*
 				if( writer.lineNeedsSemicolon() == true
 					&& writer.previousToken() != Token::SEMICOLON
 					&& writer.previousToken() != Token::NEWLINE
 					&& writer.previousToken() != Token::NEWLINE_BEFORE_SCOPE_END
-					/*&& writer.previousToken() != Token::SCOPE_BEGIN
-					&& writer.previousToken() != Token::SCOPE_END
-					&& writer.previousToken() != Token::FUNC
-					&& writer.previousToken() != Token::DEFINE_FUNC_ARGUMENT
-					&& writer.previousToken() != Token::DEFINE_FUNC_RETURN //not actually needed...
-					&& writer.previousToken() != Token::CLASS
-					&& writer.previousToken() != Token::COMMENT
-					//&& writer.previousToken() != Token::STAR_COMMENT
-					&& writer.previousToken() != Token::VISIBILITY_DEFAULT
-					*/
+					//&& writer.previousToken() != Token::SCOPE_BEGIN
+					//&& writer.previousToken() != Token::SCOPE_END
+					//&& writer.previousToken() != Token::FUNC
+					//&& writer.previousToken() != Token::DEFINE_FUNC_ARGUMENT
+					//&& writer.previousToken() != Token::DEFINE_FUNC_RETURN //not actually needed...
+					//&& writer.previousToken() != Token::CLASS
+					//&& writer.previousToken() != Token::COMMENT
+					///////&& writer.previousToken() != Token::STAR_COMMENT
+					//&& writer.previousToken() != Token::VISIBILITY_DEFAULT
 				)
 				{
 					writer.writeChar(';');
+					writer.writeChar(' ');
 				}
+
+				writer.lineNeedsSemicolon(false);
+				*/
+
+				writer.writeLineEnding();
+
+				if( writer.writeSemicolon() )
+					writer.writeChar(' ');
 
 				writer.lineNeedsSemicolon(false);
 
@@ -1776,6 +1839,11 @@
 								ReportError::reportError("No return_type parenthesis in func: ", &set_elem);
 							}
 						}
+						else
+						{
+							// No return type parenthesis, so mark it as void.
+							writer.writeString( "void " );
+						}
 
 						if( writer.isHeader() == false )//cpp
 						{
@@ -1788,19 +1856,20 @@
 							}
 						}
 
+						// We write the name of the func here:
 						writer.writeString( set_elem.name() );
 					}//if func
 					else if( set_elem.token() == Token::CONSTRUCTOR )
 					{
 						if( set_elem.parent() )
 						{
-							if( writer.isHeader() == false )//cpp
+							if( writer.isHeader() == false ) // cpp
 							{
 								writer.writeString( set_elem.parent()->name() );
 								writer.writeString( "::" );
 							}
 
-							writer.writeString( set_elem.parent()->name() );//for a c++ constructor, the name of the class...
+							writer.writeString( set_elem.parent()->name() ); // for a c++ constructor, the name of the class...
 							//writer.writeString( "__new" + set_elem.parent()->name() );//for a struct "constructor"
 						}
 					}
@@ -1808,14 +1877,14 @@
 					{
 						if( set_elem.parent() )
 						{
-							if( writer.isHeader() == false )//cpp
+							if( writer.isHeader() == false ) // cpp
 							{
 								writer.writeString( set_elem.parent()->name() );
 								writer.writeString( "::" );
 							}
 
 							writer.writeChar('~');
-							writer.writeString( set_elem.parent()->name() );//these two lines for c++ destructor...
+							writer.writeString( set_elem.parent()->name() ); // these two lines for c++ destructor...
 							//writer.writeString( "__delete" + set_elem.parent()->name() );//for a struct "constructor"
 						}
 					}
@@ -1965,7 +2034,8 @@
 				}//end isHeader cpp
 				
 				bool is_a_oneliner = true; // We presume the worst case scenario... :)
-
+				bool has_return_parentheses = true;
+				bool is_first_auto_init = true; // Add a colon before first AUTO_INIT in Constructors.
 
 					if( set_elem.token() == Token::MAIN )
 					{
@@ -2003,6 +2073,17 @@
 							}
 						}
 						*/
+
+						LangElement* myparam_start = set_elem.searchFirst(Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES);
+
+						if( myparam_start == 0 )
+						{
+							// Write void param type for C++, if we find no parentheses here.
+							writer.writeString("()");
+							has_return_parentheses = false;
+						}
+
+
 						{
 							for(unsigned long i = 0; i < set_elem.langElements.size(); i++)
 							{
@@ -2023,6 +2104,26 @@
 								else if( set_elem.langElements[i]->token() == Token::VISIBILITY )
 								{
 									//do nothing, already written
+								}
+								else if( set_elem.langElements[i]->token() == Token::AUTO_INIT )
+								{
+									// Special handling to write the IMHO strange C++ class initializers, known as AUTO_INIT here.
+									if( writer.isHeader() == false ) // cpp
+									{
+										if( is_first_auto_init == true )
+										{
+											is_first_auto_init = false;
+											writer.writeString( ": " );
+										}
+										else
+										{
+											// A not so pretty place for the comma, but I've seen this style of code written in production C++ code by humans!
+											// So the comma will be before all auto inits here.
+											writer.writeString( ", " );	
+										}
+
+										writeElement(writer, *set_elem.langElements[i]);
+									}
 								}
 								//REMOVED: else if( set_elem.langElements[i]->token() == Token::DEFINE_FUNC_ARGUMENT )
 								/*//REMOVED: {
@@ -2070,6 +2171,11 @@
 
 									is_a_oneliner = false; // Not a oneliner.
 									
+									if(writer.isHeader() == true && has_return_parentheses == false) //hpp
+									{
+										writer.writeChar(';'); // automatic semicolon handling case
+									}
+
 									//set_elem.langElements[i]->write(writer);
 									writeElement(writer, *set_elem.langElements[i]);
 
@@ -2082,9 +2188,11 @@
 								}
 								else if( set_elem.langElements[i]->token() == Token::SCOPE_BEGIN)
 								{
+									//TODO check if this is called at all!!
+
 									if( writer.isHeader() == true )//hpp
 									{
-										if(is_a_oneliner == true) // If we are a oneliner the automatic semicolon won't happen, because there is no newline.
+										if(is_a_oneliner == true || has_return_parentheses == false) // If we are a oneliner the automatic semicolon won't happen, because there is no newline.
 										{
 											writer.writeChar(';');
 										}
@@ -2124,13 +2232,12 @@
 								}
 								/*
 								else if( set_elem.langElements[i]->token() == Token::PARENTHESIS_BEGIN
-									|| set_elem.langElements[i]->token() == Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES
-									|| set_elem.langElements[i]->token() == Token::PARENTHESIS_END
-									|| set_elem.langElements[i]->token() == Token::PARENTHESIS_END_FUNC_PARAM_TYPES)
+									|| set_elem.langElements[i]->token() == Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES)
 								{
-									//handle this separately because of isHeader.
-									set_elem.langElements[i]->write(writer);
-								}*/
+									has_return_parentheses = true;
+									writeElement(writer, *set_elem.langElements[i]);
+								}
+								*/
 								else if(set_elem.langElements[i]->token() == Token::DEFINE_REFERENCE
 									&& set_elem.langElements[i]->role() == Role::FUNC_RETURN)
 								{
