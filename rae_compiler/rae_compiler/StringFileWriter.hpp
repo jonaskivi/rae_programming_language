@@ -1,6 +1,10 @@
 #ifndef RAE_COMPILER_STRINGFILEWRITER_HPP
 #define RAE_COMPILER_STRINGFILEWRITER_HPP
 
+#include <stdio.h>
+
+namespace Rae
+{
 
 namespace TripleOption
 {
@@ -207,7 +211,7 @@ public:
 		}
 		else
 		{
-			cout<<"File is not ok. "<<set_filename<<"\n";
+			cout<<"Unable to create file: "<<set_filename<<"\n";
 			m_isFileOk = false;
 		}
 
@@ -261,6 +265,8 @@ public:
 		fwrite( set, sizeof(char), count, outFile );
 	}
 };
+
+}
 
 #endif //RAE_COMPILER_STRINGFILEWRITER_HPP
 

@@ -1,6 +1,8 @@
 #ifndef RAE_COMPILER_LANGELEMENT_HPP
 #define RAE_COMPILER_LANGELEMENT_HPP
 
+#include <assert.h>
+
 #include "rae_helpers.hpp"
 
 #include "ReportError.hpp"
@@ -10,6 +12,9 @@
 #include <vector>
 	using namespace std;
 */
+
+namespace Rae
+{
 
 namespace ParseError
 {
@@ -77,9 +82,9 @@ enum e
 {
 	UNDEFINED,
 	EMPTY, //intentionally empty
-	PASSTHROUGH, //to c++ header .hpp
+	PASSTHROUGH_HDR, //to c++ header .hpp
 	PASSTHROUGH_SRC, //to c++ source .cpp
-	ERROR,
+	RAE_ERROR,
 	MODULE,
 	MODULE_NAME,
 	CLOSE_MODULE,
@@ -131,8 +136,9 @@ enum e
 	//USE_BUILT_IN_TYPE, //We are using USE_REFERENCE instead of this for now...
 
 	//REAL_IN_CLASS, //biggest floating point type, maybe 80 bits or something...
-	NUMBER,
-	NUMBER_AFTER_DOT,
+	NUMBER, // integer
+	FLOAT_NUMBER,
+	DECIMAL_NUMBER_AFTER_DOT,
 
 	REFERENCE_DOT,//the dot when using references and calling funcs and members.
 	DOT,//do we need dot in other contexts? Yes, in floating point numbers!
@@ -257,8 +263,8 @@ enum e
 	
 	IF,
 	FOR,
-	FOREACH,
-	IN,
+	FOR_EACH,
+	IN_TOKEN,
 
 	TRUE_TRUE,
 	FALSE_FALSE,
@@ -362,6 +368,7 @@ public:
 		m_name(""),
 		m_type(""),
 		m_typeType(TypeType::UNDEFINED),
+		m_typeConvert(TypeType::UNDEFINED),
 		m_builtInType(BuiltInType::UNDEFINED),
 		m_containerType(ContainerType::UNDEFINED),
 		m_role(Role::UNDEFINED),
@@ -370,6 +377,7 @@ public:
 		m_parent(nullptr),
 		m_initData(nullptr),
 		m_definitionElement(nullptr),
+		m_pairElement(nullptr),
 		m_previousElement(nullptr),
 		m_nextElement(nullptr),
 		m_isUnknownType(false),
@@ -383,6 +391,7 @@ public:
 		m_token(set_lang_token_type),
 		m_name(set_name),	
 		m_typeType(set_type_type),
+		m_typeConvert(TypeType::UNDEFINED),
 		m_builtInType(BuiltInType::UNDEFINED),
 		m_containerType(ContainerType::UNDEFINED),
 		m_role(Role::UNDEFINED),
@@ -391,6 +400,7 @@ public:
 		m_parent(nullptr),
 		m_initData(nullptr),
 		m_definitionElement(nullptr),
+		m_pairElement(nullptr),
 		m_previousElement(nullptr),
 		m_nextElement(nullptr),
 		m_isUnknownType(false),
@@ -420,7 +430,7 @@ public:
 		m_builtInType = copy_from.m_builtInType;//must NOT be initialized after the next call to type().
 		m_type = copy_from.m_type; //automatically tests if it is built_in_type.
 
-		foreach(LangElement* an_elem, copy_from.langElements)
+		for(LangElement* an_elem : copy_from.langElements)
 		{
 			if(an_elem)
 				langElements.push_back( (an_elem->copy()) );
@@ -442,6 +452,7 @@ public:
 		res->m_name = m_name;
 		res->m_type = m_type;
 		res->m_typeType = m_typeType;
+		res->m_typeConvert = m_typeConvert;
 		res->m_builtInType = m_builtInType;
 		res->m_containerType = m_containerType;
 		res->m_role = m_role;
@@ -452,12 +463,13 @@ public:
 			res->m_initData = m_initData->copy();
 		else res->m_initData = nullptr;
 		res->m_definitionElement = m_definitionElement;
+		res->m_pairElement = m_pairElement;
 		res->m_previousElement = m_previousElement;
 		res->m_nextElement = m_nextElement;
 		res->m_isUnknownType = m_isUnknownType;
 		res->m_lineNumber.copyFrom( m_lineNumber );
 
-		foreach(LangElement* an_elem, langElements)
+		for(LangElement* an_elem : langElements)
 		{
 			if(an_elem)
 				res->langElements.push_back( (an_elem->copy()) );
@@ -475,7 +487,7 @@ public:
 		//all LangElements should be owned by vector langElements
 		//other vectors only have borrowed ones... I hope.
 		/*
-		foreach(LangElement* elem, langElements)
+		for(LangElement* elem : langElements)
 		{
 			#ifdef DEBUG_RAE_DESTRUCTORS
 				if(elem)
@@ -526,15 +538,26 @@ public:
 		}
 		//else
 		//string ret = "name: " + name() + " " + tokenString() + " typetype: " + typeTypeString() + " type: " + type() + " line: " + numberToString(lineNumber().line);
-		string ret = tokenString();
-		if(type() != "")
-			ret += " type: " + type();
+		string ret;
 
+		if(type() != "")
+			ret += type() + " ";
+		
 		if(name() != "")
-			ret += " name: " + name();
+			ret += name() + " ";
+
+		// Add spaces to align next tokenString at 25 chars
+		for (int i = ret.length(); i < 25; ++i)
+		{
+			ret += " ";
+		}
+
+		ret += tokenString();
 
 		if(typeType() != TypeType::UNDEFINED)
 			ret += " typetype: " + typeTypeString();
+		if(containerType() != ContainerType::UNDEFINED)
+			ret += " containerType: " + containerTypeString();
 		ret += " line: " + numberToString(lineNumber().line);
 
 		return ret;
@@ -546,7 +569,7 @@ public:
 	{
 		cout<<"printOutLangElements():\n";
 		uint i = 0;
-		foreach( LangElement* elem, langElements )
+		for( LangElement* elem : langElements )
 		{
 			cout<<i<<": "<<elem->toString()<<"\n";
 			i++;
@@ -557,7 +580,7 @@ public:
 	void printOutListOfFunctions()
 	{
 		cout<<"Functions in "<<toString()<<"\n-------------------------\n";
-		foreach(LangElement* elem, langElements)
+		for(LangElement* elem : langElements)
 		{
 			if( elem->token() == Token::FUNC )
 			{
@@ -570,7 +593,7 @@ public:
 	void printOutListOfReferences()
 	{
 		cout<<"Defined references in "<<toString()<<"\n-------------------------\n";
-		foreach(LangElement* elem, langElements)
+		for(LangElement* elem : langElements)
 		{
 			if( elem->token() == Token::DEFINE_REFERENCE )
 			{
@@ -598,7 +621,7 @@ public:
 
 		int not_on_first = 0;
 
-		foreach(LangElement* elem, langElements)
+		for(LangElement* elem : langElements)
 		{
 			if( elem->token() == Token::IMPORT_NAME )
 			{
@@ -614,7 +637,7 @@ public:
 			}
 			else
 			{
-				break;//break the foreach... hope this works.
+				break;//break the for... hope this works.
 			}
 		}
 
@@ -629,13 +652,64 @@ public:
 	public: string tokenString() { return Token::toString(m_token); }
 
 	public: string typeTypeString() { return TypeType::toString(m_typeType); }
+
+	public: string containerTypeString() { return ContainerType::toString(m_containerType); }
 	
 	public: bool isOperator()
 	{
+		// This doesn't return ASSIGNMENT or INCREMENT and DECREMENT, because
+		// those have different rules in validate.
 		if( token() == Token::PLUS
 			|| token() == Token::MINUS
+			|| token() == Token::MULTIPLY
+			|| token() == Token::DIVIDE
+			|| token() == Token::MODULO
+			|| token() == Token::ASSIGNMENT
+			|| token() == Token::OPERATOR_INCREMENT
+			|| token() == Token::OPERATOR_DECREMENT
+			|| token() == Token::EQUALS
+			|| token() == Token::NOT_EQUAL
+			|| token() == Token::GREATER_THAN
+			|| token() == Token::LESS_THAN
+			|| token() == Token::GREATER_THAN_OR_EQUAL
+			|| token() == Token::LESS_THAN_OR_EQUAL
+			//|| token() == Token::NOT
+			//|| token() == Token::AND
+			//|| token() == Token::OR
 			)
 			return true;
+		//else
+		return false;
+	}
+
+	public: bool isMathOperator()
+	{
+		// This doesn't return ASSIGNMENT or INCREMENT and DECREMENT, because
+		// those have different rules in validate.
+		if( token() == Token::PLUS
+			|| token() == Token::MINUS
+			|| token() == Token::MULTIPLY
+			|| token() == Token::DIVIDE
+			|| token() == Token::MODULO
+			)
+			return true;
+		//else
+		return false;
+	}
+
+	public: bool isEndsExpression()
+	{
+		if( token() == Token::PARENTHESIS_END
+			|| token() == Token::POINT_TO_END_PARENTHESIS
+			|| token() == Token::PARENTHESIS_BEGIN
+			|| token() == Token::COMMA
+			|| token() == Token::SEMICOLON
+			|| token() == Token::NEWLINE
+			|| token() == Token::NEWLINE_BEFORE_SCOPE_END
+		)
+		{
+			return true;
+		}
 		//else
 		return false;
 	}
@@ -660,6 +734,40 @@ public:
 			|| token() == Token::MAIN
 			//REMOVED: || token() == Token::DEFINE_FUNC_ARGUMENT
 			|| token() == Token::DEFINE_FUNC_RETURN
+		)
+		{
+			return true;
+		}
+		//else
+		return false;
+	}
+
+	public: bool isBeginsScope()
+	{
+		if( isFunc()
+			|| token() == Token::SCOPE_BEGIN
+			|| token() == Token::CLASS
+			|| token() == Token::ENUM
+		)
+		{
+			return true;
+		}
+		//else
+		return false;
+	}
+
+	public: bool isParenthesis()
+	{
+		if( token() == Token::PARENTHESIS_BEGIN
+			|| token() == Token::PARENTHESIS_END
+			|| token() == Token::PARENTHESIS_BEGIN_LOG
+			|| token() == Token::PARENTHESIS_END_LOG
+			|| token() == Token::PARENTHESIS_BEGIN_LOG_S
+			|| token() == Token::PARENTHESIS_END_LOG_S
+			|| token() == Token::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES
+			|| token() == Token::PARENTHESIS_END_FUNC_RETURN_TYPES
+			|| token() == Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES
+			|| token() == Token::PARENTHESIS_END_FUNC_PARAM_TYPES
 		)
 		{
 			return true;
@@ -718,11 +826,11 @@ public:
   		return false;
   	}
 
-	//The statementRValue. This is important.
-	public: LangElement* statementRValue()
+	//The expressionRValue. This is important.
+	public: LangElement* expressionRValue()
 	{
 		#ifdef DEBUG_RAE_RVALUE
-		cout<<"LangElement::statementRValue() START. "<<toString()<<"\n";
+		cout<<"LangElement::expressionRValue() START. "<<toString()<<"\n";
 		#endif
 
 		//TODO handle () handle ?. etc.
@@ -730,25 +838,25 @@ public:
 		if( token() == Token::FUNC_CALL )
 		{
 			#ifdef DEBUG_RAE_RVALUE
-			cout<<"LangElement::statementRValue() it is a FUNC_CALL.\n";
+			cout<<"LangElement::expressionRValue() it is a FUNC_CALL.\n";
 			#endif
 
 			LangElement* ret_type = funcReturnType();
 			if(ret_type)
 			{
 				#ifdef DEBUG_RAE_RVALUE
-				cout<<"LangElement::statementRValue() and it has a funcReturnType().\n";
+				cout<<"LangElement::expressionRValue() and it has a funcReturnType().\n";
 				#endif
-				//return ret_type->statementRValue();
+				//return ret_type->expressionRValue();
 				return ret_type;
 			}
 			else
 			{
 				#ifdef DEBUG_RAE_RVALUE
-				cout<<"LangElement::statementRValue() bohoo. no funcReturnType() while it is a FUNC_CALL. Strange. Odd. Probably an error: "<<toString()<<"\n";
+				cout<<"LangElement::expressionRValue() bohoo. no funcReturnType() while it is a FUNC_CALL. Strange. Odd. Probably an error: "<<toString()<<"\n";
 				#endif
-				ReportError::reportError("Compiler asked for statement return value, but this function call doesn't return anything.", this);
-				return nullptr; //if a func has no return type then there's no statementRValue.
+				ReportError::reportError(std::string("Compiler asked for statement return value, but this function call doesn't return anything."), this);
+				return nullptr; //if a func has no return type then there's no expressionRValue.
 			}
 		}
 		else if( token() == Token::USE_REFERENCE
@@ -756,59 +864,56 @@ public:
 		)
 		{
 			#ifdef DEBUG_RAE_RVALUE
-			cout<<"LangElement::statementRValue() it is a USE_REFERENCE or USE_MEMBER.\n";
+			cout<<"LangElement::expressionRValue() it is a USE_REFERENCE or USE_MEMBER.\n";
 			#endif
 
 			if( nextElement() == 0
-			|| nextElement()->token() == Token::NEWLINE
-			|| nextElement()->token() == Token::NEWLINE_BEFORE_SCOPE_END
-			|| nextElement()->token() == Token::PARENTHESIS_END
-			|| nextElement()->token() == Token::POINT_TO_END_PARENTHESIS
-			|| nextElement()->token() == Token::SEMICOLON
+			|| nextElement()->isEndsExpression()
 			)
 			{
 				return this;
 			}
 			else
 			{
-				return nextElement()->statementRValue();
+				return nextElement()->expressionRValue();
 			}
 		}
 		else if( token() == Token::REFERENCE_DOT )
 		{
 			#ifdef DEBUG_RAE_RVALUE
-			cout<<"LangElement::statementRValue() got a REFERENCE_DOT.\n";
+			cout<<"LangElement::expressionRValue() got a REFERENCE_DOT.\n";
 			#endif
 
 			if( nextElement() == 0
-			|| nextElement()->token() == Token::NEWLINE
-			|| nextElement()->token() == Token::NEWLINE_BEFORE_SCOPE_END
-			|| nextElement()->token() == Token::PARENTHESIS_END
-			|| nextElement()->token() == Token::POINT_TO_END_PARENTHESIS
-			|| nextElement()->token() == Token::SEMICOLON
+			|| nextElement()->isEndsExpression()
 			)
 			{
 				//TODO errors in langElement with reportError?
 				ReportError::reportError("Error. No USE_REFERENCE or FUNC_CALL after REFERENCE_DOT.", this);
-				return 0;
+				return nullptr;
 			}
 			else
 			{
-				return nextElement()->statementRValue();
+				return nextElement()->expressionRValue();
 			}	
+		}
+		else if( token() == Token::QUOTE || token() == Token::NUMBER )
+		{
+			// This function does not have any sense!
+			return this;
 		}
 		else
 		{
 			#ifdef DEBUG_RAE_RVALUE
-			cout<<"LangElement::statementRValue() no statementRValue.\n";
+			cout<<"LangElement::expressionRValue() no expressionRValue.\n";
 			#endif
-			//no statementRValue.
-			return 0;
+			//no expressionRValue.
+			return nullptr;
 		}
 
 		cout<<"shouldn't get here.\n";
 		//assert(0);
-		return 0;
+		return nullptr;
 	}
 
 	LangElement* funcReturnType()
@@ -853,7 +958,7 @@ public:
 						#ifdef DEBUG_RAE_RVALUE
 						cout<<"LangElement::funcReturnType() nothing between parentheses. void return type.\n";
 						#endif
-						//Nothing between parentheses. void return type. no statementRValue, by the way.
+						//Nothing between parentheses. void return type. no expressionRValue, by the way.
 						return 0;
 					}
 					else
@@ -916,6 +1021,58 @@ public:
 	}
 */
 
+	// other parenthesis except the ones in the start and the end
+	static bool hasListOtherParenthesis(vector<LangElement*>& list)
+	{
+		// note, we skip first and last index.
+		for(uint i = 1; i < list.size()-1; ++i)
+		{
+			if( list[i]->isParenthesis() )
+				return true;
+		}
+		return false;
+	}
+
+	void elementListUntil(Token::e set_token, vector<LangElement*>& return_list)
+	{
+		return_list.push_back(this);
+		if( token() == set_token )
+			return;
+		//else
+		if(nextElement())
+			nextElement()->elementListUntil(set_token, return_list);
+	}
+
+	void elementListUntilPair(vector<LangElement*>& return_list)
+	{
+		if(pairElement() == nullptr)
+		{
+			ReportError::reportError("Asked elementListUntilPair, but there's no pair", this);
+			return;
+		}
+		elementListUntilPair(pairElement(), return_list);
+	}
+
+	void elementListUntilPair(LangElement* pair, vector<LangElement*>& return_list)
+	{
+		return_list.push_back(this);
+		if( pair == this )
+			return;
+		//else
+		if(nextElement())
+			nextElement()->elementListUntilPair(pair, return_list);
+	}
+
+/*
+	void listBetweenParenthesis(Token::e set_token, vector<LangElement*>& return_list)
+	{
+		return_list.push_back(this);
+		if( token() == set_token )
+			return;
+		//else
+		elementListUntil(set_token, return_list);
+	}
+*/
 	// We return by value vector, but we hope move semantics get rid of the copy and just move the vector.
 	vector<LangElement*> funcParameterList()
 	{
@@ -1018,7 +1175,7 @@ public:
 				}
 				else
 				{
-					UNFINISHED IN HERE: because we need to think about how to represent an argument which is a statement like:
+					UNFINISHED IN_TOKEN HERE: because we need to think about how to represent an argument which is a statement like:
 					func_call( arg + 1, arg2 * 55 + "an_error" + hello.callSomething(and_this_here_wont_affect_it) )
 
 					cout<<"added elem: "<<elem->toSingleLineString()<<"\n";
@@ -1125,7 +1282,7 @@ public:
 	{
 		if( searchFirst(Token::TEMPLATE_SECOND_TYPE) != 0 )
 		{
-			ReportError::reportError("ERROR in createTemplateSecondType() We already had a second type for the template: " + templateSecondTypeString() + " new second type: " + set_type, this);
+			ReportError::reportError("RAE_ERROR in createTemplateSecondType() We already had a second type for the template: " + templateSecondTypeString() + " new second type: " + set_type, this);
 		}
 		else
 		{
@@ -1138,7 +1295,7 @@ public:
 	{
 		//returns the type of the TEMPLATE_SECOND_TYPE
 		//if it has one. there should be only one child.
-		foreach(LangElement* set_elem, langElements)
+		for(LangElement* set_elem : langElements)
 		{
 			if(set_elem->token() == Token::TEMPLATE_SECOND_TYPE)
 				return set_elem->type();
@@ -1163,7 +1320,7 @@ public:
 	{
 		// returns the type of the TEMPLATE_SECOND_TYPE
 		// if it has one. there should be only one child.
-		foreach(LangElement* set_elem, langElements)
+		for(LangElement* set_elem : langElements)
 		{
 			if(set_elem->token() == Token::TEMPLATE_SECOND_TYPE)
 				return set_elem->typeInCpp();
@@ -1184,6 +1341,11 @@ public:
 	public: TypeType::e typeType() { return m_typeType; }
 	public: void typeType(TypeType::e set) { m_typeType = set; }
 	protected: TypeType::e m_typeType;
+
+	// Convert from e.g. val to ref
+	public: TypeType::e typeConvert() { return m_typeConvert; }
+	public: void typeConvert(TypeType::e set) { m_typeConvert = set; }
+	protected: TypeType::e m_typeConvert;
 
 	// ContainerType is an addition to TypeType and DefineReference.
 	// It tells if we're just single or an array, or something else.
@@ -1258,6 +1420,12 @@ public:
 	public: LangElement* definitionElement() { return m_definitionElement; }
 	public: void definitionElement(LangElement* set) { m_definitionElement = set; }
 	protected: LangElement* m_definitionElement;
+
+	// A link to the matching parenthesis pair. Currently for parenthesis (), but
+	// could be used with {} and []
+	public: LangElement* pairElement() { return m_pairElement; }
+	public: void pairElement(LangElement* set) { m_pairElement = set; }
+	protected: LangElement* m_pairElement;
 
 	public: LangElement* previousElement() { return m_previousElement; }
 	public: void previousElement(LangElement* set) { m_previousElement = set; }
@@ -1429,7 +1597,38 @@ public:
 		return "ERRORnotAClass";
 	}
 
+	LangElement* searchClosestParentToken(Token::e set)
+	{
+		//return null if not found.
+		LangElement* res = parent();
+		while( res )
+		{
+			if( res->token() == set )
+			{
+				return res;
+			}
+			res = res->parent();//move up in hierarchy.
+		}
+		return res;//if not found this will be zero in the end, because that's what ends the while loop.
+	}
+
 	//then some strange checking from the parent, the class and func and stuff:
+
+	LangElement* scope() // could be renamed to parentScope
+	{
+		LangElement* res = parent();
+		while( res )
+		{
+			if( res->isBeginsScope() )
+			{
+				return res;
+			}
+			res = res->parent();//move up in hierarchy.
+		}
+		return res;	
+	}
+
+
 	LangElement* parentClass()
 	{
 		return searchClosestParentToken(Token::CLASS);
@@ -1446,21 +1645,6 @@ public:
 		}
 		return res;//if not found this will be zero in the end, because that's what ends the while loop.
 		*/
-	}
-
-	LangElement* searchClosestParentToken(Token::e set)
-	{
-		//return null if not found.
-		LangElement* res = parent();
-		while( res )
-		{
-			if( res->token() == set )
-			{
-				return res;
-			}
-			res = res->parent();//move up in hierarchy.
-		}
-		return res;//if not found this will be zero in the end, because that's what ends the while loop.
 	}
 
 	LangElement* parentFunc()
@@ -1622,7 +1806,7 @@ public:
 	{
 		if( token() != Token::CLASS )
 		{
-			foreach(LangElement* init_ob, ownedElements)
+			for(LangElement* init_ob : ownedElements)
 			{
 					LangElement* auto_init_elem = init_ob->copy();
 					auto_init_elem->definitionElement(init_ob);//our init_ob can be found through the definitionElement.
@@ -1648,7 +1832,7 @@ public:
 			return;
 		}
 
-		foreach( LangElement* elem, langElements )
+		for( LangElement* elem : langElements )
 		{
 			if(elem->token() == Token::CONSTRUCTOR)
 			{	
@@ -1709,7 +1893,7 @@ public:
 			return;
 		}
 
-		foreach( LangElement* elem, langElements )
+		for( LangElement* elem : langElements )
 		{
 			if(elem->token() == Token::DESTRUCTOR)
 			{		
@@ -2271,8 +2455,8 @@ public:
 			/////////cout<<"LangElement.addName: "<<Token::toString(m_currentElement->token())<<" name:>"<<set_name<<"\n");
 			m_currentElement->name( set_name );
 		}
-		else cout<<"ERROR: LangElement::addNameToCurrentElement() : No m_currentElement.\n";
-			//rae::log("ERROR: LangElement::addNameToCurrentElement() : No m_currentElement.\n");
+		else cout<<"RAE_ERROR: LangElement::addNameToCurrentElement() : No m_currentElement.\n";
+			//rae::log("RAE_ERROR: LangElement::addNameToCurrentElement() : No m_currentElement.\n");
 	}
 	
 	void addTypeToCurrentElement( string set_type )
@@ -2282,14 +2466,14 @@ public:
 			//////////cout<<"LangElement.addType: "<<Token::toString(m_currentElement->token())<<" type:>"<<set_type<<"\n");
 			m_currentElement->type( set_type );
 		}
-		else cout<<"ERROR: LangElement::addTypeToCurrentElement() : No m_currentElement.\n";
-			//rae::log("ERROR: LangElement::addTypeToCurrentElement() : No m_currentElement.\n");
+		else cout<<"RAE_ERROR: LangElement::addTypeToCurrentElement() : No m_currentElement.\n";
+			//rae::log("RAE_ERROR: LangElement::addTypeToCurrentElement() : No m_currentElement.\n");
 	}
 	
 	void copyChildElementsFrom( LangElement& from )
 	{
 		/////////cout<<"from: "<<from.name()<<"<\n");
-		foreach( LangElement* elem, from.langElements )
+		for( LangElement* elem : from.langElements )
 		{
 			////////////cout<<"Copy elem: \n"<<elem->name();
 			//Hmm. We copy just the pointers... Ouch.
@@ -2310,7 +2494,7 @@ public:
 	{
 		assert(0);
 
-		foreach( LangElement* elem, langElements )
+		for( LangElement* elem : langElements )
 		{
 			if( elem->name() == set_name )
 			{	
@@ -2334,7 +2518,7 @@ public:
 	//if so then merge as hasFunctionOrMember which is more descriptive.
 	LangElement* hasFunctionOrMember(string set_name)
 	{
-		foreach( LangElement* elem, langElements )
+		for( LangElement* elem : langElements )
 		{
 			if( elem->name() == set_name )
 			{
@@ -2347,7 +2531,7 @@ public:
 
 	LangElement* searchName(string set_name)
 	{
-		foreach( LangElement* elem, langElements )
+		for( LangElement* elem : langElements )
 		{
 			if( elem->name() == set_name )
 			{
@@ -2360,7 +2544,7 @@ public:
 
 	LangElement* searchFirst(Token::e set_lang_token_type)
 	{
-		foreach( LangElement* elem, langElements )
+		for( LangElement* elem : langElements )
 		{
 			if( elem->token() == set_lang_token_type )
 			{
@@ -2373,7 +2557,7 @@ public:
 
 	LangElement* searchLast(Token::e set_lang_token_type)
 	{
-		//foreach( LangElement* elem, langElements )
+		//for( LangElement* elem : langElements )
 		for( long i = langElements.size()-1l; i >= 0l; i-- )
 		{
 			if( langElements[i]->token() == set_lang_token_type )
@@ -2385,6 +2569,8 @@ public:
 		return 0;
 	}
 };
+
+} // end namespace Rae
 
 #endif //RAE_COMPILER_LANGELEMENT_HPP
 

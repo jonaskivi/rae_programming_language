@@ -54,15 +54,15 @@ pub:
 		my_numbers.emplace_back(7)
 		my_numbers.emplace_back(129874234985)
 		
-		//NEXT TODO log_int_array(my_numbers)
-		/*
-		for(int a_num in my_numbers)
+		//TODO NEXT log_int_array(my_numbers)
+		
+		loop( int a_num in my_numbers )
 		{
 			log(a_num)
 		}
-		*/
+		
 		/*
-		for(uint i = 0, i < my_numbers.size, i++)
+		loop( uint i = 0, i < my_numbers.size, ++i )
 		{
 			log(i, "= ", my_numbers[i])
 		}
@@ -72,6 +72,16 @@ pub:
 		log("World!")
 	}
 	
+	func (int result) int_count (let int param1, let int param2) pub
+	{
+		return param1 + param2
+	}
+
+	func (int result) tester_count (let ref Tester param1, let ref Tester param2) pub
+	{
+		return param1.data + param2.data
+	}
+
 	func (int result) count (let int param1, let ref Tester param2) pub
 	{
 		if(param2 is null) //TODO oneliner if handling:
@@ -152,7 +162,13 @@ func (int) main ([string] args)
 
 	log_s("5 + 2 = ")
 
-	log(hello.count( hello.number, hello.tester_opt ))
+	log(hello.count( hello.number, hello.tester_opt )) // opt to ref
+	log(hello.count( hello.number, hello.tester )) // val to ref
+	log(hello.count( hello.number, tester_lnk )) // link to ref
+
+	// Complex validation
+	log(hello.count( hello.int_count( hello.number, (42 - 14) * 3), hello.tester_count(hello.tester, tester_lnk) ))
+	// End complex validation
 
 	hello.tester.data = 3
 

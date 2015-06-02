@@ -1,5 +1,5 @@
 //this file is automatically created from Rae programming language module:
-///Users/joonaz/Dropbox/jonas/2014/ohjelmointi/rae_programming_language/cpp/rae/link
+//c:\Users\jonaz\Dropbox\jonas\2015\ohjelmointi\rae_programming_language/cpp/rae/link
 #ifndef _rae_link_hpp_
 #define _rae_link_hpp_
 
@@ -184,7 +184,7 @@ public:
 		if(links.empty())
 		{
 			#ifdef RAE_DEBUG
-			cout<<"ERROR: LinkList.unlinkJustOneLink() links was already empty. Cancelled removing it.\n";
+			cout<<"RAE_ERROR: LinkList.unlinkJustOneLink() links was already empty. Cancelled removing it.\n";
 			#endif
 			return;
 		}

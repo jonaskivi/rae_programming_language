@@ -1,6 +1,9 @@
 
 #include "LangElement.hpp"
 
+namespace Rae
+{
+
 namespace TypeType
 {
 string toString(TypeType::e set)
@@ -8,7 +11,7 @@ string toString(TypeType::e set)
 	switch(set)
 	{
 		default:
-			return "ERROR TypeType:: not recognized.";
+			return "RAE_ERROR TypeType:: not recognized.";
 		case TypeType::UNDEFINED:
 			return "TypeType::UNDEFINED";
 		case TypeType::VAL:
@@ -58,7 +61,7 @@ string toString(ContainerType::e set)
 	switch(set)
 	{
 		default:
-			return "ERROR ContainerType:: not recognized.";
+			return "RAE_ERROR ContainerType:: not recognized.";
 		case ContainerType::UNDEFINED:
 			return "ContainerType::UNDEFINED";
 		case ContainerType::ARRAY:
@@ -76,17 +79,17 @@ string toString(Token::e set)
 		switch(set)
 		{
 			default:
-			return "ERROR Token:: not recognized.";
+			return "RAE_ERROR Token:: not recognized.";
 			case Token::UNDEFINED:
 			return "Token::UNDEFINED";
 			case Token::EMPTY:
 			return "Token::EMPTY";
-			case Token::PASSTHROUGH:
-			return "Token::PASSTHROUGH";
+			case Token::PASSTHROUGH_HDR:
+			return "Token::PASSTHROUGH_HDR";
 			case Token::PASSTHROUGH_SRC:
 			return "Token::PASSTHROUGH_SRC";
-			case Token::ERROR:
-			return "Token::ERROR";
+			case Token::RAE_ERROR:
+			return "Token::RAE_ERROR";
 			case Token::MODULE:
 			return "Token::MODULE";
 			case Token::MODULE_NAME:
@@ -159,8 +162,10 @@ string toString(Token::e set)
 
 			case Token::NUMBER:
 			return "Token::NUMBER";
-			case Token::NUMBER_AFTER_DOT:
-			return "Token::NUMBER_AFTER_DOT";
+			case Token::FLOAT_NUMBER:
+			return "Token::FLOAT_NUMBER";
+			case Token::DECIMAL_NUMBER_AFTER_DOT:
+			return "Token::DECIMAL_NUMBER_AFTER_DOT";
 			
 			case Token::REFERENCE_DOT:
 			return "Token::REFERENCE_DOT";
@@ -366,10 +371,10 @@ string toString(Token::e set)
 			return "Token::IF";
 			case Token::FOR:
 			return "Token::FOR";
-			case Token::FOREACH:
-			return "Token::FOREACH";
-			case Token::IN:
-			return "Token::IN";
+			case Token::FOR_EACH:
+			return "Token::FOR_EACH";
+			case Token::IN_TOKEN:
+			return "Token::IN_TOKEN";
 
 			case Token::TRUE_TRUE:
 			return "Token::TRUE_TRUE";
@@ -464,7 +469,7 @@ string toString(Token::e set)
 		switch(parenthesis_begin_type)
 		{
 			default:
-			return Token::ERROR;
+			return Token::RAE_ERROR;
 			case Token::PARENTHESIS_BEGIN:
 			//return Token::PARENTHESIS_BEGIN;
 			//case Token::PARENTHESIS_END:
@@ -494,7 +499,7 @@ string toString(Token::e set)
 		switch(begin_type)
 		{
 			default:
-			//return Token::ERROR; // We might think this is an error,
+			//return Token::RAE_ERROR; // We might think this is an error,
 			return Token::BRACKET_END; //but we don't.
 			case Token::BRACKET_BEGIN:
 			//return Token::BRACKET_BEGIN;
@@ -523,7 +528,7 @@ string toString(Token::e set)
 		switch(lang_token_type)
 		{
 			default:
-			return Token::ERROR;
+			return Token::RAE_ERROR;
 			case Token::BOOL:
 			return Token::BOOL_IN_CLASS;
 			case Token::BYTE:
@@ -818,4 +823,4 @@ void LineNumber::printOut()
 	////rae::log("line: ", line, " charpos: ", charPosInLine);
 }
 
-
+}

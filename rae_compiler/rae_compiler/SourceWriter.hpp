@@ -21,6 +21,28 @@
 		writer.currentIndentMinus();
 	}
 
+	void writeDebugTree2( StringFileWriter& writer, LangElement& set_elem )
+	{
+		writer.writeIndents();
+		writer.writeString( set_elem.toSingleLineString() );
+		writer.writeChar('\n');
+
+		if( set_elem.nextElement() )
+		{
+			if(set_elem.nextElement()->parent() == &set_elem)
+				writer.currentIndentPlus();
+
+			writeDebugTree2( writer, *set_elem.nextElement() );
+
+			if(set_elem.nextElement()->parent() == &set_elem)
+				writer.currentIndentMinus();
+		}
+		else
+		{
+			//ReportError::reportError("writeDebugTree2 Chain ended at: ", &set_elem);
+		}
+	}
+
 
 // Writing
 	
@@ -65,7 +87,7 @@
 				//writer.writeIndents();
 				writer.writeString( set_elem.name() );
 				//writer.writeChar( '\n' );
-				//foreach( LangElement* elem, langElements )
+				//for( LangElement* elem : langElements )
 				//{
 				//	elem->write(writer);
 				//}
@@ -309,7 +331,7 @@
 				writer.writeString(set_elem.name());
 				writer.writeChar('\n');
 			break;
-			case Token::PASSTHROUGH:
+			case Token::PASSTHROUGH_HDR:
 				if( writer.isHeader() == true )//hpp
 				{
 					writer.writeString(set_elem.name());
@@ -785,48 +807,48 @@
 
 				//if( writer.nextToken() == Token::USE_REFERENCE && writer.nextElement()->typeType() == TypeType::VAL )
 				{
-					LangElement* got_statementRValue = 0;
+					LangElement* got_expressionRValue = 0;
 					if( writer.nextElement() != 0)
 					{
 						//COUT
 						////////ReportError::reportError("WE HAVE NEXT ELEMTN.", &set_elem);
 
-						got_statementRValue = writer.nextElement()->statementRValue();
+						got_expressionRValue = writer.nextElement()->expressionRValue();
 
-						if( got_statementRValue != 0 )
+						if( got_expressionRValue != 0 )
 						{
 							#ifdef DEBUG_RAE_RVALUE
-							cout<<"GOT rvalue: "<<got_statementRValue->toString()<<"\n";
+							cout<<"GOT rvalue: "<<got_expressionRValue->toString()<<"\n";
 							#endif
 
 							//This error test was moved to validate.
 
 							//test for link to temp val, which is an error.
-							if(got_statementRValue->role() == Role::FUNC_RETURN)
+							if(got_expressionRValue->role() == Role::FUNC_RETURN)
 							{
-								if( got_statementRValue->typeType() == TypeType::VAL
-								|| got_statementRValue->typeType() == TypeType::BUILT_IN_TYPE )
+								if( got_expressionRValue->typeType() == TypeType::VAL
+								|| got_expressionRValue->typeType() == TypeType::BUILT_IN_TYPE )
 								{
-									writer.writeString( "ERROR /*point to temporary object.*/" );
+									writer.writeString( "RAE_ERROR /*point to temporary object.*/" );
 									ReportError::reportError("pointing a link to a temporary object returned by function call is not possible.", &set_elem);
 								}
 							}
 							
 							//This could be "else", but we'll write it anyway, even though the test is done twice in FUNC_CALL case.
-							if( got_statementRValue->typeType() == TypeType::VAL
-								|| got_statementRValue->typeType() == TypeType::BUILT_IN_TYPE )
+							if( got_expressionRValue->typeType() == TypeType::VAL
+								|| got_expressionRValue->typeType() == TypeType::BUILT_IN_TYPE )
 							{
 								//COUT
 								////////ReportError::reportError("SHOULD_WRITE &", &set_elem);
 
 								writer.writeChar( '&' );//TODO make this better...
-								//.statementRValue()
+								//.expressionRValue()
 								//if( evaluate. == use_ref and writer.nextElement()->evaluateStatementReturnValue()->typeType() == ...;
 							}
-							else if( got_statementRValue->typeType() == TypeType::OPT
-								|| got_statementRValue->typeType() == TypeType::REF
-								|| got_statementRValue->typeType() == TypeType::LINK
-								|| got_statementRValue->typeType() == TypeType::PTR
+							else if( got_expressionRValue->typeType() == TypeType::OPT
+								|| got_expressionRValue->typeType() == TypeType::REF
+								|| got_expressionRValue->typeType() == TypeType::LINK
+								|| got_expressionRValue->typeType() == TypeType::PTR
 							)
 							{
 								//ok.
@@ -835,7 +857,7 @@
 							}
 							else
 							{
-								ReportError::reportError("TODO Compiler error. We should implement other kind of statementRValues in ", &set_elem );
+								ReportError::reportError("TODO Compiler error. We should implement other kind of expressionRValues in ", &set_elem );
 							}
 						}
 						#ifdef DEBUG_RAE_RVALUE
@@ -850,6 +872,8 @@
 			case Token::REFERENCE_DOT:
 				if( writer.previousToken() == Token::NUMBER )
 				{
+					ReportError::reportError("REFERENCE_DOT after NUMBER.", writer.previousElement() );
+					assert(0); // This should not happen.
 					writer.writeChar( '.' );
 				}
 				else if(writer.previousElement() && writer.previousElement()->typeType() == TypeType::VAL )
@@ -895,6 +919,16 @@
 						writer.writeString( set_elem.name() );
 					}
 				}*/
+
+				if( set_elem.typeConvert() == TypeType::REF
+					&& set_elem.definitionElement()
+					&& set_elem.definitionElement()->typeType() == TypeType::VAL
+					)
+				{
+					// convert val to ref. (in C++ get the pointer of the value type.)
+					writer.writeChar('&');
+				}
+
 				if( set_elem.definitionElement()
 					&& set_elem.definitionElement()->containerType() == ContainerType::ARRAY
 					&& set_elem.definitionElement()->typeType() != TypeType::VAL)
@@ -928,9 +962,11 @@
 			case Token::PARENTHESIS_BEGIN:
 			case Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES:
 				writer.writeChar( '(' );
+				iterateWrite(writer, set_elem);
 			break;
 			case Token::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES:
 				//no output.
+				iterateWrite(writer, set_elem);
 			break;
 			case Token::PARENTHESIS_END:
 			case Token::PARENTHESIS_END_FUNC_PARAM_TYPES:
@@ -944,6 +980,7 @@
 			case Token::PARENTHESIS_BEGIN_LOG_S:
 				writer.writeChar( '<' );
 				writer.writeChar( '<' );
+				iterateWrite(writer, set_elem);
 			break;
 			case Token::PARENTHESIS_END_LOG:
 				writer.writeString("<<\"\\n\"");//That's a little funky looking line, but it's supposed to look just like that. Hope your syntax highlighting can handle it.
@@ -966,7 +1003,7 @@
 
 					// Non bounds checked with just a bracket:
 					//writer.writeString(set_elem.name());
-					// Bounds checked with out helmet on:
+					// Bounds checked with helmet on:
 					writer.writeString(".at(");
 					iterateWrite(writer, set_elem);
 				
@@ -1462,7 +1499,7 @@
 				}
 			break;
 			*/
-			case Token::IN:
+			case Token::IN_TOKEN:
 				writer.writeChar(' ');
 				writer.writeChar(':');
 				writer.writeChar(' ');
@@ -1486,7 +1523,7 @@
 				}
 			break;
 			case Token::FOR:
-			case Token::FOREACH:
+			case Token::FOR_EACH:
 				writer.lineNeedsSemicolon(false);
 				writer.writeString("for ");
 			break;
@@ -1516,7 +1553,7 @@
 				
 				if(set_elem.parent() && set_elem.parent()->token() == Token::CLASS)
 				{
-					//cout<<"IN SCOPE_BEGIN for class: "<<set_elem.parentClassName()<<"\n";
+					//cout<<"IN_TOKEN SCOPE_BEGIN for class: "<<set_elem.parentClassName()<<"\n";
 					//cout<<"parent: "<<set_elem.parent()->toString()<<"\n";
 					
 					//This is the scope that begins a class.
@@ -1525,21 +1562,21 @@
 				}
 				else if(set_elem.parent() && set_elem.parent()->token() == Token::CONSTRUCTOR)
 				{
-					//cout<<"IN SCOPE_BEGIN for constructor: "<<set_elem.toString()<<"\n";
+					//cout<<"IN_TOKEN SCOPE_BEGIN for constructor: "<<set_elem.toString()<<"\n";
 					//cout<<"parent: "<<set_elem.parent()->toString()<<"\n";
 					
 					injectConstructorBoilerPlate(writer, set_elem);
 				}
 				else if(set_elem.parent() && set_elem.parent()->token() == Token::DESTRUCTOR)
 				{
-					//cout<<"IN SCOPE_BEGIN for destructor: "<<set_elem.toString()<<"\n";
+					//cout<<"IN_TOKEN SCOPE_BEGIN for destructor: "<<set_elem.toString()<<"\n";
 					//cout<<"parent: "<<set_elem.parent()->toString()<<"\n";
 					
 					injectDestructorBoilerPlate(writer, set_elem);
 				}
 
 
-				/*foreach( LangElement* elem, langElements )
+				/*for( LangElement* elem : langElements )
 				{
 					elem->write(writer);
 				}*/
@@ -1579,11 +1616,15 @@
 					/////writer.writeChar( '\n' );
 				}
 				/*
-				foreach( LangElement* elem, langElements )
+				for( LangElement* elem : langElements )
 				{
 					elem->write(writer);
 				}*/
 				iterateWrite(writer, set_elem);
+			break;
+			case Token::NUMBER:
+			case Token::FLOAT_NUMBER:
+				writer.writeString(set_elem.name());
 			break;
 			case Token::QUOTE:
 				//writer.writeChar('\"');
@@ -1663,7 +1704,7 @@
 					writer.writeString( set_elem.parent()->name() );//for a c++ constructor, the name of the class...
 					//writer.writeString( "__new" + set_elem.parent()->name() );//for a struct "constructor"
 				}
-				foreach( LangElement* elem, set_elem.langElements )
+				for( LangElement* elem : set_elem.langElements )
 				{
 					elem->write(writer);
 				}
@@ -1677,7 +1718,7 @@
 					//writer.writeString( "__delete" + set_elem.parent()->name() );//for a struct "constructor"
 				}
 				writer.writeChar( '\n' );
-				foreach( LangElement* elem, set_elem.langElements )
+				for( LangElement* elem : set_elem.langElements )
 				{
 					elem->write(writer);
 				}
@@ -1901,7 +1942,7 @@
 					{
 						writer.writeString( "(int argc, char* const argv[])" );
 						/*
-						foreach( LangElement* elem, set_elem.langElements )
+						for( LangElement* elem : set_elem.langElements )
 						{
 							if( elem->token() == Token::DEFINE_FUNC_RETURN )
 							{
@@ -2044,7 +2085,7 @@
 					else //a normal FUNC
 					{
 						/*
-						foreach( LangElement* elem, set_elem.langElements )
+						for( LangElement* elem : set_elem.langElements )
 						{
 							if( elem->token() == Token::DEFINE_FUNC_RETURN )
 							{
@@ -2284,7 +2325,7 @@
 				
 /*
 				uint count_elem = 0;
-				foreach( LangElement* elem, set_elem.langElements )
+				for( LangElement* elem : set_elem.langElements )
 				{
 					if( count_elem == 0)
 					{
@@ -2301,7 +2342,7 @@
 						}
 					}
 					//elem->write(writer);
-					break;//can we break a foreach?
+					break;
 				}					
 */
 			break;
@@ -2327,7 +2368,7 @@
 					//writer.writeChars("\n{\n", 3);
 					//writer.writeChar('\n');
 
-					/*foreach( LangElement* elem, set_elem.langElements )
+					/*for( LangElement* elem : set_elem.langElements )
 					{
 						elem->write(writer);
 					}*/
@@ -2408,7 +2449,7 @@
 					//writer.writeString( ": " );
 					/////writer.writeChar( '\n' );
 					//writer.writeChar( '\n' ); //let's put a line after public: ...
-					/*foreach( LangElement* elem, set_elem.langElements )
+					/*for( LangElement* elem : set_elem.langElements )
 					{
 						elem->write(writer);
 					}*/
@@ -2454,7 +2495,7 @@
 					
 					/////writer.writeChar( '\n' );
 					//writer.writeChar( '\n' ); //let's put a line after public: ...
-					/*foreach( LangElement* elem, set_elem.langElements )
+					/*for( LangElement* elem : set_elem.langElements )
 					{
 						elem->write(writer);
 					}*/
@@ -2477,7 +2518,7 @@
 					writer.lineNeedsSemicolon(false);
 					writer.writeString( string("#include \"") );
 					int not_on_first = 0;
-					foreach( LangElement* elem, set_elem.langElements )
+					for( LangElement* elem : set_elem.langElements )
 					{
 						if( elem->token() == Token::IMPORT_NAME )
 						{
@@ -2493,7 +2534,7 @@
 						}
 						else
 						{
-							break;//break the foreach... hope this works.
+							break;//break the for... hope this works.
 						}
 					}
 					writer.writeString( string(".hpp\"") );
@@ -2526,7 +2567,7 @@
 				{
 					writer.lineNeedsSemicolon(false);
 					writer.writeString( string("#ifndef _") );
-					foreach( LangElement* elem, set_elem.langElements )
+					for( LangElement* elem : set_elem.langElements )
 					{
 						if( elem->token() == Token::MODULE_NAME )
 						{
@@ -2535,13 +2576,13 @@
 						}
 						else
 						{
-							break;//break the foreach... hope this works.
+							break;//break the for... hope this works.
 						}
 					}
 					writer.writeString( string("hpp_\n") );
 					
 					writer.writeString( string("#define _") );
-					foreach( LangElement* elem, set_elem.langElements )
+					for( LangElement* elem : set_elem.langElements )
 					{
 						if( elem->token() == Token::MODULE_NAME )
 						{
@@ -2550,7 +2591,7 @@
 						}
 						else
 						{
-							break;//break the foreach... hope this works.
+							break;//break the for... hope this works.
 						}
 					}
 					writer.writeString( string("hpp_\n\n") );
@@ -2563,7 +2604,7 @@
 					writer.writeString("#include \"rae/link.hpp\"\n\n");
 					//writer.writeString("using namespace std;"); //not this... I guess.
 					
-					/*foreach( LangElement* elem, set_elem.langElements )
+					/*for( LangElement* elem : set_elem.langElements )
 					{
 						elem->write(writer);
 					}*/
@@ -2580,7 +2621,7 @@
 					writer.writeString( last_module_name_element->name() );
 					writer.writeString(".hpp\"\n");
 
-					//foreach( LangElement* elem, set_elem.langElements )
+					//for( LangElement* elem : set_elem.langElements )
 					//{
 					//	elem->write(writer);
 					//}
@@ -2593,7 +2634,7 @@
 					writer.lineNeedsSemicolon(false);
 					writer.writeString( string("#endif // _") );
 					
-					/*foreach( LangElement* elem, set_elem.langElements )
+					/*for( LangElement* elem : set_elem.langElements )
 					{
 						if( elem->token() == Token::MODULE_NAME )
 						{
@@ -2605,7 +2646,7 @@
 					//our set_elem.parent is the module now:
 					if( set_elem.parent() && set_elem.parent()->token() == Token::MODULE)
 					{
-						foreach( LangElement* elem, set_elem.parent()->langElements )
+						for( LangElement* elem : set_elem.parent()->langElements )
 						{
 							if( elem->token() == Token::MODULE_NAME )
 							{
@@ -2614,7 +2655,7 @@
 							}
 							else
 							{
-								break;//break the foreach... hope this works.
+								break;//break the for... hope this works.
 							}
 						}
 					}

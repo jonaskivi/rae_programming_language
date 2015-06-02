@@ -4,7 +4,11 @@
 #include <string>
 	using namespace std;
 
-#include <initializer_list>
+// Not in Visual Studio 2012:
+//#include <initializer_list>
+
+namespace Rae
+{
 
 class LangElement;
 
@@ -29,10 +33,10 @@ public:
 	static void reportError(string set, LineNumber lineNumber)
 	{
 		rlutil::setColor(rlutil::RED);
-		cout<<"ERROR: ";
+		cout<<"RAE_ERROR: ";
 		rlutil::setColor(rlutil::WHITE);
 		cout<<set<<" / line: "<<lineNumber.line<<" / Module: "<<moduleName()<<"\n";
-		//rae::log("ERROR: ", lineNumber.line, " ", set, "\n");
+		//rae::log("RAE_ERROR: ", lineNumber.line, " ", set, "\n");
 		m_countErrors++;
 	}
 	*/
@@ -40,8 +44,10 @@ public:
 	static void reportInfo(string set, LangElement* set_elem);
 	static void reportInfo(string set, string in_which_namespace);
 	static void reportWarning(string set, LangElement* set_elem);
+	//not in vs2012: 
 	static void reportWarning(string set, std::initializer_list<LangElement*> set_elems);
 	static void reportError(string set, LangElement* set_elem);
+	//not in vs2012:
 	static void reportError(string set, std::initializer_list<LangElement*> set_elems);
 	static void reportError(string set, int set_line_number, string in_which_namespace);
 	static void compilerError(string set, LangElement* set_elem);
@@ -68,7 +74,7 @@ public:
 	protected: static int m_countErrors;
 };
 
-		
+}
 
 #endif
 

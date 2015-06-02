@@ -2,6 +2,9 @@
 #include "ReportError.hpp"
 #include "LangElement.hpp"
 
+namespace Rae
+{
+
 	void ReportError::reportInfo(string set, LangElement* set_elem)
 	{
 		//set_elem->parseError(ParseError::SYNTAX_ERROR);
@@ -87,7 +90,7 @@
 	void ReportError::reportError(string set, LangElement* set_elem)
 	{
 		rlutil::setColor(rlutil::RED);
-		cout<<"ERROR: ";
+		cout<<"RAE_ERROR: ";
 		rlutil::setColor(rlutil::WHITE);
 		cout<<set<<"\n";
 
@@ -162,7 +165,7 @@
 	void ReportError::reportError(string set, std::initializer_list<LangElement*> set_elems)
 	{
 		rlutil::setColor(rlutil::RED);
-		cout<<"ERROR: ";
+		cout<<"RAE_ERROR: ";
 		rlutil::setColor(rlutil::WHITE);
 		cout<<set<<"\n";
 
@@ -204,7 +207,7 @@
 	void ReportError::reportError(string set, int set_line_number, string in_which_namespace)
 	{
 		rlutil::setColor(rlutil::RED);
-		cout<<"ERROR: ";
+		cout<<"RAE_ERROR: ";
 		rlutil::setColor(rlutil::WHITE);
 		cout<<set;
 
@@ -216,7 +219,7 @@
 	void ReportError::compilerError(string set, LangElement* set_elem)
 	{
 		rlutil::setColor(rlutil::RED);
-		cout<<"COMPILER ERROR: ";
+		cout<<"COMPILER RAE_ERROR: ";
 		rlutil::setColor(rlutil::WHITE);
 		cout<<set<<"\n";
 
@@ -250,7 +253,7 @@
 	{
 		//set_elem->parseError(ParseError::COMPILER_ERROR);
 		rlutil::setColor(rlutil::RED);
-		cout<<"COMPILER ERROR: ";
+		cout<<"COMPILER RAE_ERROR: ";
 		rlutil::setColor(rlutil::WHITE);
 		cout<<set<<"\n";
 		
@@ -261,4 +264,5 @@
 	int ReportError::m_countWarnings = 0;
 	int ReportError::m_countErrors = 0;
 
+} // end namespace Rae
 

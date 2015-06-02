@@ -1,18 +1,21 @@
 #ifndef RAE_COMPILER_RAE_HELPERS_HPP
 #define RAE_COMPILER_RAE_HELPERS_HPP
 
-
 #include <iostream>
 #include "rlutil.h"//for colours in console output
 #include <sstream> //for ostringstream
 #include <string>
 #include <vector>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <direct.h>
 #if __cplusplus >= 201103L //c++11
 	#include <thread>
 #endif
 
 	using namespace std;
 
+/* REMOVE BOOST
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
 
@@ -22,6 +25,7 @@
 #include <boost/bind.hpp>
 #include <boost/range/algorithm/remove_if.hpp>
 	using namespace boost;
+*/
 
 #include <stdio.h>//for FILE
 
@@ -33,8 +37,8 @@ typedef unsigned int uint;
 //#include "rae_log.hpp"
 
 #define DEBUG_RAE_DEBUGTREE
-#define DEBUG_RAE_VALIDATE
-#define DEBUG_RAE_HUMAN
+//#define DEBUG_RAE_VALIDATE
+//#define DEBUG_RAE_HUMAN
 
 //#define DEBUG_RAE_PARSER
 //#define DEBUG_RAE
@@ -90,8 +94,12 @@ enum e
 };
 }
 
-
-
+PathType::e checkPathType(string currentFilenamePath);
+int createPathIfNotExist(string set_path);
+int createPath(string s);
+string parentPath(string original_path);
+string getFilenameFromPath(string original_path);
+string replaceExtension(string original_path, string new_extension);
 
 #endif
 
