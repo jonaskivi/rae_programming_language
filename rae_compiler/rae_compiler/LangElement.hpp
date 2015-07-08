@@ -368,7 +368,8 @@ public:
 		m_name(""),
 		m_type(""),
 		m_typeType(TypeType::UNDEFINED),
-		m_typeConvert(TypeType::UNDEFINED),
+		m_typeConvertFrom(TypeType::UNDEFINED),
+		m_typeConvertTo(TypeType::UNDEFINED),
 		m_builtInType(BuiltInType::UNDEFINED),
 		m_containerType(ContainerType::UNDEFINED),
 		m_role(Role::UNDEFINED),
@@ -391,7 +392,8 @@ public:
 		m_token(set_lang_token_type),
 		m_name(set_name),	
 		m_typeType(set_type_type),
-		m_typeConvert(TypeType::UNDEFINED),
+		m_typeConvertFrom(TypeType::UNDEFINED),
+		m_typeConvertTo(TypeType::UNDEFINED),
 		m_builtInType(BuiltInType::UNDEFINED),
 		m_containerType(ContainerType::UNDEFINED),
 		m_role(Role::UNDEFINED),
@@ -452,7 +454,8 @@ public:
 		res->m_name = m_name;
 		res->m_type = m_type;
 		res->m_typeType = m_typeType;
-		res->m_typeConvert = m_typeConvert;
+		res->m_typeConvertFrom = m_typeConvertFrom;
+		res->m_typeConvertTo = m_typeConvertTo;
 		res->m_builtInType = m_builtInType;
 		res->m_containerType = m_containerType;
 		res->m_role = m_role;
@@ -547,7 +550,7 @@ public:
 			ret += name() + " ";
 
 		// Add spaces to align next tokenString at 25 chars
-		for (int i = ret.length(); i < 25; ++i)
+		for(int i = ret.length(); i < 25; ++i)
 		{
 			ret += " ";
 		}
@@ -558,6 +561,8 @@ public:
 			ret += " typetype: " + typeTypeString();
 		if(containerType() != ContainerType::UNDEFINED)
 			ret += " containerType: " + containerTypeString();
+		if(isUnknownType() == true)
+			ret += " isUnknownType.";
 		ret += " line: " + numberToString(lineNumber().line);
 
 		return ret;
@@ -1343,9 +1348,19 @@ public:
 	protected: TypeType::e m_typeType;
 
 	// Convert from e.g. val to ref
-	public: TypeType::e typeConvert() { return m_typeConvert; }
-	public: void typeConvert(TypeType::e set) { m_typeConvert = set; }
-	protected: TypeType::e m_typeConvert;
+	public: void typeConvert(TypeType::e from, TypeType::e to)
+	{
+		m_typeConvertFrom = from;
+		m_typeConvertTo = to;
+	}
+
+	public: TypeType::e typeConvertFrom() { return m_typeConvertFrom; }
+	public: void typeConvertFrom(TypeType::e set) { m_typeConvertFrom = set; }
+	protected: TypeType::e m_typeConvertFrom;
+
+	public: TypeType::e typeConvertTo() { return m_typeConvertTo; }
+	public: void typeConvertTo(TypeType::e set) { m_typeConvertTo = set; }
+	protected: TypeType::e m_typeConvertTo;
 
 	// ContainerType is an addition to TypeType and DefineReference.
 	// It tells if we're just single or an array, or something else.
@@ -1407,6 +1422,10 @@ public:
 	public: bool isUnknownType() { return m_isUnknownType; }
 	public: void isUnknownType(bool set)
 	{
+		#ifdef DEBUG_DEBUGNAME
+			if (g_debugName == name())
+				cout << "isUnknownType set from: " << (m_isUnknownType ? "true" : "false") << " to: " << (set ? "true" : "false")<< " " << toSingleLineString() << "\n";
+		#endif
 		if(set == false) // Self healed from the unknown reference, so we set that there was no error either.
 			parseError(ParseError::UNDEFINED);
 		m_isUnknownType = set;

@@ -1942,6 +1942,7 @@ void SourceParser::handleToken(string set_token)
 		}
 		else if (set_token == "*")
 		{
+			assert(0);
 			//TODO pointer type...
 			ReportError::reportError("TODO pointer type.", previousElement());
 			newLangElement(Token::MULTIPLY, TypeType::UNDEFINED, set_token);

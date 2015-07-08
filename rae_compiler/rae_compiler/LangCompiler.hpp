@@ -302,15 +302,17 @@ public:
 
 			//rae::log("We have sourceFiles: ", sourceFiles.size(), "\n");;
 
+            cout<<"We have C++11, but this code is just bollocks. Rewrite this.\n";
+            
 			for(uint i = 0; i < sourceFiles.size(); i++)
 			{
 				//thread* t1 = new thread(task, "Hello " + numberToString(i));
 
 				//rae::log("sourcefile: ", sourceFiles[i], "\n");
-
-				SourceParser* a_parser = new SourceParser(sourceFiles[i].string(), false);//false is do_parse:
-				a_parser->newImportSignal.connect( bind(&LangCompiler::addSourceFileAsImport, this, _1) );
-				a_parser->searchElementInOtherModulesSignal.connect( bind(&LangCompiler::searchElementInOtherModules, this, _1, _2) );
+                
+				SourceParser* a_parser = new SourceParser(sourceFiles[i], false);//false is do_parse:
+				//a_parser->newImportSignal.connect( bind(&LangCompiler::addSourceFileAsImport, this, _1) );
+				//a_parser->searchElementInOtherModulesSignal.connect( bind(&LangCompiler::searchElementInOtherModules, this, _1, _2) );
 				sourceParsers.push_back(a_parser);
 
 				//std::thread t1(&SomeClass::threadFunction, *this, arg1, arg2);
@@ -326,13 +328,14 @@ public:
 				//parserThreads.push_back(t1);
 								
 			}
-
+            /*
 			foreach(thread* th, parserThreads)
 			{
 				//rae::log("Going to join() a thread.\n");
 				if(th->joinable() )
 					th->join();
 			}
+            */
 		#else
 			cout<<"No multithreading because we don't have C++11. You must use force_one_thread = true.\n";
 		#endif

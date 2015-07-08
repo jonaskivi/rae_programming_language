@@ -1,5 +1,5 @@
 //this file is automatically created from Rae programming language module:
-//c:\Users\jonaz\Dropbox\jonas\2015\ohjelmointi\rae_programming_language/cpp/rae/examples/HelloWorld
+///Users/joonaz/Dropbox/jonas/2015/ohjelmointi/rae_programming_language/cpp/rae/examples/HelloWorld
 #ifndef _rae_examples_HelloWorld_hpp_
 #define _rae_examples_HelloWorld_hpp_
 
@@ -151,19 +151,19 @@ public:
 	
 	public: void say_hello(); // line: 46
 	public: int32_t int_count(const int32_t param1, const int32_t param2); // line: 76
-	public: int32_t tester_count( const Tester* param1,  const Tester* param2); // line: 81
-	public: int32_t count(const int32_t param1,  const Tester* param2); // line: 86
+	public: Tester tester_count( const Tester* param1,  const Tester* param2); // line: 81
+	public: int32_t count(const int32_t param1,  const Tester* param2); // line: 88
 	public: int32_t number();
 	public: void number(int32_t set);
 	protected: int32_t m_number; // default initializers are copied to constructors.
 	
 	
-	public: const int32_t let_init_data; // line: 109
-	int32_t no_init_data; // line: 110
-	double no_init_datad; // line: 111
+	public: const int32_t let_init_data; // line: 111
+	int32_t no_init_data; // line: 112
+	double no_init_datad; // line: 113
 	
-	protected: int32_t anotherNumber; // line: 113
-	public: float afloat; // line: 114
+	protected: int32_t anotherNumber; // line: 115
+	public: float afloat; // line: 116
 	
 	Tester tester; // val is the default type
 	Tester* tester_opt; // opt is the optional type. This one is allocated automatically.
@@ -173,21 +173,21 @@ public:
 	// when the pointed object is destroyed.
 	Tester* tester_ptr; // Don't use raw pointers unless interfacing with C.
 	
-	std::string name; // line: 124
+	std::string name; // line: 126
 	
-	std::vector<std::string> names; // line: 126
+	std::vector<std::string> names; // line: 128
 	
-	std::vector<int32_t>* opt_array_test; // line: 128
-	std::vector<int32_t>* ref_array_test; // line: 129
-	std::vector<int32_t>* ptr_array_test; // line: 130
+	std::vector<int32_t>* opt_array_test; // line: 130
+	std::vector<int32_t>* ref_array_test; // line: 131
+	std::vector<int32_t>* ptr_array_test; // line: 132
 	//TODO link[int] link_array_test
 	std::vector<int32_t> array_test; //std::vector<int>	
 	std::array<int32_t, 5> static_array_test; //std::array<int, 5>
-	std::vector<Tester > testers; // line: 134
-	std::vector<Tester > defaultTesters; // line: 135
-	std::vector<rae::link<Tester> > tester_links; // line: 136
-	std::vector<Tester* > tester_opts; // line: 137
-	std::vector<Tester* > tester_refs; // line: 138
+	std::vector<Tester > testers; // line: 136
+	std::vector<Tester > defaultTesters; // line: 137
+	std::vector<rae::link<Tester> > tester_links; // line: 138
+	std::vector<Tester* > tester_opts; // line: 139
+	std::vector<Tester* > tester_refs; // line: 140
 	std::vector<Tester* > tester_ptrs;
 };
 

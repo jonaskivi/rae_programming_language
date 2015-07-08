@@ -920,10 +920,20 @@
 					}
 				}*/
 
+				/*JONDE REMOVE:
 				if( set_elem.typeConvert() == TypeType::REF
 					&& set_elem.definitionElement()
 					&& set_elem.definitionElement()->typeType() == TypeType::VAL
 					)
+				{
+					// convert val to ref. (in C++ get the pointer of the value type.)
+					writer.writeChar('&');
+				}
+				*/
+
+				if( (set_elem.typeConvertFrom() == TypeType::VAL && set_elem.typeConvertTo() == TypeType::REF)
+					|| (set_elem.typeConvertFrom() == TypeType::VAL && set_elem.typeConvertTo() == TypeType::OPT)
+				)
 				{
 					// convert val to ref. (in C++ get the pointer of the value type.)
 					writer.writeChar('&');
@@ -950,6 +960,14 @@
 					{
 						writer.writeString( set_elem.name() );
 					}
+				}
+
+				if( (set_elem.typeConvertFrom() == TypeType::LINK && set_elem.typeConvertTo() == TypeType::REF)
+					|| (set_elem.typeConvertFrom() == TypeType::LINK && set_elem.typeConvertTo() == TypeType::OPT)
+				)
+				{
+					// convert link to ref.
+					writer.writeString(".obj");
 				}
 			break;
 			//case Token::UNKNOWN_USE_REFERENCE:

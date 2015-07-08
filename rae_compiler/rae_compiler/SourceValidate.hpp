@@ -431,13 +431,59 @@
 				//else cout<<"types DON'T have definitionElements.\n"; //this mostly happens only for built_in_types.
 				//and I'm happy to tell you that we seem to have definitionElements for user defined types!
 
-				if( line[k]->definitionElement() && func_params[i]->typeType() != line[k]->definitionElement()->typeType() )
+				/*if( line[k]->definitionElement() && func_params[i]->typeType() != line[k]->definitionElement()->typeType() )
 				{
+					cout << "Setting typeConvert in: " << line[k]->toSingleLineString() << " to: " << TypeType::toString( func_params[i]->typeType() ) << "\n";
 					line[k]->typeConvert( func_params[i]->typeType() );
-				}
+				}*/
 
 				++k;
-			}	
+			}
+
+			// Find commas and split
+			int nroFragments = 0;
+			int start_frag = 1;
+			for(k = 1; k < line.size(); ++k)
+			{
+				if( k > start_frag && line[k]->token() == Token::COMMA )
+				{
+					cout << "Found comma at: " << k << " so fragment is: " << start_frag << " - " << k-1 << "\n";
+					vector<LangElement*> fragment;
+					for(int j = start_frag; j < k; ++j)
+					{
+						fragment.push_back( line[j] );
+					}
+					
+					if( func_params.size() > nroFragments )
+						validateParameterLine(*func_params[nroFragments], fragment);
+					else cout << "TODO ERROR: too many parameters to a function.\n";
+					
+					start_frag = k + 1;
+					++nroFragments;
+				}
+
+				if( k == line.size()-1 && k > start_frag)
+				{
+					cout << "Last fragment: " << start_frag << " - " << k << "\n";
+					vector<LangElement*> fragment;
+					for(int j = start_frag; j < k; ++j)
+					{
+						fragment.push_back( line[j] );
+					}
+					
+					if( func_params.size() > nroFragments )
+						validateParameterLine(*func_params[nroFragments], fragment);
+					else cout << "TODO ERROR: too many parameters to a function.\n";
+					
+					start_frag = k + 1;
+					++nroFragments;
+				}
+			}
+
+			if( func_params.size() > nroFragments )
+				cout << "TODO ERROR: too FEW parameters to a function. Check default args.\n";
+			else if(nroFragments > 0)
+				cout << "Just the right amount of parameters to a function. " << func_params.size() << " and " << nroFragments << "\n";
 		}
 
 		bool hasMathOperator = false;
@@ -468,6 +514,86 @@
 		cout<<"END validateLine\n";
 		
 	}
+
+	void validateParameterLine(LangElement& param, vector<LangElement*>& line, int tab_level = 0)
+	{
+		assert(line.size() > 0); // I bet this assert will cause trouble...
+
+		if(hasListOtherParenthesis(line))
+		{
+			cout << "SHIIT: there's parenthesis inside this function call.\n";
+			assert(0);
+		}
+
+		if(line.size() == 1)
+		{
+			cout << "The only thing here is: " << line[0]->toSingleLineString() << "\n";
+			validateParameter(param, *line[0]);
+		}
+		else
+		{
+			validateParameter(param, *line[0]);
+
+			/*
+			for(int i = 0; i < line.size(); ++i)
+			{
+
+				
+				if( line[i]->token() == Token::USE_REFERENCE && i+1 < line.size() && line[i+1]->token() == Token::REFERENCE_DOT)
+				{
+
+				}
+			}	
+			*/		
+		}
+	}
+
+	void validateParameter(LangElement& param, LangElement& line)
+	{
+		cout << "validateParameter START.\n";
+
+		LangElement* ret_value = line.expressionRValue();
+
+		if(ret_value == nullptr)
+		{
+			cout << "TODO ERROR in validateParameter(): expressionRValue is null.\n";
+			assert(0);
+		}
+
+		//if( ret_value->definitionElement() && param.typeType() != ret_value->definitionElement()->typeType() )
+		if( param.typeType() != ret_value->typeType() )
+		{
+			cout << "Setting typeConvert in: " << line.toSingleLineString() << " to: " << TypeType::toString( param.typeType() ) << "\n";
+			line.typeConvert( ret_value->typeType(), param.typeType() );
+		}
+		else
+		{
+			cout << "TODO validateParameter() Unhandled typeConvert.\n";
+			cout << "types are: ret_value: " << ret_value->toSingleLineString() << " param: " << param.toSingleLineString() << " paramTypeType: " << TypeType::toString( param.typeType() ) << "\n";
+		}
+
+		/*
+		if( line.token() == Token::FUNC_CALL )
+		{
+			if( line.returnType() )
+		}
+		else if( line.token() == Token::USE_REFERENCE )
+		{
+			if( line.definitionElement() && param.typeType() != line.definitionElement()->typeType() )
+			{
+				cout << "Setting typeConvert in: " << line.toSingleLineString() << " to: " << TypeType::toString( param.typeType() ) << "\n";
+				line.typeConvert( param.typeType() );
+			}
+		}
+		*/
+
+		cout << "validateParameter END.\n";
+	}
+
+
+
+
+	// Probably some old stuff:
 
 	bool validateElement(LangElement& set_elem)
 	{

@@ -2793,6 +2793,7 @@ public:
 					currentWord = "";
 					
 					currentLine += currentChar;
+					return true; // WHY?
 				}
 			}
 
@@ -3579,11 +3580,11 @@ public:
 		unknownUseMembers.push_back(set_elem);
 	}
 
-	static bool isUnknownType(LangElement* set)
+	static bool isKnownType(LangElement* set)
 	{
 		if (!set)
 			return true;
-		return set->isUnknownType();
+		return !set->isUnknownType();
 	}
 
 	void cleanUpUnknownTokens(vector<LangElement*>& unknown_tokens)
@@ -3597,7 +3598,7 @@ public:
 
 		unknown_tokens.erase(std::remove_if(unknown_tokens.begin(),
                          unknown_tokens.end(),
-                         isUnknownType),
+						 isKnownType ),
           unknown_tokens.end());
 
 		#ifdef DEBUG_RAE_PARSER
@@ -3616,7 +3617,7 @@ public:
 
 		unknownDefinitions.erase(std::remove_if(unknownDefinitions.begin(),
                          unknownDefinitions.end(),
-                         isUnknownType),
+						 isKnownType ),
           unknownDefinitions.end());
 
 		#ifdef DEBUG_RAE_PARSER
@@ -3635,7 +3636,7 @@ public:
 
 		unknownUseReferences.erase(std::remove_if(unknownUseReferences.begin(),
                          unknownUseReferences.end(),
-                         isUnknownType),
+                         isKnownType),
           unknownUseReferences.end());
 
 		#ifdef DEBUG_RAE_PARSER
@@ -3654,8 +3655,8 @@ public:
 
 		unknownUseMembers.erase(std::remove_if(unknownUseMembers.begin(),
                          unknownUseMembers.end(),
-                         isUnknownType),
-          unknownUseMembers.end());
+						 isKnownType ),
+        unknownUseMembers.end());
 
 		#ifdef DEBUG_RAE_PARSER
 		cout<<"unknownUseMembers.size after remove: "<<unknownUseMembers.size()<<"\n";
@@ -3711,6 +3712,11 @@ public:
 		cout<<"looking for class: "<<set_class<<" val or func: "<<set_name<<"\n";
 		#endif
 
+		#ifdef DEBUG_DEBUGNAME
+			if (g_debugName == set_name || g_debugName == set_class)
+				cout << "looking for class: " << set_class << " val or func: " << set_name << "\n";
+		#endif
+
 		for(LangElement* elem : userDefinedTokens)
 		{
 			if( elem->name() == set_class )
@@ -3740,6 +3746,10 @@ public:
 			LangElement* found_func_or_val = found_class->searchName(set_name);
 			if( found_func_or_val )
 			{
+				#ifdef DEBUG_DEBUGNAME
+					if (g_debugName == set_name || g_debugName == set_class)
+						cout << "found func or val: " << set_name << " in class: " << set_class << "\n";
+				#endif
 				#ifdef DEBUG_RAE_PARSER
 				cout<<"found func or val too.\n";
 				#endif
@@ -3747,6 +3757,10 @@ public:
 			}
 			else
 			{
+				#ifdef DEBUG_DEBUGNAME
+					if (g_debugName == set_name || g_debugName == set_class)
+						cout << "found func or val: " << set_name << " in class: " << set_class << "\n";
+				#endif
 				#ifdef DEBUG_RAE_PARSER
 				cout<<"didn't find func or val though.\n";
 				#endif
@@ -3791,6 +3805,10 @@ public:
 					#ifdef DEBUG_RAE_PARSER
 					cout<<"searchScope: found class: "<<elem->type()<<" : "<<elem->toString()<<"\n";
 					#endif
+					#ifdef DEBUG_DEBUGNAME
+						if (g_debugName == set_elem->name() )
+							cout << "searchScope: found name in class: " << elem->type() << " : " << elem->toSingleLineString() << "\n";
+					#endif
 					if( checkIfTokenIsValidInCurrentContext(set_elem, elem) )
 					{
 						return elem;
@@ -3799,6 +3817,10 @@ public:
 					{
 						#ifdef DEBUG_RAE_PARSER
 						cout<<"BUT IT*S NOT VALID!!!!\n";
+						#endif
+						#ifdef DEBUG_DEBUGNAME
+							if (g_debugName == set_elem->name())
+								cout << "searchScope: BUT IT'S NOT VALID: " << elem->type() << " : " << elem->toSingleLineString() << "\n";
 						#endif
 					}
 				}
@@ -3821,6 +3843,10 @@ public:
 				{
 					#ifdef DEBUG_RAE_PARSER
 					cout<<"searchScope: found definition: "<<elem->name()<<" : "<<elem->toString()<<"\n";
+					#endif
+					#ifdef DEBUG_DEBUGNAME
+						if (g_debugName == set_elem->name())
+							cout << "searchScope: found definition: " << elem->type() << " : " << elem->toSingleLineString() << "\n";
 					#endif
 					if( checkIfTokenIsValidInCurrentContext(set_elem, elem) )
 					{
@@ -4028,6 +4054,10 @@ public:
 					#ifdef DEBUG_RAE_PARSER
 					cout<<"JJJJJJEEEEEEEESSSS: found: "<<elem->type()<<" : "<<elem->toString()<<"\n";
 					#endif
+					#ifdef DEBUG_DEBUGNAME
+						if (g_debugName == set_elem->name())
+							cout << "searchElementAndCheckIfValidLocal: found: " << elem->type() << " : " << elem->toSingleLineString() << "\n";
+					#endif
 					if( checkIfTokenIsValidInCurrentContext(set_elem, elem) )
 					{
 						return elem;
@@ -4058,6 +4088,10 @@ public:
 				{
 					#ifdef DEBUG_RAE_PARSER
 					cout<<"HORDUM: found definition: "<<elem->name()<<" : "<<elem->toString()<<"\n";
+					#endif
+					#ifdef DEBUG_DEBUGNAME
+						if (g_debugName == set_elem->name())
+							cout << "searchElementAndCheckIfValidLocal: found2: " << elem->type() << " : " << elem->toSingleLineString() << "\n";
 					#endif
 					if( checkIfTokenIsValidInCurrentContext(set_elem, elem) )
 					{
@@ -4168,10 +4202,8 @@ public:
 
 	bool checkIfTokenIsValidInCurrentContext( LangElement* current_context_use, LangElement* found_definition )
 	{
-		#ifdef DEBUG_RAE_PARSER
-		//TEMP
-		string debug_string_con = "tester_links"; //testers
-		if(current_context_use->name() == debug_string_con)
+		#ifdef DEBUG_DEBUGNAME
+		if(current_context_use->name() == g_debugName)
 		{
 			cout<<"checkIfTokenIsValid.\n";
 		}
@@ -4192,8 +4224,8 @@ public:
 				*/
 			if( current_context_use->isDefinition() )
 			{
-				#ifdef DEBUG_RAE_PARSER
-				if(current_context_use->name() == debug_string_con)
+				#ifdef DEBUG_DEBUGNAME
+				if (current_context_use->name() == g_debugName)
 			  	{
 			  		cout<<"definitions are always valid.\n";
 			  	}
@@ -4205,12 +4237,12 @@ public:
 			//also if found_elem is a class or enum. We can use those always. 
 			if( found_definition->isUserDefinableToken() )
 			{
-				#ifdef DEBUG_RAE_PARSER
-				if(current_context_use->name() == debug_string_con)
-		  	{
-		  		cout<<"valid because the found_definition is a class or enum or other user definable type.\n";
-		  	}
-		  	#endif
+				#ifdef DEBUG_DEBUGNAME
+				if(current_context_use->name() == g_debugName)
+		  		{
+		  			cout<<"valid because the found_definition is a class or enum or other user definable type.\n";
+		  		}
+		  		#endif
 				return true;
 			}
 
@@ -4230,6 +4262,12 @@ public:
 					//It's ok.
 					#ifdef DEBUG_RAE_PARSER
 					cout<<"HAROP2: it's ok. it's valid. someclass.somefunc\n";
+					#endif
+					#ifdef DEBUG_DEBUGNAME
+						if (current_context_use->name() == g_debugName)
+						{
+							cout << "it's ok. it's valid. someclass.somefunc\n";
+						}
 					#endif
 					return true;
 				}
@@ -4341,8 +4379,8 @@ public:
 			}
 			else if( current_context_use->previousElement() )
 			{
-				#ifdef DEBUG_RAE_PARSER
-				if(current_context_use->name() == debug_string_con)
+				#ifdef DEBUG_DEBUGNAME
+				if(current_context_use->name() == g_debugName)
 				{
 					cout<<"Do we have REFERENCE_DOT:.\n";
 					if(current_context_use->previousToken() == Token::REFERENCE_DOT)
@@ -4366,8 +4404,8 @@ public:
 			//In the same class or func, or global:
 			if( current_context_use->scope() == found_definition->scope() )
 			{
-				#ifdef DEBUG_RAE_PARSER
-				if(current_context_use->name() == debug_string_con)
+				#ifdef DEBUG_DEBUGNAME
+				if(current_context_use->name() == g_debugName)
 				{
 					cout<<"valid in SAME PARENT.\n";
 				}
@@ -4380,8 +4418,8 @@ public:
 				//note to self: here we are most probably only dealing with USE_REFERENCEs, USE_MEMBERs and FUNC_CALLs.
 				//all definitions were most likely already checked.
 
-				#ifdef DEBUG_RAE_PARSER
-				if(current_context_use->name() == debug_string_con)
+				#ifdef DEBUG_DEBUGNAME
+				if(current_context_use->name() == g_debugName)
 				{
 					cout<<"getting desperate here. not in same parent. no reference dot type use and all that... but both have parents.\n";
 					cout<<"current_context_use.parent is: "<<current_context_use->scope()->toString()<<"\n";
@@ -4397,8 +4435,8 @@ public:
 						//from the linenumber... I don't know if that really works. We'll see.
 						if( found_definition->lineNumber().totalCharNumber < current_context_use->lineNumber().totalCharNumber )
 						{
-							#ifdef DEBUG_RAE_PARSER
-							if(current_context_use->name() == debug_string_con)
+							#ifdef DEBUG_DEBUGNAME
+							if(current_context_use->name() == g_debugName)
 							{
 								cout<<"valid. same func. and definition is before use.\n";
 							}
@@ -4407,8 +4445,8 @@ public:
 						}
 						else
 						{
-							#ifdef DEBUG_RAE_PARSER
-							if(current_context_use->name() == debug_string_con)
+							#ifdef DEBUG_DEBUGNAME
+							if(current_context_use->name() == g_debugName)
 							{
 								cout<<"NOT valid. same func, but definition is after use.\n";
 							}
@@ -4418,8 +4456,8 @@ public:
 					}
 					else if( current_context_use->parentFunc() != found_definition->parentFunc() )//different funcs.
 					{
-						#ifdef DEBUG_RAE_PARSER
-						if(current_context_use->name() == debug_string_con)
+						#ifdef DEBUG_DEBUGNAME
+						if(current_context_use->name() == g_debugName)
 						{
 							cout<<"NOT valid. different funcs.\n";
 						}
@@ -4439,8 +4477,8 @@ public:
 						//TODO here's where the code to check if something is hidden goes... so TODO an element must know it's own visibility.
 						//so maybe we'll add the visibility as a param to LangElement, and only VISIBILITY_DEFAULT will be put on the list of
 						//langelements...
-						#ifdef DEBUG_RAE_PARSER
-						if(current_context_use->name() == debug_string_con)
+						#ifdef DEBUG_DEBUGNAME
+						if(current_context_use->name() == g_debugName)
 						{
 							cout<<"valid. same class. definition in class (not in func) and use in func.\n";
 						}
@@ -4449,8 +4487,8 @@ public:
 					}
 					else
 					{
-						#ifdef DEBUG_RAE_PARSER
-						if(current_context_use->name() == debug_string_con)
+						#ifdef DEBUG_DEBUGNAME
+						if(current_context_use->name() == g_debugName)
 						{
 							cout<<"NOT valid because this case is Unhandled2.\n";
 							cout<<"context_use: "<<current_context_use->toString()<<"\nfound_stuff: "<<found_definition->toString();
@@ -4475,8 +4513,8 @@ public:
 				}
 				else
 				{
-					#ifdef DEBUG_RAE_PARSER
-					if(current_context_use->name() == debug_string_con)
+					#ifdef DEBUG_DEBUGNAME
+					if(current_context_use->name() == g_debugName)
 					{
 						cout<<"NOT valid because this case is Unhandled1.\n";
 						cout<<"context_use: "<<current_context_use->toString()<<"\nfound_stuff: "<<found_definition->toString();
@@ -4491,7 +4529,7 @@ public:
 				if( current_context_use->parent()->parent() == found_definition->parent()->parent() )
 				{
 					//in the same class, but perhaps in different funcs...
-					if(current_context_use->name() == debug_string_con)
+					if(current_context_use->name() == g_debugName)
 					{
 						cout<<"NOT valid in SAME class but perhaps different funcs.\n";
 					}
@@ -4502,7 +4540,7 @@ public:
 				{
 					//current_contexts is in a func, so parent->parent is class
 					//found_definition is inside a class. the same class...
-					if(current_context_use->name() == debug_string_con)
+					if(current_context_use->name() == g_debugName)
 					{
 						cout<<"valid in context in func. same class.\n";
 					}
@@ -4514,7 +4552,7 @@ public:
 					//found_definition is inside a func which is in a class.
 					//in this case, the context is wrong, because found_elem is definition,
 					//and current_context is using it.
-					if(current_context_use->name() == debug_string_con)
+					if(current_context_use->name() == g_debugName)
 					{
 						cout<<"NOT valid context is wrong.\n";
 					}
@@ -4522,7 +4560,7 @@ public:
 				}
 				else
 				{
-					if(current_context_use->name() == debug_string_con)
+					if(current_context_use->name() == g_debugName)
 					{
 						cout<<"NOT valid because this case is Unhandled1.\n";
 						cout<<"context_use: "<<current_context_use->toString()<<"\nfound_stuff: "<<found_definition->toString();
@@ -4534,9 +4572,9 @@ public:
 			}
 			else if( found_definition->scope() == 0 )
 			{
-				#ifdef DEBUG_RAE_PARSER
+				#ifdef DEBUG_DEBUGNAME
 				//maybe it's a global definition, because it doesn't have a parent?
-				if(current_context_use->name() == debug_string_con)
+				if(current_context_use->name() == g_debugName)
 				{
 					cout<<"Umm. valid in maybe its a global thing..\n";
 				}
@@ -4545,8 +4583,8 @@ public:
 			}
 			else if( current_context_use->scope() == 0 )
 			{
-				#ifdef DEBUG_RAE_PARSER
-				if(current_context_use->name() == debug_string_con)
+				#ifdef DEBUG_DEBUGNAME
+				if(current_context_use->name() == g_debugName)
 				{
 					cout<<"NOT valid in current use is global and def in class or func.\n";
 				}
@@ -4558,8 +4596,8 @@ public:
 			}
 			else
 			{
-				#ifdef DEBUG_RAE_PARSER
-				if(current_context_use->name() == debug_string_con)
+				#ifdef DEBUG_DEBUGNAME
+				if(current_context_use->name() == g_debugName)
 				{
 					cout<<"NOT valid because this case is Unhandled2.\n";
 				}
@@ -4568,8 +4606,8 @@ public:
 			}
 		}
 
-		#ifdef DEBUG_RAE_PARSER
-		if(current_context_use->name() == debug_string_con)
+		#ifdef DEBUG_DEBUGNAME
+		if(current_context_use->name() == g_debugName)
 		{
 			cout<<"valid END.\n";
 		}
@@ -4613,7 +4651,10 @@ public:
 			cout<<"trying to handle: "<<set_token<<" in line: "<<lineNumber.line<<"\n";
 			//rae::log("trying to handle: ", set_token, "\n");
 		#endif
-
+		#ifdef DEBUG_DEBUGNAME
+			if( set_token == g_debugName )
+				cout << "handleUserDefinedToken START. trying to handle: " << set_token << " in line: " << lineNumber.line << "\n";
+		#endif
 		//Should we should just mark everything unknown at this point,
 		//and later handle all the unknowns in one big pass.
 		//Would it be easier? Maybe. But then again, if we only need to parse things (mostly) once
@@ -4682,6 +4723,10 @@ public:
 			#ifdef DEBUG_RAE_HUMAN
 			cout<<"Found user token: "<<found_elem->toString()<<" "<<found_elem->namespaceString()<<"\n";
 			//rae::log("Found user token: ", found_elem->toString(), "\n");
+			#endif
+			#ifdef DEBUG_DEBUGNAME
+				if (g_debugName == set_token)
+					cout << "handleUserDefinedToken: found: " << found_elem->type() << " : " << found_elem->toSingleLineString() << "\n";
 			#endif
 
 			//Check if it is a valid token in this context: //check already in searchToken now...
@@ -4806,6 +4851,10 @@ public:
 			#ifdef DEBUG_RAE_HUMAN
 			cout<<"Didn't find: "<<set_token<<" creating unknown ref.\n";
 			#endif
+			#ifdef DEBUG_DEBUGNAME
+				if( set_token == g_debugName )
+					cout << "handleUserDefinedToken Didn't find: " << set_token << " in line: " << lineNumber.line << "\n";
+			#endif
 			//specifically don't do our_new_element = , because this is already unknown and will be handled later...
 			//Oh well. found_elem would be null anyway...
 			if(currentReference == nullptr)
@@ -4860,6 +4909,12 @@ public:
 
 	void handleUnknownTokens()
 	{
+		cout << "handleUnknownTokens START.\n";
+
+		cout << "unknownDefinitions: " << unknownDefinitions.size() << "\n";
+		cout << "unknownUseReferences: " << unknownUseReferences.size() << "\n";
+		cout << "unknownUseMembers: " << unknownUseMembers.size() << "\n";
+
 		/*if( unknownDefinitions.empty() && unknownUseReferences.empty() && unknownUseMembers.empty() )
 		{
 			return;
@@ -4878,7 +4933,7 @@ public:
 
 			if( unknownDefinitions.empty() && unknownUseReferences.empty() && unknownUseMembers.empty() )
 			{
-				if(i > 0)
+				//if(i > 0)
 				ReportError::reportInfo("Parsed module " + numberToString(i+1) + " times. All unknown references found.", moduleName() );
 				return;
 			}
@@ -4888,6 +4943,8 @@ public:
 		{
 			ReportError::reportError("After parsing the source 4 times, there are still " + numberToString(unknownDefinitions.size() + unknownUseReferences.size() + unknownUseMembers.size()) + " unknown references.", 0, moduleName() );
 		}
+		//TEMP:
+		else cout << "All unknowns handled OK.\n";
 	}
 
 	void handleCheckForPreviousDefinitionsList()
@@ -5013,7 +5070,10 @@ public:
 				//rae::log("Found unknown user token: ", found_elem->toString(), "\n");
 				//rae::log("and the lang elem was: ", lang_elem->toString(), "\n");
 				#endif
-
+				#ifdef DEBUG_DEBUGNAME
+					if (g_debugName == lang_elem->name())
+						cout << "handleUnknownTokens: found: " << found_elem->type() << " : " << found_elem->toSingleLineString() << "\n";
+				#endif
 				switch(found_elem->token())
 				{
 					default:

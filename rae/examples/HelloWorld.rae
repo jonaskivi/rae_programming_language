@@ -77,9 +77,11 @@ pub:
 		return param1 + param2
 	}
 
-	func (int result) tester_count (let ref Tester param1, let ref Tester param2) pub
+	func (val Tester) tester_count (let ref Tester param1, let ref Tester param2) pub
 	{
-		return param1.data + param2.data
+		//return param1.data + param2.data
+		//return param1 // TODO convert let ref to val by making a copy!
+		return tester
 	}
 
 	func (int result) count (let int param1, let ref Tester param2) pub
@@ -89,12 +91,12 @@ pub:
 
 		if(param1 > 0 )// TODO is not: and param2 is not null)
 		{
-			log("whoa.")
+			//log("whoa.")
 		}
 
 		if param1 > 0 // TODO no parentheses
 		{
-			log("whoa.")
+			//log("whoa.")
 		}
 
 		return param1 + param2.data
@@ -167,7 +169,7 @@ func (int) main ([string] args)
 	log(hello.count( hello.number, tester_lnk )) // link to ref
 
 	// Complex validation
-	log(hello.count( hello.int_count( hello.number, (42 - 14) * 3), hello.tester_count(hello.tester, tester_lnk) ))
+	//NEXT: log(hello.count( hello.int_count( hello.number, (42 - 14) * 3), hello.tester_count(hello.tester, tester_lnk) ))
 	// End complex validation
 
 	hello.tester.data = 3

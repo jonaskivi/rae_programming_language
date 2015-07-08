@@ -8,7 +8,9 @@
 #include <vector>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <direct.h>
+#ifdef _WIN32
+    #include <direct.h>
+#endif
 #if __cplusplus >= 201103L //c++11
 	#include <thread>
 #endif
@@ -41,6 +43,8 @@ typedef unsigned int uint;
 //#define DEBUG_RAE_HUMAN
 
 //#define DEBUG_RAE_PARSER
+#define DEBUG_DEBUGNAME
+const std::string g_debugName("tester");
 //#define DEBUG_RAE
 //#define DEBUG_RAE2
 //#define DEBUG_RAE_DESTRUCTORS

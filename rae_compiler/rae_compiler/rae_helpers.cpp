@@ -51,7 +51,6 @@ int createPathIfNotExist(string set_path)
 
 int createPath(std::string s)
 {
-	//mode_t mode = 0755; // No mode_t in Visual Studio 2013...
 	size_t pre = 0, pos;
 	std::string dir;
 	int mdret;
@@ -66,7 +65,12 @@ int createPath(std::string s)
 		dir = s.substr(0, pos++);
 		pre = pos;
 		if (dir.size() == 0) continue; // if leading / first time is 0 length
+#ifdef __APPLE__
+        mode_t mode = 0755; // No mode_t in Visual Studio 2013...
+        if ((mdret = mkdir(dir.c_str(), mode)) && errno != EEXIST)
+#else
 		if ((mdret = _mkdir(dir.c_str()/*, mode*/)) && errno != EEXIST)
+#endif
 		{
 			return mdret;
 		}

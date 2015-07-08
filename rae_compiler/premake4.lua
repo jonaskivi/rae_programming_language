@@ -10,7 +10,7 @@ solution "rae_compiler"
       kind "ConsoleApp"
       language "C++"
       targetdir "../"
-      files { "rae_compiler/*.hpp", "rae_compiler/*.cpp" }
+      files { "./rae_compiler/*.hpp", "./rae_compiler/*.cpp" }
       includedirs { "rae_compiler" --[["external/glew/include", "external/glfw/include", "external/nanovg/src", "external/glm", "external/glm/glm", "rae", "external/"--]] }
       --links {"glfw3", "glew", "nanovg"}
       --defines { "GLEW_STATIC", "NANOVG_GLEW" }

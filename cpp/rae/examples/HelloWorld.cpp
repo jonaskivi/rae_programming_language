@@ -1,5 +1,5 @@
 //this file is automatically created from Rae programming language module:
-//c:\Users\jonaz\Dropbox\jonas\2015\ohjelmointi\rae_programming_language/cpp/rae/examples/HelloWorld
+///Users/joonaz/Dropbox/jonas/2015/ohjelmointi/rae_programming_language/cpp/rae/examples/HelloWorld
 #include "HelloWorld.hpp"
 
 //class Tester
@@ -102,7 +102,7 @@ void HelloWorld::say_hello()
 		}
 		*/
 	
-	/*possible error, unknown token:*/tester->/*possible error, unknown token:*/log_me; // line: 72
+	tester.log_me(); // line: 72
 	std::cout<<"World!"<<"\n";
 }
 
@@ -111,75 +111,77 @@ int32_t HelloWorld::int_count(const int32_t param1, const int32_t param2)
 	return param1 + param2;
 }
 
-int32_t HelloWorld::tester_count( const Tester* param1,  const Tester* param2)
+Tester HelloWorld::tester_count( const Tester* param1,  const Tester* param2)
 {
-	return param1->data + param2->data;
+	//return param1.data + param2.data
+	//return param1 // TODO convert let ref to val by making a copy!
+	return tester;
 }
 
 int32_t HelloWorld::count(const int32_t param1,  const Tester* param2)
 {
 	if (param2 == nullptr)//TODO oneliner if handling:
-	return 0; // line: 89
+	return 0; // line: 91
 	
 	if (param1 > 0)// TODO is not: and param2 is not null)
 	{
-		std::cout<<"whoa."<<"\n";
+		//log("whoa.")
 	}
 	
 	if (param1 > 0)// TODO no parentheses
 	{
-		std::cout<<"whoa."<<"\n";
+		//log("whoa.")
 	}
 	
 	return param1 + param2->data;
 }
 
-int32_t HelloWorld::number() { return /*possible error, unknown token:*/m_number; }
+int32_t HelloWorld::number() { return m_number; }
 
-void HelloWorld::number(int32_t set) { /*possible error, unknown token:*/m_number = set; }
+void HelloWorld::number(int32_t set) { m_number = set; }
 
 int32_t main(int argc, char* const argv[])
 {
-	std::string hello_rae = "What? Hello Rae World"; // line: 144
-	std::cout<<hello_rae<<"\n"; // line: 145
+	std::string hello_rae = "What? Hello Rae World"; // line: 146
+	std::cout<<hello_rae<<"\n"; // line: 147
 	
 	HelloWorld hello; //semicolons are allowed, but not required.
 	
 	HelloWorld hello2; //val is default
 	
-	std::cout<<hello2.name<<"\n"; // line: 151
+	std::cout<<hello2.name<<"\n"; // line: 153
 	
 	//Rae does not use = for pointing to an object. Instead use -> to point.
 	//= operator will copy by value, so that the behaviour is consistent,
 	//whether you're using pointers or values.
-	rae::link<Tester> tester_lnk; // line: 156
-	tester_lnk.linkTo(&hello.tester); // line: 157
+	rae::link<Tester> tester_lnk; // line: 158
+	tester_lnk.linkTo(&hello.tester); // line: 159
 	
-	std::cout<<"LINK saying hello:"<<"\n"; // line: 159
-	tester_lnk.obj->log_me(); // line: 160
+	std::cout<<"LINK saying hello:"<<"\n"; // line: 161
+	tester_lnk.obj->log_me(); // line: 162
 	
-	hello.say_hello(); // line: 162
+	hello.say_hello(); // line: 164
 	
-	std::cout<<"5 + 2 = "; // line: 164
+	std::cout<<"5 + 2 = "; // line: 166
 	
 	std::cout<<hello.count(hello.number(), hello.tester_opt)<<"\n"; // opt to ref
-	std::cout<<hello.count(hello.number(), hello.tester)<<"\n"; // val to ref
-	std::cout<<hello.count(hello.number(), tester_lnk)<<"\n"; // link to ref
+	std::cout<<hello.count(hello.number(), &hello.tester)<<"\n"; // val to ref
+	std::cout<<hello.count(hello.number(), tester_lnk.obj)<<"\n"; // link to ref
 	
 	// Complex validation
-	std::cout<<hello.count(hello.int_count(hello.number(), (42 - 14) *  * 3), hello.tester_count(hello.tester, tester_lnk))<<"\n"; // line: 171
+	//NEXT: log(hello.count( hello.int_count( hello.number, (42 - 14) * 3), hello.tester_count(hello.tester, tester_lnk) ))
 	// End complex validation
 	
-	hello.tester.data = 3; // line: 174
+	hello.tester.data = 3; // line: 176
 	
-	hello.tester_opts.push_back(hello.tester_opt); // line: 176
+	hello.tester_opts.push_back(hello.tester_opt); // line: 178
 	
-	hello.tester_links.emplace_back(); // line: 178
-	hello.tester_links.at(0).linkTo(&hello.tester); // line: 179
-	std::cout<<"LINK in an array saying hello: "<<"\n"; // line: 180
-	hello.tester_links.at(0).obj->log_me(); // line: 181
-	std::cout<<"Ok. Said hello."<<"\n"; // line: 182
-	hello.tester_links.at(0).obj->data = 8; // line: 183
+	hello.tester_links.emplace_back(); // line: 180
+	hello.tester_links.at(0).linkTo(&hello.tester); // line: 181
+	std::cout<<"LINK in an array saying hello: "<<"\n"; // line: 182
+	hello.tester_links.at(0).obj->log_me(); // line: 183
+	std::cout<<"Ok. Said hello."<<"\n"; // line: 184
+	hello.tester_links.at(0).obj->data = 8; // line: 185
 	std::cout<<"an eight = "<<hello.tester_links.at(0).obj->data<<"\n";
 	
 	if (true == 1)// parentheses also allowed.
@@ -187,8 +189,8 @@ int32_t main(int argc, char* const argv[])
 		std::cout<<"true"<<"\n";
 	}
 	
-	bool is_what = false; // line: 191
-	bool is_other = true; // line: 192
+	bool is_what = false; // line: 193
+	bool is_other = true; // line: 194
 	
 	if (is_what == true || is_other == true)
 	{
