@@ -884,6 +884,10 @@
 				}
 			break;
 			case Token::REFERENCE_DOT:
+
+				//if (writer.previousElement() )
+					//cout << "REFERENCE_DOT previousElement:::: " << writer.previousElement()->toSingleLineString() << "\n";
+
 				if( writer.previousToken() == Token::USE_NAMESPACE )
 				{
 					assert(0); // This shouldn't happen. We skip dots when getting a namespace.
@@ -909,12 +913,56 @@
 				{
 					writer.writeChar( '.' ); // we use this strange thing for arrays: (*our_array_ptr).size()
 				}
+				else if( writer.previousElement()
+					&& writer.previousElement()->token() == Token::BRACKET_BEGIN ) // NOTE it's actually BRACKET_BEGIN and not END here.
+					// Because BRACKET_BEGIN is currentParentElement which has children.
+				{
+					// Using an array: some_array[5].something
+					// A difficult case: some_array[Rae::GetSomeThing.whatIsIt(123 + 321)].something
+					/*JONDE REMOVE LangElement* bracketPair = writer.previousElement()->pairElement();
+					if(bracketPair)
+					{
+						cout << "bracketPair: " << bracketPair->toSingleLineString() << "\n";
+					}
+					else cout << "OH NOEW. There's no bracketPair.\n";
+					*/
+
+					LangElement* array_ob = writer.previousElement()->previousElement();
+					if(array_ob)
+					{
+						cout << "array_ob: " << array_ob->toSingleLineString() << "\n";
+						LangElement* type_element = array_ob->arrayContainedTypeElement();
+						if(type_element)
+						{
+							if(type_element->typeType() == TypeType::VAL)
+							{
+								cout << "It's a VAL in an array. Writing dot.\n";
+								writer.writeChar( '.' );
+							}
+							else
+							{
+								cout << "It's something else. Writing -> for pointer stuff.\n";
+								writer.writeChar( '-' );
+								writer.writeChar( '>' );
+							}
+						}
+						else
+						{
+							cout << "Couldn't get type_element from an array.\n"; //TODO reportError
+						}
+					}
+					else
+					{
+						cout << "OH NOEW. There's no array_ob. We'll just write a dot.\n";
+						writer.writeChar( '.' );
+					}
+				}
 				else
 				{
-					if( writer.previousElement() && writer.previousElement()->name() == "someints" )
+					if( writer.previousElement() && writer.previousElement()->name() == "tester_stuff" )
 					{
 						//debug:
-						ReportError::reportError("someints: containerType: ", writer.previousElement() );
+						ReportError::reportError("JEPU. tester_stuff: ", writer.previousElement() );
 					}
 
 					writer.writeChar( '-' );//we're using pointer dereferencing -> for now...
@@ -2141,7 +2189,7 @@
 				}//end isHeader cpp
 				
 				bool is_a_oneliner = true; // We presume the worst case scenario... :)
-				bool has_return_parentheses = true;
+				bool has_param_parentheses = true;
 				bool is_first_auto_init = true; // Add a colon before first AUTO_INIT in Constructors.
 
 					if( set_elem.token() == Token::MAIN )
@@ -2181,13 +2229,13 @@
 						}
 						*/
 
-						LangElement* myparam_start = set_elem.searchFirst(Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES);
+						LangElement* myparam_start = set_elem.searchFirst(Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES, Token::SCOPE_BEGIN);
 
-						if( myparam_start == 0 )
+						if( myparam_start == nullptr || myparam_start->token() == Token::SCOPE_BEGIN)
 						{
 							// Write void param type for C++, if we find no parentheses here.
 							writer.writeString("()");
-							has_return_parentheses = false;
+							has_param_parentheses = false;
 						}
 
 
@@ -2278,7 +2326,7 @@
 
 									is_a_oneliner = false; // Not a oneliner.
 									
-									if(writer.isHeader() == true && has_return_parentheses == false) //hpp
+									if(writer.isHeader() == true && has_param_parentheses == false) //hpp
 									{
 										writer.writeChar(';'); // automatic semicolon handling case
 									}
@@ -2299,7 +2347,7 @@
 
 									if( writer.isHeader() == true )//hpp
 									{
-										if(is_a_oneliner == true || has_return_parentheses == false) // If we are a oneliner the automatic semicolon won't happen, because there is no newline.
+										if(is_a_oneliner == true || has_param_parentheses == false) // If we are a oneliner the automatic semicolon won't happen, because there is no newline.
 										{
 											writer.writeChar(';');
 										}
@@ -2341,7 +2389,7 @@
 								else if( set_elem.langElements[i]->token() == Token::PARENTHESIS_BEGIN
 									|| set_elem.langElements[i]->token() == Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES)
 								{
-									has_return_parentheses = true;
+									has_param_parentheses = true;
 									writeElement(writer, *set_elem.langElements[i]);
 								}
 								*/

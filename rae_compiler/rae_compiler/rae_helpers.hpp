@@ -45,7 +45,7 @@ typedef unsigned int uint;
 
 //#define DEBUG_RAE_PARSER
 #define DEBUG_DEBUGNAME
-const std::string g_debugName("tanne");
+const std::string g_debugName("glDeleteBuffers");
 //#define DEBUG_RAE
 //#define DEBUG_RAE2
 //#define DEBUG_RAE_DESTRUCTORS

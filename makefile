@@ -92,6 +92,11 @@ debugraehello:
 	$(CXX) $(CXXFLAGS) -I./cpp/ ./cpp/rae/examples/HelloWorld.cpp -o rae_hello
 	./rae_hello
 
+small: ./rae/examples/small.rae ./cpp/rae/examples/small.hpp ./cpp/rae/examples/small.cpp
+	./$(EXECUTABLE) ./rae/examples/small.rae
+	$(CXX) $(CXXFLAGS) -I./cpp/ ./cpp/rae/examples/small.cpp -o small
+	./small
+
 opttester:
 	./$(EXECUTABLE) ./rae/examples/OptTester.rae
 	$(CXX) $(CXXFLAGS) -I./cpp/ ./cpp/rae/examples/OptTester.cpp -o opttester

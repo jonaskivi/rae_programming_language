@@ -1358,6 +1358,25 @@ public:
 		return m_type;
 	}
 
+	public: LangElement* arrayContainedTypeElement()
+	{
+		if(m_token == Token::BRACKET_DEFINE_ARRAY_BEGIN && langElements.size() > 0)
+		{
+			return langElements[0];
+		}
+		else if( m_token != Token::USE_REFERENCE)
+		{
+			ReportError::compilerError("arrayContainedTypeElement. Tried to get it for something that is not an array.", this);
+		}
+		else if( definitionElement() )
+		{
+			return definitionElement()->arrayContainedTypeElement();
+		}
+
+		return nullptr;
+		//return searchFirst(Token::TEMPLATE_SECOND_TYPE);
+	}
+
 	//stuff for templates: first we have a second type for the template
 	//like in:
 	//class FirstType(SecondType)
@@ -2688,6 +2707,23 @@ public:
 		for( LangElement* elem : langElements )
 		{
 			if( elem->token() == set_lang_token_type )
+			{
+				return elem;
+			}
+		}
+		//nothing found:
+		return 0;
+	}
+
+	LangElement* searchFirst(Token::e set_lang_token_type, Token::e set_lang_token_type2)
+	{
+		for( LangElement* elem : langElements )
+		{
+			if( elem->token() == set_lang_token_type )
+			{
+				return elem;
+			}
+			else if( elem->token() == set_lang_token_type2 )
 			{
 				return elem;
 			}

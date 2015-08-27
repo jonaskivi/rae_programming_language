@@ -383,6 +383,8 @@ public:
 
 	public: void setNameForExpectingName(string set)
 	{
+		cout << "Got name for EXPECTING_NAME: <" << set << "> Now checking it.\n";
+
 		setNameAndCheckForPreviousDefinitions( m_expectingNameFor, set );
 		doReturnToExpectToken();
 	}
@@ -1748,6 +1750,9 @@ REMOVED:
 			cout<<"newUseReference of definition: "<<set_definition_elem->toString()<<"\n";
 			//rae::log("newUseReference: ",set_elem->toString(),"\n");
 		#endif
+
+		if (set_definition_elem->type() == "vec3")
+			ReportError::reportError("vec3 USE_REFERENCE at: ", lang_elem);
 
 		return lang_elem;
 	}
@@ -4289,7 +4294,7 @@ public:
 					return elem;
 				}
                 */
-				else if( set_elem->name() == elem->typedefNewType() ) // Typedef...
+				else if( elem->token() == Token::CPP_TYPEDEF && set_elem->name() == elem->typedefNewType() ) // Typedef...
 				{
 					cout << "Yammy. It's a typedef definition2: " << elem->toSingleLineString() << "\n";
 					return elem;
@@ -5069,15 +5074,18 @@ public:
 							{
 								LangElement* our_ref = newDefineReference( "val", Role::TEMPLATE_PARAMETER );
 								our_ref->useNamespace(found_elem);
+								cout << "Namespace stuff created1: " << our_ref->toSingleLineString() << "\n";
 							}
 							else
 							{
 								LangElement* our_ref = newLangElement( Token::USE_NAMESPACE, TypeType::UNDEFINED, set_token, set_token);
 								our_ref->useNamespace(found_elem);
 								unfinishedElement(our_ref); // Still waiting for the name etc.
+								cout << "Namespace stuff created2: " << our_ref->toSingleLineString() << "\n";
 							}
 							
 							isWaitingForNamespaceDot = true;
+							cout << "isWaitingForNamespaceDot1 with " << found_elem->toSingleLineString() << "\n";
 						}
 						else
 						{
@@ -5089,6 +5097,8 @@ public:
 							currentReference->useNamespace(found_elem);
 
 							isWaitingForNamespaceDot = true;
+
+							cout << "isWaitingForNamespaceDot2 with " << found_elem->toSingleLineString() << "\n";
 						}
 
 						//if (unfinishedElement())

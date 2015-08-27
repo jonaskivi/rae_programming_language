@@ -592,7 +592,8 @@
 		{
 			//cout << "TODO ERROR in validateParameter(): expressionRValue is null.\n";
 			ReportError::reportError("TODO ERROR in validateParameter(): expressionRValue is null.", &line);
-			assert(0);
+			return;
+			//assert(0);
 		}
 
 		//if( ret_value->definitionElement() && param.typeType() != ret_value->definitionElement()->typeType() )

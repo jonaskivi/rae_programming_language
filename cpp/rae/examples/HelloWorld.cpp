@@ -212,6 +212,11 @@ int32_t main(int argc, char* const argv[])
 	; //hello.array_test[0]
 	//log("arrays 9 + 2 = ", hello.count( hello.array_test[0], hello.tester_opts[0] ))
 	
+	std::vector<Rae::Tester > tester_stuff = {8, 1}; // line: 220
+	
+	for (int32_t i = 0; i < tester_stuff.size(); ++i)
+	std::cout<<i<<": "<<tester_stuff.at(i).data<<"\n"; // line: 223
+	
 	return 0;
 }
 

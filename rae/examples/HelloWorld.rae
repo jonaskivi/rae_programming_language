@@ -216,6 +216,11 @@ func (int) main ([string] args)
 	#hello.array_test[0]
 	#log("arrays 9 + 2 = ", hello.count( hello.array_test[0], hello.tester_opts[0] ))
 
+	[Rae.Tester] tester_stuff = [8, 1]
+
+	loop( int i = 0; i < tester_stuff.size; ++i )
+		log(i, ": ", tester_stuff[i].data)
+
 	return 0
 }
 

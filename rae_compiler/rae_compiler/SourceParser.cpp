@@ -99,14 +99,7 @@ bool SourceParser::handleTokenRaeCppCommon(string set_token)
 		//cout<<"Waiting for comment line to end.\n";
 		return true;
 	}
-	else if (set_token == "#")
-	{
-		isSingleLineComment = true;
-		//currentLine = "#";
-		//cout<<"Waiting for comment line to end.\n";
-		return true;
-	}
-
+	
 	// Different expectingTokens:
 
 	if (expectingToken() == Token::DECIMAL_NUMBER_AFTER_DOT)
@@ -139,11 +132,13 @@ bool SourceParser::handleTokenRaeCppCommon(string set_token)
 	}
 	else if (expectingToken() == Token::EXPECTING_NAME)
 	{
+		cout << "EXPECTING_NAME should happen.\n";
 		setNameForExpectingName(set_token);
 		return true;
 	}
 	else if (expectingToken() == Token::EXPECTING_TYPE)
 	{
+		cout << "EXPECTING_TYPE should happen.\n";
 		setTypeForExpectingType(set_token);
 		return true;
 	}
@@ -183,7 +178,17 @@ bool SourceParser::handleTokenRaeCppCommon(string set_token)
 		}
 		else if (set_token == ";")
 		{
-			newLangElement(Token::SEMICOLON, TypeType::UNDEFINED, set_token);
+			LangElement* lang_elem = newLangElement(Token::SEMICOLON, TypeType::UNDEFINED, set_token);
+			if( lang_elem->previousToken() == Token::PARENTHESIS_END_FUNC_PARAM_TYPES
+				||  lang_elem->isFunc() )
+			{
+				// End func. Header func definition.
+				//#ifdef DEBUG_RAE_HUMAN
+					cout<<"end of function. with a semicolon.\n\n";
+				//#endif
+				currentFunc = nullptr;
+				scopeElementStackPop();
+			}
 			return true;
 		}
 		else if (set_token == "{")
@@ -629,6 +634,13 @@ bool SourceParser::handleTokenCpp(string set_token)
             return true;
 		}
 	}
+	else if (expectingToken() == Token::INIT_DATA)
+	{
+		cout << "INIT_DATA for C++ is TODO.\n";
+		doReturnToExpectToken();
+
+		return handleToken(set_token);
+	}
 	else if (expectingToken() == Token::UNDEFINED)
 	{
 		if(currentClass && currentClass->name() == set_token)
@@ -975,6 +987,13 @@ bool SourceParser::handleToken(string set_token)
 	{
 		return handleTokenCpp(set_token);
 	}
+	else if (set_token == "#")
+	{
+		isSingleLineComment = true;
+		//currentLine = "#";
+		//cout<<"Waiting for comment line to end.\n";
+		return true;
+	}
 
 	if (handleTokenRaeCppCommon(set_token) == true )
 		return true;
@@ -1125,7 +1144,7 @@ bool SourceParser::handleToken(string set_token)
 		if (isWaitingForNamespaceDot)
 		{
 			// Ignore.
-			cout << "Got namespace dot.\n";
+			cout << "Got namespace dot. isWaitingForNamespaceDot set to false now.\n";
 			isWaitingForNamespaceDot = false;
 			return true;
 		}
@@ -1186,6 +1205,7 @@ bool SourceParser::handleToken(string set_token)
 		{
 			if (currentParentElement() && currentParentElement()->token() == Token::INIT_DATA)
 			{
+				cout << "Shit. Got semicolon in for loop INIT_DATA.\n";
 				endInitData();//This is important. This ends our init_data being the currentParentElement (which receives the init_data.)
 			}
 			else
@@ -1300,10 +1320,13 @@ bool SourceParser::handleToken(string set_token)
 		}
 		else
 		{
+			cout << "Why don't we get here!?\n";
+
 			if (currentParentElement() && currentParentElement()->token() == Token::INIT_DATA)
 			{
 				if (handleNumber(set_token))
 				{
+					cout << "INIT_DATA got a number.\n";
 					//don't do anything. We've done it already!
 				}
 				else
@@ -2085,6 +2108,12 @@ bool SourceParser::handleToken(string set_token)
 			}
 			else //normal (
 			{
+				if(currentReference != nullptr)
+				{
+					cout << "We really have some dangling currentReference. Got a (. nameless stuff. Ending currentReference.\n";
+					currentReference = nullptr;
+				}
+			
 				//cout<<"normal (\n";
 				//if(previousElement())
 				//	cout<<"previousToken: "<<previousElement()->toString();
@@ -2763,7 +2792,13 @@ bool SourceParser::handleToken(string set_token)
 	}
 	else if (expectingToken() == Token::DEFINE_REFERENCE_NAME)
 	{
-		if (set_token == ")")
+		if (set_token == "(" || set_token == ",")
+		{
+			cout << "Got ( or a , which can't be a DEFINE_REFERENCE_NAME. This is probably a nameless temporary object. We currently support them only as value types.\n";
+			doReturnToExpectToken();
+			return handleToken(set_token); //rehandle set_token.
+		}
+		else if (set_token == ")")
 		{
 			if (expectingRole() == Role::FUNC_RETURN)
 			{
@@ -2802,12 +2837,6 @@ bool SourceParser::handleToken(string set_token)
 		else if (set_token == "]")
 		{
 			newBracketEnd(Token::BRACKET_DEFINE_ARRAY_END, set_token);
-		}
-		else if (set_token == ",")
-		{
-			//REMOVE old.
-			assert(0);
-			//setUnfinishedElementToStaticArray();
 		}
 		else if (set_token == "*")
 		{
