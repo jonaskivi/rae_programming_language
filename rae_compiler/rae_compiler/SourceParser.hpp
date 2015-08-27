@@ -145,6 +145,12 @@ and by using a method called classHasFunctionOrValue()
 
 */
 
+enum class ParserType
+{
+	RAE,
+	CPP
+};
+
 
 class SourceParser
 {
@@ -233,6 +239,8 @@ public:
 
 	void init()
 	{
+		m_parserType = ParserType::RAE;
+
 		lineNumber.line = 1;//linenumbers start from 1, but we keep it default to 0 to see if it's really been set.
 
 		debugWriteLineNumbers = true;//false;
@@ -272,6 +280,10 @@ public:
 		isPassthroughMode = false;
 		isPassthroughSourceMode = false;
 
+		isWaitingForNamespaceDot = false;
+
+		isCppBindingsParseMode = false;
+
 		m_currentParentElement = 0;
 		currentModule = 0;
 		currentClass = 0;
@@ -295,9 +307,14 @@ public:
 	//when we need to know some more context about what we were doing before.
 	public: Token::e doReturnToExpectToken()
 	{
+        for(uint i = 0; i < returnToExpectTokenStack.size(); ++i)
+            cout << "expect stack: " << i << " " << Token::toString(returnToExpectTokenStack[i]) << "\n";
+        
 		if( returnToExpectTokenStack.empty() )
 		{
-			expectingToken(Token::UNDEFINED);
+			//expectingToken(Token::UNDEFINED);
+            m_expectingToken = Token::UNDEFINED;
+			//
 			//cout<<"NO TOKENS: Returned to expectToken: Token::UNDEFINED.\n";
 			return m_expectingToken;
 		}
@@ -308,18 +325,32 @@ public:
 
 		if( returnToExpectTokenStack.empty() )
 		{
-			expectingToken(Token::UNDEFINED);
+			//expectingToken(Token::UNDEFINED);
+            m_expectingToken = Token::UNDEFINED;
+			//
 			//cout<<"POPPED AND NO TOKENS: Returned to expectToken: Token::UNDEFINED.\n";
 			return m_expectingToken;
 		}
 		else
 		{
 			m_expectingToken = returnToExpectTokenStack.back();
+            //cout << "POPPED and going to: " << Token::toString(m_expectingToken)<<"\n";
 		}
 
+		//
 		//cout<<"Returned to expectToken: "<<Token::toString(m_expectingToken)<<"\n";
 		return m_expectingToken;
 		//return m_returnToExpectToken;
+	}
+
+	// Now the system might work, when using this explicit function
+	public: void pushExpectingToken(Token::e set)
+	{
+		//#ifdef DEBUG_RAE_PARSER
+			cout<<"PUSH expectingToken to: "<<Token::toString(set)<<"\n";
+		//#endif
+		m_expectingToken = set;
+		returnToExpectTokenStack.push_back(set);
 	}
 
 	/*
@@ -353,16 +384,30 @@ public:
 	public: void setNameForExpectingName(string set)
 	{
 		setNameAndCheckForPreviousDefinitions( m_expectingNameFor, set );
-		expectingToken(Token::UNDEFINED);
+		doReturnToExpectToken();
 	}
 	public: LangElement* expectingNameFor(){ return m_expectingNameFor; }
 	public: void expectingNameFor(LangElement* set)
 	{
 		m_expectingNameFor = set;
-		expectingToken(Token::EXPECTING_NAME);
+		pushExpectingToken(Token::EXPECTING_NAME);
 	}
 	protected: LangElement* m_expectingNameFor;
 
+	public: void setTypeForExpectingType(string set)
+	{
+		//setTypeAndCheckForPreviousDefinitions( m_expectingNameFor, set );
+		// TODO check if type exists
+		m_expectingTypeFor->type(set);
+		doReturnToExpectToken();
+	}
+	public: LangElement* expectingTypeFor(){ return m_expectingTypeFor; }
+	public: void expectingTypeFor(LangElement* set)
+	{
+		m_expectingTypeFor = set;
+		pushExpectingToken(Token::EXPECTING_NAME);
+	}
+	protected: LangElement* m_expectingTypeFor;
 	/*
 	//NOT YET USED:
 	public: void setTypeForExpectingType(string set)
@@ -425,10 +470,15 @@ public:
 	int nroWaitingForPlusCommentEnd;
 	string currentPlusComment;
 
-	//for handling the @ special tokens such as @c++
+	//for handling the @ special tokens such as @cpp
 	bool isWaitingForPragmaToken;
 	bool isPassthroughMode;
 	bool isPassthroughSourceMode;
+
+	bool isWaitingForNamespaceDot;
+
+	//after @cpp_bindings
+	bool isCppBindingsParseMode;
 
 	string currentModuleHeaderFileName;//e.g. HelloWorld.hpp, we pass this into the cpp writer.
 
@@ -461,19 +511,24 @@ public:
 
 	LangElement* newLangElement(Token::e set_lang_token_type, TypeType::e set_type_type, string set_name = "", string set_type = "")
 	{
-		LangElement* lang_elem;
+		LangElement* lang_elem = nullptr;
 		
 		if( currentParentElement() )
 		{
 			lang_elem = currentParentElement()->newLangElement(lineNumber, set_lang_token_type, set_type_type, set_name, set_type);
+			lang_elem->namespaceElement(currentNamespace);
 		
 		//else if( currentModule )
 		//{
 		
 			//lang_elem = currentModule->newLangElement(lineNumber, set_lang_token_type, set_type_type, set_name, set_type);
-			if( set_lang_token_type == Token::MODULE
+			if(    set_lang_token_type == Token::MODULE
+				|| set_lang_token_type == Token::NAMESPACE
 				|| set_lang_token_type == Token::CLASS
-				|| set_lang_token_type == Token::FUNC
+				|| set_lang_token_type == Token::FUNC //JONDE TODO replace these 4 lines with static isFunc() function.
+				|| set_lang_token_type == Token::CONSTRUCTOR
+				|| set_lang_token_type == Token::DESTRUCTOR
+				|| set_lang_token_type == Token::MAIN
 				|| set_lang_token_type == Token::INIT_DATA //also init data is now a parent element!
 				//and it holds all the init_data inside it.
 				)
@@ -487,8 +542,9 @@ public:
 		}
 		else
 		{
-			ReportError::compilerError("newLangElement() No current parent element found. Do you have a module? Compilers fault. Something went wrong.");
+			ReportError::compilerError("newLangElement() No current parent element found. Have you defined a module using the module keyword?");
 			cout<<"tried to create:"<<Token::toString(set_lang_token_type)<<" name: "<<set_name<<" type: "<<set_type<<"\n";
+			exit(0);
 		}
 
 		if(lang_elem)
@@ -547,6 +603,9 @@ public:
 
 		LangElement* our_scope_elem = newLangElement(Token::SCOPE_BEGIN, TypeType::UNDEFINED, "{");
 		
+		
+		//MOVED to newLangElement. Remove from here if it starts working.
+
 		// a scope element will only become a parent if it's an empty scope. Otherwise the parent will be
 		// the class, func, enum, etc. statement, which is our current parent, and we put that to the stack.
 		//if( scopeElementStack.empty() == false )
@@ -555,7 +614,7 @@ public:
 		LangElement* iter = our_scope_elem->previousElement();
 		while(iter)
 		{
-			if( iter->isFunc() || iter->token() == Token::ENUM || iter->token() == Token::CLASS )
+			if( iter->isFunc() || iter->token() == Token::ENUM || iter->token() == Token::CLASS || iter->token() == Token::NAMESPACE)
 			{
 				// if we get here, we are the first SCOPE_BEGIN in this func, enum or class.
 				break;
@@ -570,7 +629,7 @@ public:
 		}
 
 		//put the scope or class or func, or init_data object to scope stack.
-		scopeElementStackPush( currentParentElement() ); //NOT true anymore: but we put the class or func (or limiting scope) in the stack. Not the actual scope object (unless it is a limiting scope.)
+		////////JONDE REMOVE scopeElementStackPush( currentParentElement() ); //NOT true anymore: but we put the class or func (or limiting scope) in the stack. Not the actual scope object (unless it is a limiting scope.)
 		
 	}
 
@@ -612,7 +671,14 @@ public:
 				previousElement()->nextElement(new_lang_elem);
 			}
 
-			if( scope_elem->token() == Token::CLASS )
+			if( scope_elem->token() == Token::NAMESPACE )
+			{
+				//#ifdef DEBUG_RAE_HUMAN
+				cout<<"end of namespace: " << scope_elem->name() << "\n";
+				//#endif
+				currentNamespace = scope_elem->namespaceElement(); // Can be nullptr, but that is just good.
+			}
+			else if( scope_elem->token() == Token::CLASS )
 			{
 				#ifdef DEBUG_RAE_HUMAN
 				cout<<"end of class.\n\n";
@@ -644,7 +710,7 @@ public:
 					cout<<"Creating a constructor.\n";
 					#endif
 
-					LangElement* a_con = scope_elem->newLangElementToTopOfClass(lineNumber, Token::CONSTRUCTOR, TypeType::UNDEFINED, "new" );
+					LangElement* a_con = scope_elem->newLangElementToTopOfClass(lineNumber, Token::CONSTRUCTOR, TypeType::UNDEFINED, "init" );
 					listOfConstructors.push_back(a_con);
 					a_con->newLangElement(lineNumber, Token::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES, TypeType::UNDEFINED, "(");
 					a_con->newLangElement(lineNumber, Token::PARENTHESIS_END_FUNC_RETURN_TYPES, TypeType::UNDEFINED, ")");
@@ -786,7 +852,7 @@ public:
 				//Ok, but we might have classes inside classes so we check later when we pop, if it's another class...
 				currentClass = nullptr;
 			}
-			else if( scope_elem->token() == Token::FUNC )
+			else if( scope_elem->isFunc() )
 			{
 				#ifdef DEBUG_RAE_HUMAN
 				cout<<"end of function.\n\n";
@@ -814,6 +880,8 @@ public:
 
 	void scopeElementStackPush(LangElement* set)
 	{
+		if(set)
+			cout << "scopeElementStackPush: " << set->toSingleLineString() << "\n";
 		scopeElementStack.push_back(set);
 	}
 
@@ -833,7 +901,8 @@ public:
 	{
 		if( !scopeElementStack.empty() )
 		{
-			currentParentElement( scopeElementStack.back() );
+			// Definitely don't push to scope stack here. Otherwise it will add the element twice.
+			currentParentElement( scopeElementStack.back(), /*push_to_scope_stack:*/false);
 			if( currentParentElement() )
 			{
 				if( currentParentElement()->token() == Token::CLASS )
@@ -841,7 +910,7 @@ public:
 					//...so if the current scope is another class, we mark it again.
 					currentClass = currentParentElement();
 				}
-				else if( currentParentElement()->token() == Token::FUNC )
+				else if( currentParentElement()->isFunc() )
 				{
 					currentFunc = currentParentElement();
 				}
@@ -854,20 +923,23 @@ public:
 		else if( currentModule )
 		{
 			//now also the module can be the parent element.
-			currentParentElement(currentModule);
+			currentParentElement(currentModule, false);
 		}
 		else
 		{
 			//currentParentElement(0);
 			cout<<"error in scopeElementStackPop. no currentModule!!!!!!\n";
 		}
+
+		if(currentParentElement()) 
+			cout << "resetParentElementToCurrentScope: " << currentParentElement()->toSingleLineString() << "\n";
 	}
 
 	void resetParentElementToAboveParent()
 	{
 		if( currentParentElement() && currentParentElement()->parent() )
 		{
-			currentParentElement( currentParentElement()->parent() );
+			currentParentElement( currentParentElement()->parent(), false);
 			if( currentParentElement() )
 			{
 				if( currentParentElement()->token() == Token::CLASS )
@@ -875,7 +947,7 @@ public:
 					//...so if the current scope is another class, we mark it again.
 					currentClass = currentParentElement();
 				}
-				else if( currentParentElement()->token() == Token::FUNC )
+				else if( currentParentElement()->isFunc() )
 				{
 					currentFunc = currentParentElement();
 				}
@@ -888,7 +960,7 @@ public:
 		else if( currentModule )
 		{
 			//now also the module can be the parent element.
-			currentParentElement(currentModule);
+			currentParentElement(currentModule, false);
 		}
 		else
 		{
@@ -912,10 +984,12 @@ public:
 		}
 		else
 		{
-			#ifdef DEBUG_RAE
-			cout<<"End init_data.\n";
+			//#ifdef DEBUG_RAE
+			if(initdata_start_elem)
+				cout<<"End initdata for: " << initdata_start_elem->toSingleLineString() << "\n";
+			else cout << "endInitData for NO INIT_DATA.";
 			//rae::log("End scope for: ",Token::toString( scope_elem->token() ));
-			#endif
+			//#endif
 		}
 
 		/*if( scopeElementStack.empty() == true )
@@ -932,7 +1006,8 @@ public:
 		//removed freeOwned from here.
 		//removed checking for NEWLINE_BEFORE_SCOPE_END
 		
-		resetParentElementToCurrentScope();
+		scopeElementStackPop(); //JONDE Trying this now.
+		//resetParentElementToCurrentScope();
 		doReturnToExpectToken(); // Note that we set expectingtoken already here.
 	}
 
@@ -1033,7 +1108,7 @@ public:
 		lang_elem->containerType( ContainerType::ARRAY );
 
 		//Brackets don't create a new scope, but they are still currentParent. That's why we don't push to scopeElementStack here.
-		currentParentElement(lang_elem);
+		currentParentElement(lang_elem, true);
 		//currentArray = lang_elem;
 
 		bracketStack.push_back(lang_elem);
@@ -1053,7 +1128,7 @@ public:
 		LangElement* lang_elem = newLangElement(set_lang_token_type, TypeType::UNDEFINED, set_token);
 		
 		//Brackets don't create a new scope, but they are still currentParent. That's why we don't push to scopeElementStack here.
-		currentParentElement(lang_elem);
+		currentParentElement(lang_elem, true);
 
 		bracketStack.push_back(lang_elem);
 
@@ -1120,7 +1195,8 @@ public:
 	 	}
 
 	 	//resetParentElementToCurrentScope();
-	 	resetParentElementToAboveParent();
+	 	/////resetParentElementToAboveParent();
+	 	scopeElementStackPop();
 	 	currentReference = nullptr;
 
  		return lang_elem;
@@ -1302,6 +1378,15 @@ public:
 		
 		return lang_elem;
 	}
+
+	LangElement* newNamespace(string set_name)
+	{
+		LangElement* lang_elem;
+		lang_elem = newLangElement(Token::NAMESPACE, TypeType::UNDEFINED, set_name);
+		currentNamespace = lang_elem;
+		addToUserDefinedTokens(lang_elem);
+		return lang_elem;
+	}
 /*
 	LangElement* newFunc(string set_name = "")
 	{
@@ -1351,10 +1436,10 @@ public:
 		}
 		return lang_elem;*/
 
-		#ifdef DEBUG_RAE_HUMAN
+		//#ifdef DEBUG_RAE_HUMAN
 			cout<<"newQuote: "<<set_name<<"\n";
 			//rae::log("newQuote: ",set_name,"\n");
-		#endif
+		//#endif
 		
 		return newLangElement(Token::QUOTE, TypeType::UNDEFINED, set_name);		
 	}
@@ -1440,8 +1525,11 @@ public:
 			newLangElement(Token::NEWLINE, "\n");
 		}*/
 		
-		//if()
-		if(currentParentElement() && currentParentElement()->token() != Token::MODULE )
+		// This used to be like this, that on a MODULE level newlines were not recorded. Why was that?
+		// Maybe we'll find out soon enough.
+		//if(currentParentElement() && currentParentElement()->token() != Token::MODULE )
+		/* Well, I just removed this let's see what it does:
+		if( currentParentElement() )
 		{
 			newLangElement(Token::NEWLINE, TypeType::UNDEFINED, "\n");
 		}
@@ -1450,7 +1538,9 @@ public:
 			//if it's a comment, then do the newline anyway...
 			newLangElement(Token::NEWLINE, TypeType::UNDEFINED, "\n");	
 		}
+		*/
 
+		newLangElement(Token::NEWLINE, TypeType::UNDEFINED, "\n");
 
 	}
 
@@ -1630,16 +1720,16 @@ REMOVED:
 		*/
 		if( lang_elem->parentToken() == Token::CLASS && set_type_type != TypeType::PTR )
 		{
-			// We are inside a class definition, so we autoinit in constructors. Expect not raw pointers.
+			// We are inside a class definition, so we autoinit in constructors. Except not raw pointers.
 			listOfAutoInitObjects.push_back(lang_elem);
 		}
 
 		addToUserDefinedTokens(lang_elem);
 
-		#ifdef DEBUG_RAE_HUMAN
+		//#ifdef DEBUG_RAE_HUMAN
 			cout<<"newDefineReference: type: "<<set_type<<" name: "<<lang_elem->namespaceString()<<"<\n";
 			//rae::log("newDefineReference: ",set_type," ",set_name,"\n");
-		#endif
+		//#endif
 
 		return lang_elem;
 	}
@@ -1661,7 +1751,6 @@ REMOVED:
 
 		return lang_elem;
 	}
-
 
 	LangElement* newFuncCall(LangElement* set_definition_elem)
 	{
@@ -1861,6 +1950,7 @@ REMOVED:
 	}
 
 	LangElement* currentModule;
+	LangElement* currentNamespace;
 	LangElement* currentClass;
 	LangElement* currentFunc;
 	LangElement* currentEnum;
@@ -1876,7 +1966,16 @@ REMOVED:
 	protected: LangElement* m_unfinishedElement;
 	
 
-	public: LangElement* previousElement() { return m_previousElement; }
+    // Hmm. We wanted to skip whitespace in previousElement stuff, because it would mess things up.
+    // So previousElement never returns whitespace elements.
+	public: LangElement* previousElement()
+    {
+        if (m_previousElement && m_previousElement->isWhiteSpace() )
+        {
+            return m_previousElement->previousElement();
+        }
+        return m_previousElement;
+    }
 	public: void previousElement(LangElement* set) { m_previousElement = set; }
 	protected: LangElement* m_previousElement;
 
@@ -1922,16 +2021,43 @@ REMOVED:
 	}
 	//This is either a module, class, func or an empty scope
 	public: LangElement* currentParentElement() { return m_currentParentElement; }
-	public: void currentParentElement(LangElement* set)
+	public: void currentParentElement(LangElement* set, bool push_to_scope_stack = true)
 	{
-		#ifdef DEBUG_RAE_PARSER
+		//#ifdef DEBUG_RAE_PARSER
 		if(set)
 		{
-			cout<<"currentParentElement set to: "<<set->toString()<<"\n";
+			cout<<"currentParentElement set to: "<<set->toSingleLineString()<<"\n";
 		}
 		else cout<<"currentParentElement set to null.\n";
-		#endif
+		//#endif
 		m_currentParentElement = set;
+
+		// a scope element will only become a parent if it's an empty scope. Otherwise the parent will be
+		// the class, func, enum, etc. statement, which is our current parent, and we put that to the stack.
+		//if( scopeElementStack.empty() == false )
+		//if( currentParentElement() && currentParentElement()->token() == Token::SCOPE_BEGIN )
+		//if( shouldNewestScopeBeAParentElement() == true )
+		/*LangElement* iter = our_scope_elem->previousElement();
+		while(iter)
+		{
+			if( iter->isFunc() || iter->token() == Token::ENUM || iter->token() == Token::CLASS || iter->token() == Token::NAMESPACE)
+			{
+				// if we get here, we are the first SCOPE_BEGIN in this func, enum or class.
+				break;
+			}
+			else if( iter->token() == Token::SCOPE_BEGIN )
+			{
+				// We are not the first SCOPE_BEGIN so this is an empty scope which will be a parent then.
+				currentParentElement(our_scope_elem);
+				break;
+			}
+			iter = iter->previousElement();
+		}
+		*/
+		
+		//put the scope or class or func, or init_data object to scope stack.
+		if(push_to_scope_stack)
+			scopeElementStackPush( m_currentParentElement ); //NOT true anymore: but we put the class or func (or limiting scope) in the stack. Not the actual scope object (unless it is a limiting scope.)
 	}
 	protected: LangElement* m_currentParentElement;
 	
@@ -1943,7 +2069,7 @@ REMOVED:
 
 public:
 	
-	bool isWriteToFile;
+	bool isWriteToFile; // When set to false, we don't generate any output code for this module/SourceParser object.
 	bool isFileBased;
 
 	FILE* currentFile;
@@ -1964,7 +2090,7 @@ public:
 
 		for(LangElement* elem : currentModule->langElements)
 		{
-			if( elem->token() == Token::MODULE_NAME )
+			if( elem->token() == Token::MODULE_DIR || elem->token() == Token::MODULE_NAME )
 			{
 				if(not_on_first > 0)
 				{
@@ -2144,7 +2270,7 @@ public:
 
 			for( LangElement* elem : module_elem->langElements )
 			{
-				if( elem->token() == Token::MODULE_NAME )
+				if( elem->token() == Token::MODULE_DIR || elem->token() == Token::MODULE_NAME )
 				{
 					module_name += elem->name();
 					module_name += "/"; //a directory separator
@@ -2231,7 +2357,7 @@ public:
 			StringFileWriter writer;
 			writer.create( outputHeaderPath, /*isHeader*/true );
 
-			writer.writeString("//this file is automatically created from Rae programming language module:\n//");
+			writer.writeString("// this file is automatically created from Rae programming language module:\n//");
 			writer.writeString( module_filename );
 			writer.writeString("\n");
 			
@@ -2247,7 +2373,7 @@ public:
 			StringFileWriter writer2;
 			writer2.create( outputFilePath, /*isHeader*/false );
 
-			writer2.writeString("//this file is automatically created from Rae programming language module:\n//");
+			writer2.writeString("// this file is automatically created from Rae programming language module:\n//");
 			writer2.writeString( module_filename );
 			writer2.writeString("\n");
 
@@ -2282,7 +2408,7 @@ public:
 			StringFileWriter writer3;
 			writer3.create( debugFilePath, /*isHeader doesn't matter here*/false );
 
-			writer3.writeString("//this file is automatically created from Rae programming language module:\n//");
+			writer3.writeString("// this file is automatically created from Rae programming language module:\n//");
 			writer3.writeString( module_filename );
 			writer3.writeString("\n");
 			writeDebugTree(writer3, *module_elem);	
@@ -2304,7 +2430,7 @@ public:
 			StringFileWriter writer4;
 			writer4.create( debugFilePath, /*isHeader doesn't matter here*/false );
 
-			writer4.writeString("//this file is automatically created from Rae programming language module:\n//");
+			writer4.writeString("// this file is automatically created from Rae programming language module:\n//");
 			writer4.writeString( module_filename );
 			writer4.writeString("\n");
 			writeDebugTree2(writer4, *module_elem);	
@@ -2363,7 +2489,7 @@ public:
 	bool readChar()
 	{
 		lineNumber.totalCharNumber++;//Ok, 1 is the first element.
-		lineNumber.charPosInLine++;//1 is the first char in line. (unlike in C arrays...)
+		lineNumber.column++;//1 is the first char in line. (unlike in C arrays...)
 
 		handleSlash = "";
 		handleSlash += currentChar;//put the char we had in the last "frame" here. So it's the char before the currentChar
@@ -2382,7 +2508,7 @@ public:
 	bool readCharFromString()
 	{
 		lineNumber.totalCharNumber++;//Ok, 1 is the first element.
-		lineNumber.charPosInLine++;//1 is the first char in line. (unlike in C arrays...)
+		lineNumber.column++;//1 is the first char in line. (unlike in C arrays...)
 
 		handleSlash = "";
 		handleSlash += currentChar;//put the char we had in the last "frame" here. So it's the char before the currentChar
@@ -2435,14 +2561,20 @@ public:
 				//just handling the linenumbers here, so that none get lost.
 				lineNumber.line++;
 			}
-			
-			
+		
+			if( currentChar == '\r')
+			{
+				// TODO report carriage return once per compile for the first file that contains it...
+				//cout << "STRANGE CHAR! Ignore it. It's probably carriage return.\n";
+				return false;
+			}
+	
 			if( isPassthroughMode == true || isPassthroughSourceMode == true )
 			{
 				if( isWaitingForPragmaToken == true )
 				{
 					//enter or space (or slash for comments) to end pragma.
-					if( currentChar == '\n' || currentChar == ' ' || currentChar == '/' )
+					if( isWhiteSpace(currentChar) || currentChar == '/' )
 					{
 						isWaitingForPragmaToken = false;
 						wholeToken = currentWord;
@@ -2829,7 +2961,7 @@ public:
 
 					isSingleLineComment = true;
 
-					currentComment = "//";
+					currentComment = "";
 
 					return true;
 				}
@@ -2860,8 +2992,8 @@ public:
 
 			if(isWaitingForPragmaToken == true)
 			{
-				//space or enter (or slash for comments) ends a pragma token.
-				if( currentChar == ' ' || currentChar == '\n' || currentChar == '/' )
+				//whitespace: space, enter or tab (or slash for comments) ends a pragma token.
+				if( isWhiteSpace(currentChar) || currentChar == '/' )
 				{
 					#ifdef DEBUG_RAE_HUMAN
 						cout<<"End @ pragma: "<<currentWord<<"\n";
@@ -2919,6 +3051,7 @@ public:
 				{
 					wholeToken = currentWord;//"-"
 					isWholeToken = true;
+					currentWord = "";
 				}
 			}
 			
@@ -2963,6 +3096,17 @@ public:
 				isWaitingForPragmaToken = true;
 
 				currentWord = "@";
+				currentLine += currentChar;
+			}
+			else if( currentChar == '#' )
+			{
+				wholeToken = currentWord;
+				isWholeToken = true;
+				
+				wholeToken2 = "#";
+				isWholeToken2 = true;
+				currentWord = "";
+				
 				currentLine += currentChar;
 			}
 			else if( currentChar == '.' )
@@ -3243,8 +3387,11 @@ public:
 		//}
 	}
 
-	
-
+public:
+	ParserType parserType() { return m_parserType; }
+	void parserType(ParserType set) { m_parserType = set; }
+	protected: ParserType m_parserType;	
+public:
 	void parseIdle()
 	{				
 		//while( EOF != (currentChar = getc(currentFile)) )
@@ -3259,7 +3406,10 @@ public:
 						//cout<<"TOKEN:>"<<wholeToken<<"<\n";
 						isWholeToken = false;
 						//cout<<"calling handleToken on wholeToken1\n";
-						handleToken(wholeToken);
+						if (parserType() == ParserType::RAE)
+							handleToken(wholeToken);
+						else if (parserType() == ParserType::CPP)
+							handleTokenCpp(wholeToken);
 					}
 					else isWholeToken = false;
 				}
@@ -3270,7 +3420,10 @@ public:
 						//cout<<"TOKEN2:>"<<wholeToken2<<"<\n";
 						isWholeToken2 = false;
 						//cout<<"calling handleToken on wholeToken2!!!!\n";
-						handleToken(wholeToken2);
+						if (parserType() == ParserType::RAE)
+							handleToken(wholeToken2);
+						else if (parserType() == ParserType::CPP)
+							handleTokenCpp(wholeToken2);
 					}
 					else isWholeToken2 = false;
 				}
@@ -3521,7 +3674,13 @@ public:
 		}
 	}
 
-	void handleToken(string set_token);
+	// These all return true if they handled the token. False if not.
+	bool handleTokenRaeCppCommon(string set_token);
+	// parse C++ tokens
+	bool handleTokenCpp(string set_token);
+	// parse Rae tokens
+	bool handleToken(string set_token);
+
 	
 	//return true if it was a number...
 	bool handleNumber(string set_token)
@@ -3795,6 +3954,14 @@ public:
 				continue;
 			}
 
+			if( elem->token() == Token::NAMESPACE )
+			{
+				if( set_elem->name() == elem->name() )
+				{
+					cout << "THIS IS DA SAME NAMESPACE. " << set_elem->toSingleLineString() << " and earlier: " << elem->toSingleLineString() << "\n";;
+				}
+			}	
+
 			//If it's a definition. Then we are only interested in classes.
 
 			//if( (set_elem->token() == Token::DEFINE_REFERENCE || set_elem->token() == Token::DEFINE_ARRAY)
@@ -3888,13 +4055,13 @@ public:
 			{
 				//no errors.
 			}
-			else
+			else if(prev_def->token() != Token::MODULE_DIR || prev_def->token() != Token::MODULE_NAME)
 			{
 				//if( previousElement() )
 				//	cout<<"PREVIOUSTOKEN WAS: "<<previousElement()->toString();
 
 				ReportError::reportError("redefinition of name: " + set_token + "\nUse \"override\" to use the same name again.", previousElement() );
-				ReportError::reportError("previous definition is here: " + prev_def->toString(), prev_def );
+				ReportError::reportError("previous definition is here: ", prev_def );
 			}
 			
 			//elem_to_set->name(set_token);
@@ -3920,13 +4087,13 @@ public:
 			{
 				//no errors.
 			}
-			else
+			else if(prev_def->token() != Token::MODULE_DIR || prev_def->token() != Token::MODULE_NAME)
 			{
 				//if( previousElement() )
 				//	cout<<"PREVIOUSTOKEN WAS: "<<previousElement()->toString();
 
-				ReportError::reportError("redefinition of name: " + set_elem->toString() + "\nUse \"override\" to use the same name again.", previousElement() );
-				ReportError::reportError("previous definition is here: " + prev_def->toString(), prev_def );
+				ReportError::reportError("redefinition of name:\nUse \"override\" to use the same name again:", set_elem );
+				ReportError::reportError("previous definition is here: ", prev_def );
 			}
 			
 			//elem_to_set->name(set_token);
@@ -3963,10 +4130,10 @@ public:
 			{
 				//no errors.
 			}
-			else
+			else if(prev_def->token() != Token::MODULE_DIR || prev_def->token() != Token::MODULE_NAME)
 			{
-				ReportError::reportError("redefinition of name: " + set_token, previousElement() );
-				ReportError::reportError("previous definition is here: " + prev_def->toString(), prev_def );
+				ReportError::reportError("redefinition of name: " + set_token, elem_to_set );
+				ReportError::reportError("previous definition is here: ", prev_def );
 			}
 			
 			elem_to_set->name(set_token);
@@ -3995,6 +4162,13 @@ public:
 	//This should be good...
 	LangElement* searchElementAndCheckIfValidLocal(LangElement* set_elem)
 	{
+		if (g_debugName == set_elem->name())
+		{
+			rlutil::setColor(rlutil::LIGHTBLUE);
+			cout << "searchElementAndCheckIfValidLocal. module: " << moduleName() << " looking for: " << set_elem->name() << "\n";
+			rlutil::setColor(rlutil::WHITE);
+		}
+
 		#ifdef DEBUG_RAE_PARSER
 		//TEMP:
 		//if(moduleName() == "rae.examples.Tester")
@@ -4027,6 +4201,13 @@ public:
 				#ifdef DEBUG_RAE_PARSER
 				cout<<"Super. ScopeFinder found it.\n";
 				#endif
+
+				if (g_debugName == set_elem->name())
+				{
+					rlutil::setColor(rlutil::GREEN);
+					cout << "searchElementAndCheckIfValidLocal. module: " << moduleName() << " Found: " << set_elem->name() << " in: " << res->toSingleLineString() << "\n";
+					rlutil::setColor(rlutil::WHITE);
+				}
 				return res;
 			}
 		}
@@ -4084,6 +4265,9 @@ public:
 			//We are only interested in definitions.
 			else if( elem->isDefinition() ) //ok so we don't check for: set_elem->isUseReference()
 			{
+				if (g_debugName == set_elem->name() || g_debugName == set_elem->type() || g_debugName == set_elem->typedefNewType() )
+					cout << "searchElementAndCheckIfValidLocal: looking for: " << set_elem->toSingleLineString() << " and checking: " << elem->toSingleLineString() << "\n";
+
 				if( elem->name() == set_elem->name() )
 				{
 					#ifdef DEBUG_RAE_PARSER
@@ -4098,6 +4282,19 @@ public:
 						return elem;
 					}
 				}
+                /*
+				if( set_elem->typedefNewType() == elem->name() ) // Typedef...
+				{
+					cout << "Yammy. It's a typedef definition: " << elem->toSingleLineString() << "\n";
+					return elem;
+				}
+                */
+				else if( set_elem->name() == elem->typedefNewType() ) // Typedef...
+				{
+					cout << "Yammy. It's a typedef definition2: " << elem->toSingleLineString() << "\n";
+					return elem;
+				}
+				
 			}
 			//TEMP
 			else
@@ -4200,6 +4397,13 @@ public:
 		return res;
 	}
 
+	bool isCompatibleNamespaces( LangElement* current_context_use, LangElement* found_definition )
+	{
+		//listOfUsingNamespaces ... something
+		//current_context_use->namespaceSomething()()()
+		return true;
+	}
+
 	bool checkIfTokenIsValidInCurrentContext( LangElement* current_context_use, LangElement* found_definition )
 	{
 		#ifdef DEBUG_DEBUGNAME
@@ -4232,6 +4436,12 @@ public:
 			  	#endif
 
 				return true;
+			}
+
+			// Here we check for the namespace being valid
+			if( isCompatibleNamespaces(current_context_use, found_definition) == false )
+			{
+				return false;
 			}
 
 			//also if found_elem is a class or enum. We can use those always. 
@@ -4460,6 +4670,7 @@ public:
 						if(current_context_use->name() == g_debugName)
 						{
 							cout<<"NOT valid. different funcs.\n";
+							ReportError::reportInfo("NOT valid different parent funcs. parents: ", current_context_use->parentFunc(), found_definition->parentFunc());
 						}
 						#endif
 						return false;
@@ -4736,6 +4947,8 @@ public:
 				{
 					default:
 					break;
+                    case Token::CPP_TYPEDEF:
+						cout << "Found typedef usage111111!!!\n";
 					case Token::CLASS:
 
 						if( bracketStack.empty() ) //not in the middle of a template list.
@@ -4745,6 +4958,7 @@ public:
 
 						if(currentReference == nullptr)
 						{
+							cout << "Default val case. Creating a newDefineReference for a class or typedef definition.\n";
 							//ReportError::reportError("handleUserDefinedToken. currentReference was null, when we found a class. Compiler error. set_token: " + set_token, previousElement() );
 						
 							// This case is just a class name without any preceeding val or opt, so no currentReference has been created.
@@ -4761,7 +4975,8 @@ public:
 							}
 						}
 						else
-						{	
+						{
+							cout << "We have some currentReference dangling. Setting it's class or typedef definition to " << set_token << ": " << currentReference->toSingleLineString() << "\n";
 							// expectingRole can be undefined for now. If it's set it's most likely
 							// just FUNC_RETURN or FUNC_ARGUMENT. But this remark is early days, so
 							// it might change in the future.
@@ -4793,6 +5008,9 @@ public:
 						our_new_element = newUseArray(found_elem);
 					break;
 					*/
+					case Token::CPP_PRE_DEFINE:
+						cout << "Found #define usage!!!\n";
+					break;
 					case Token::BRACKET_DEFINE_ARRAY_BEGIN:
 					case Token::BRACKET_DEFINE_STATIC_ARRAY_BEGIN:
 					case Token::DEFINE_FUNC_RETURN:
@@ -4825,7 +5043,8 @@ public:
 							our_new_element = newUseBuiltInType(found_elem);
 						}*/
 
-					break;/*
+					break;
+                    /*
 					case Token::USE_VECTOR:
 						ReportError::reportError("handleUserDefinedToken. Found USE_VECTOR. And we're not supposed to find those.");
 					break;
@@ -4836,6 +5055,50 @@ public:
 					case Token::USE_REFERENCE:
 						ReportError::reportError("handleUserDefinedToken. Found USE_REFERENCE. And we're not supposed to find those.", previousElement() );
 					break;
+                    case Token::NAMESPACE:
+                    	rlutil::setColor(rlutil::BLUE);
+						cout << "11111111handleUserDefinedToken found a namespace: " << found_elem->name() << " set_token: " << set_token << "\n";
+						
+						if (currentReference == nullptr)
+						{
+							// In fact, this could be:
+							// a type definition: Rae::SomeType, which would then default to be of kind val
+							// a func call: Rae::CallSomeFunc
+							// array definition: [Rae::SomeType]
+							if( !bracketStack.empty() )
+							{
+								LangElement* our_ref = newDefineReference( "val", Role::TEMPLATE_PARAMETER );
+								our_ref->useNamespace(found_elem);
+							}
+							else
+							{
+								LangElement* our_ref = newLangElement( Token::USE_NAMESPACE, TypeType::UNDEFINED, set_token, set_token);
+								our_ref->useNamespace(found_elem);
+								unfinishedElement(our_ref); // Still waiting for the name etc.
+							}
+							
+							isWaitingForNamespaceDot = true;
+						}
+						else
+						{
+							cout << "And we have a currentReference dangling." << currentReference->toSingleLineString() << "\n";
+							//LangElement* lang_elem = new LangElement(lineNumber, Token::USE_NAMESPACE, TypeType::UNDEFINED, set_token);
+							//lang_elem->definitionElement(found_elem);
+
+							cout << "setting useNamespace to: " << found_elem->name() << "\n";
+							currentReference->useNamespace(found_elem);
+
+							isWaitingForNamespaceDot = true;
+						}
+
+						//if (unfinishedElement())
+						//	cout << "And we have an unfinishedElement dangling." << unfinishedElement()->toSingleLineString() << "\n";
+						
+						rlutil::setColor(rlutil::WHITE);
+						//LangElement* lang_elem = newLangElement(Token::USE_NAMESPACE, TypeType::UNDEFINED, set_token);
+						//lang_elem->definitionElement(found_elem);
+                    break;
+
 				}
 			/*}
 			else //token is not valid in this context
@@ -4851,10 +5114,14 @@ public:
 			#ifdef DEBUG_RAE_HUMAN
 			cout<<"Didn't find: "<<set_token<<" creating unknown ref.\n";
 			#endif
-			#ifdef DEBUG_DEBUGNAME
-				if( set_token == g_debugName )
-					cout << "handleUserDefinedToken Didn't find: " << set_token << " in line: " << lineNumber.line << "\n";
-			#endif
+			//#ifdef DEBUG_DEBUGNAME
+			if( set_token == g_debugName )
+			{
+				rlutil::setColor(rlutil::RED);
+				cout << "handleUserDefinedToken Didn't find: " << set_token << " in line: " << lineNumber.line << " module: " << moduleName() << "\n";
+				rlutil::setColor(rlutil::WHITE);
+			}
+			//#endif
 			//specifically don't do our_new_element = , because this is already unknown and will be handled later...
 			//Oh well. found_elem would be null anyway...
 			if(currentReference == nullptr)
@@ -4910,7 +5177,7 @@ public:
 	void handleUnknownTokens()
 	{
 		cout << "handleUnknownTokens START.\n";
-
+		
 		cout << "unknownDefinitions: " << unknownDefinitions.size() << "\n";
 		cout << "unknownUseReferences: " << unknownUseReferences.size() << "\n";
 		cout << "unknownUseMembers: " << unknownUseMembers.size() << "\n";
@@ -4996,7 +5263,7 @@ public:
 
 			if( maybe_member )
 			{
-				if( maybe_member->token() == Token::FUNC )
+				if( maybe_member->isFunc() )
 				{
 					#ifdef DEBUG_RAE_HUMAN
 					cout<<"NEWWAY found a FUNC definition "<<maybe_member->toString()<<" while looking for "<<our_unknown_elem->toString()<<"\n";
@@ -5079,6 +5346,8 @@ public:
 					default:
 						ReportError::reportError("handleUnknownTokens found this: " + found_elem->toString(), lang_elem);
 					break;
+                    case Token::CPP_TYPEDEF:
+						cout << "Found typedef usage22222!!!\n";
 					case Token::CLASS:
 						
 						if(lang_elem->token() == Token::USE_REFERENCE
@@ -5179,10 +5448,13 @@ public:
 					case Token::FUNC_CALL:
 						//newLangElement(Token::FUNC_CALL, set_token);
 
+						// This can certainly be found!
+
 						//#ifdef DEBUG_RAE_HUMAN
-						cout<<"\n\n\n\n\n\nDEFINITION FUNC_CALL Found. I bet this can be removed, because it shouldn't happen!!!!!!!!!!!!!!!!!!\n\n\n\n\n\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n\n\n\n\n";
+						//////cout<<"\n\n\n\n\n\nDEFINITION FUNC_CALL Found. I bet this can be removed, because it shouldn't happen!!!!!!!!!!!!!!!!!!\n\n\n\n\n\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n\n\n\n\n";
+						//////ReportError::reportError("DEFINITION FUNC_CALL Found. I bet this can be removed, because it shouldn't happen!!!!!!", lang_elem, found_elem );//lang_elem->previous2ndElement() );
 						//#endif
-						assert(0);
+						//assert(0);
 
 						lang_elem->token(Token::FUNC_CALL);
 						lang_elem->isUnknownType(false);
@@ -5209,6 +5481,9 @@ public:
 						lang_elem->isUnknownType(false);
 					break;
 					*/
+					case Token::CPP_PRE_DEFINE:
+						cout << "Found #define usage!!!\n";
+					break;
 					case Token::BRACKET_DEFINE_ARRAY_BEGIN:
 					case Token::BRACKET_DEFINE_STATIC_ARRAY_BEGIN:
 					case Token::DEFINE_FUNC_RETURN:
@@ -5268,7 +5543,7 @@ public:
 
 								if( maybe_member )
 								{
-									if( maybe_member->token() == Token::FUNC )
+									if( maybe_member->isFunc() )
 									{
 										#ifdef DEBUG_RAE_HUMAN
 										cout<<"NEWWAY found a FUNC definition "<<maybe_member->toString()<<" while looking for "<<lang_elem->nextElement()->nextElement()->toString()<<"\n";
@@ -5342,6 +5617,12 @@ public:
 					case Token::USE_REFERENCE:
 						ReportError::reportError("handleUnknownDefinitions. Found USE_REFERENCE. And we're not supposed to find those.", lang_elem);
 					break;
+					case Token::NAMESPACE:
+						cout << "22222222handleUnknownTokens found a namespace: " << found_elem->name() << "\n";
+						lang_elem->token(Token::USE_NAMESPACE);
+                        lang_elem->definitionElement(found_elem);
+                        lang_elem->isUnknownType(false);
+					break;
 				}
 
 				#ifdef DEBUG_RAE_HUMAN
@@ -5353,7 +5634,11 @@ public:
 			{
 				if(lang_elem->previousElement() && lang_elem->previousToken() == Token::REFERENCE_DOT )
 				{
-					ReportError::reportWarning("Didn't find definition. Does the class have a member with that name? Check spelling? Did you define it somewhere? Is it accessible in this scope?", { lang_elem, lang_elem->previousElement(), lang_elem->previous2ndElement() } );
+					#if (_MSC_VER == 1700) // Visual Studio 2012
+						ReportError::reportWarning("Didn't find definition. Does the class have a member with that name? Check spelling? Did you define it somewhere? Is it accessible in this scope?", lang_elem );
+					#else
+						ReportError::reportWarning("Didn't find definition. Does the class have a member with that name? Check spelling? Did you define it somewhere? Is it accessible in this scope?", { lang_elem, lang_elem->previousElement(), lang_elem->previous2ndElement() } );
+					#endif
 				}
 				else
 				{

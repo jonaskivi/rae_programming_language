@@ -42,13 +42,24 @@ public:
 	*/
 	
 	static void reportInfo(string set, LangElement* set_elem);
+	static void reportInfo(string set, LangElement* set_elem, LangElement* set_elem2);
 	static void reportInfo(string set, string in_which_namespace);
 	static void reportWarning(string set, LangElement* set_elem);
-	//not in vs2012: 
+//not in vs2012:
+#if (_MSC_VER == 1700) // Visual Studio 2012
+	// Nothing here...
+#else
 	static void reportWarning(string set, std::initializer_list<LangElement*> set_elems);
+#endif
+
 	static void reportError(string set, LangElement* set_elem);
-	//not in vs2012:
+	static void reportError(string set, LangElement* set_elem, LangElement* set_elem2);
+//not in vs2012:
+#if (_MSC_VER == 1700) // Visual Studio 2012
+	// Nothing here...
+#else
 	static void reportError(string set, std::initializer_list<LangElement*> set_elems);
+#endif
 	static void reportError(string set, int set_line_number, string in_which_namespace);
 	static void compilerError(string set, LangElement* set_elem);
 	static void compilerError(string set);

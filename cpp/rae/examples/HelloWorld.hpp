@@ -1,4 +1,4 @@
-//this file is automatically created from Rae programming language module:
+// this file is automatically created from Rae programming language module:
 ///Users/joonaz/Dropbox/jonas/2015/ohjelmointi/rae_programming_language/cpp/rae/examples/HelloWorld
 #ifndef _rae_examples_HelloWorld_hpp_
 #define _rae_examples_HelloWorld_hpp_
@@ -11,8 +11,13 @@
 #include "rae/link.hpp"
 
 
+
+namespace Rae
+{ 
+	
+	
 class Tester
-{public:
+	{ public:
 	
 	//-------------Rae boilerplate code-------------
 		
@@ -70,18 +75,22 @@ class Tester
 	//-------------end Rae boilerplate code-------------
 
 
-	Tester(); // line: 12
-	~Tester(); // line: 13
-public: 
+		~Tester(); // line: 21
+	public: 
+		Tester(int32_t set_data = 5); // line: 20
+		
+		void log_me();
+		
+		int32_t data;
+	};
+
+
 	
-	void log_me();
-	
-	int32_t data;
-};
+} // end namespace Rae// end namespace Rae
 
 
 class HelloWorld
-{public:
+{ public:
 	
 	//-------------Rae boilerplate code-------------
 		
@@ -147,49 +156,57 @@ public:
 	//destructor:
 	~HelloWorld();
 	
-	void log_int_array(std::vector<int32_t>* someints) const; // line: 30
+	void log_int_array(std::vector<int32_t>* someints) const ; // line: 40
 	
-	public: void say_hello(); // line: 46
-	public: int32_t int_count(const int32_t param1, const int32_t param2); // line: 76
-	public: Tester tester_count( const Tester* param1,  const Tester* param2); // line: 81
-	public: int32_t count(const int32_t param1,  const Tester* param2); // line: 88
+	public: void say_hello(); // line: 56
+	public: int32_t int_count(const int32_t param1, const int32_t param2); // line: 86
+	public: Rae::Tester tester_count( const Rae::Tester* param1,  const Rae::Tester* param2); // line: 91
+	public: int32_t count(const int32_t param1,  const Rae::Tester* param2); // line: 98
 	public: int32_t number();
 	public: void number(int32_t set);
 	protected: int32_t m_number; // default initializers are copied to constructors.
 	
 	
-	public: const int32_t let_init_data; // line: 111
-	int32_t no_init_data; // line: 112
-	double no_init_datad; // line: 113
+	public: const int32_t let_init_data; // line: 121
+	int32_t no_init_data; // line: 122
+	double no_init_datad; // line: 123
 	
-	protected: int32_t anotherNumber; // line: 115
-	public: float afloat; // line: 116
+	protected: int32_t anotherNumber; // line: 125
+	public: float afloat; // line: 126
 	
-	Tester tester; // val is the default type
-	Tester* tester_opt; // opt is the optional type. This one is allocated automatically.
-	Tester* tester_not; // need to specify that it is null, if you want it to be empty.
-	rae::link<Tester> tester_link; // link is a pointer which can not allocate or free memory.
+	Rae::Tester tester; // val is the default type
+	Rae::Tester* tester_opt; // opt is the optional type. This one is allocated automatically.
+	Rae::Tester* tester_not; // need to specify that it is null, if you want it to be empty.
+	rae::link<Rae::Tester> tester_link; // link is a pointer which can not allocate or free memory.
 	// a non-owning pointer which is also automatically set to null 
 	// when the pointed object is destroyed.
-	Tester* tester_ptr; // Don't use raw pointers unless interfacing with C.
+	Rae::Tester* tester_ptr; // Don't use raw pointers unless interfacing with C.
 	
-	std::string name; // line: 126
+	std::string name; // line: 136
 	
-	std::vector<std::string> names; // line: 128
+	std::vector<std::string> names; // line: 138
 	
-	std::vector<int32_t>* opt_array_test; // line: 130
-	std::vector<int32_t>* ref_array_test; // line: 131
-	std::vector<int32_t>* ptr_array_test; // line: 132
+	//syntaksi testailua:
+	//const Rae::Tester* tester;
+	//def tester{let opt Rae.Tester}
+	//[let opt Rae.Tester tester]
+	
+	
+	std::vector<int32_t>* opt_array_test; // line: 146
+	std::vector<int32_t>* ref_array_test; // line: 147
+	std::vector<int32_t>* ptr_array_test; // line: 148
 	//TODO link[int] link_array_test
 	std::vector<int32_t> array_test; //std::vector<int>	
 	std::array<int32_t, 5> static_array_test; //std::array<int, 5>
-	std::vector<Tester > testers; // line: 136
-	std::vector<Tester > defaultTesters; // line: 137
-	std::vector<rae::link<Tester> > tester_links; // line: 138
-	std::vector<Tester* > tester_opts; // line: 139
-	std::vector<Tester* > tester_refs; // line: 140
-	std::vector<Tester* > tester_ptrs;
+	std::vector<Rae::Tester > testers; // line: 152
+	std::vector<Rae::Tester > default_testers; // line: 153
+	std::vector<rae::link<Rae::Tester> > tester_links; // line: 154
+	std::vector<Rae::Tester* > tester_opts; // line: 155
+	std::vector<Rae::Tester* > tester_refs; // line: 156
+	std::vector<Rae::Tester* > tester_ptrs;
 };
+
+
 
 #endif // _rae_examples_HelloWorld_hpp_
 

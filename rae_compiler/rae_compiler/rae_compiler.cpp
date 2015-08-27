@@ -13,7 +13,7 @@ int main (int argc, char * const argv[])
 	Rae::ReportError::countErrors(0);
 
 	rlutil::setColor(rlutil::GREEN);
-	cout<<"Rae Compiler version 0.0.2\n";
+	cout<<"Rae Compiler version 0.0.2B\n";
 	rlutil::setColor(rlutil::WHITE);
 
 	if(argc <= 1)

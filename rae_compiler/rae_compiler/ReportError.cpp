@@ -15,10 +15,18 @@ namespace Rae
 
 		if(set_elem)
 		{
-			cout<<" / line: "<<set_elem->lineNumber().line<<" / in: "<<set_elem->namespaceString();
+			cout<<" / line: "<<set_elem->lineNumber().toString()<<" / in: "<<set_elem->namespaceString() << " : " << set_elem->toSingleLineString();
 		}
 
 		cout<<"\n";
+	}
+
+	void ReportError::reportInfo(string set, LangElement* set_elem, LangElement* set_elem2)
+	{
+		cout << "RAE_INFO FROM:\n";
+		reportInfo(set, set_elem);
+		cout << "RAE_INFO2 TO:\n";
+		reportInfo(set, set_elem2);
 	}
 
 	void ReportError::reportInfo(string set, string in_which_namespace)
@@ -45,7 +53,7 @@ namespace Rae
 
 		if(set_elem)
 		{
-			cout<<" / line: "<<set_elem->lineNumber().line<<" / in: "<<set_elem->namespaceString();
+			cout<<" / line: "<<set_elem->lineNumber().toString()<<" / in: "<<set_elem->namespaceString();
 		}
 
 		cout<<"\n";
@@ -64,22 +72,28 @@ namespace Rae
 		if(set_elem)
 		{
 			set_elem->parseError(ParseError::SYNTAX_WARNING);
-			cout<<"\tname: ";
+			cout<<"\tname: >";
 			rlutil::setColor(rlutil::GREEN);
 			cout<<set_elem->name();
 			rlutil::setColor(rlutil::WHITE);
-			cout<<"\n\t"<<set_elem->tokenString();
+			cout<<"<\n\t"<<set_elem->tokenString();
 			cout<<"\n\t"<<"typetype: "<<set_elem->typeTypeString();
 			cout<<"\n\t"<<"type: "<<set_elem->type();
 			cout<<"\n\t"<<"containerType: "<<ContainerType::toString( set_elem->containerType() );
 			cout<<"\n\tline: ";
 			rlutil::setColor(rlutil::BROWN);
-			cout<<set_elem->lineNumber().line;
+			cout<<set_elem->lineNumber().toString();
 			rlutil::setColor(rlutil::WHITE);
 			cout<<" / in: ";
 			rlutil::setColor(rlutil::BROWN);
 			cout<<set_elem->namespaceString();
 			rlutil::setColor(rlutil::WHITE);
+			
+			if( isWhiteSpace(set_elem->name()) )
+			{
+				cout << "The name is whitespace.\n";
+				cout << set_elem->toSingleLineString() << "\n";
+			}
 		}
 		
 		cout<<"\n";
@@ -107,7 +121,7 @@ namespace Rae
 			cout<<"\n\t"<<"containerType: "<<ContainerType::toString( set_elem->containerType() );
 			cout<<"\n\tline: ";
 			rlutil::setColor(rlutil::BROWN);
-			cout<<set_elem->lineNumber().line;
+			cout<<set_elem->lineNumber().toString();
 			rlutil::setColor(rlutil::WHITE);
 			cout<<" / in: ";
 			rlutil::setColor(rlutil::BROWN);
@@ -120,6 +134,19 @@ namespace Rae
 		ReportError::m_countErrors++;
 	}
 
+	void ReportError::reportError(string set, LangElement* set_elem, LangElement* set_elem2)
+	{
+		cout << "RAE_ERROR FROM:\n";
+		reportError(set, set_elem);
+		cout << "RAE_ERROR TO:\n";
+		reportError(set, set_elem2);
+
+		ReportError::m_countErrors--; // Hackity hack. Remove the extra error here...
+	}
+
+#if (_MSC_VER == 1700) // Visual Studio 2012
+	// Nothing here
+#else
 	void ReportError::reportWarning(string set, std::initializer_list<LangElement*> set_elems)
 	{
 		rlutil::setColor(rlutil::YELLOW);
@@ -149,7 +176,7 @@ namespace Rae
 				cout<<"\n\t"<<"containerType: "<<ContainerType::toString( set_elem->containerType() );
 				cout<<"\n\tline: ";
 				rlutil::setColor(rlutil::BROWN);
-				cout<<set_elem->lineNumber().line;
+				cout<<set_elem->lineNumber().toString();
 				rlutil::setColor(rlutil::WHITE);
 				cout<<" / in: ";
 				rlutil::setColor(rlutil::BROWN);
@@ -191,7 +218,7 @@ namespace Rae
 				cout<<"\n\t"<<"containerType: "<<ContainerType::toString( set_elem->containerType() );
 				cout<<"\n\tline: ";
 				rlutil::setColor(rlutil::BROWN);
-				cout<<set_elem->lineNumber().line;
+				cout<<set_elem->lineNumber().toString();
 				rlutil::setColor(rlutil::WHITE);
 				cout<<" / in: ";
 				rlutil::setColor(rlutil::BROWN);
@@ -203,6 +230,7 @@ namespace Rae
 
 		ReportError::m_countErrors++;
 	}
+#endif
 
 	void ReportError::reportError(string set, int set_line_number, string in_which_namespace)
 	{
@@ -236,7 +264,7 @@ namespace Rae
 			cout<<"\n\t"<<"containerType: "<<ContainerType::toString( set_elem->containerType() );
 			cout<<"\n\tline: ";
 			rlutil::setColor(rlutil::BROWN);
-			cout<<set_elem->lineNumber().line;
+			cout<<set_elem->lineNumber().toString();
 			rlutil::setColor(rlutil::WHITE);
 			cout<<" / in: ";
 			rlutil::setColor(rlutil::BROWN);

@@ -61,7 +61,7 @@ public:
 		//workingPath = boost::filesystem::current_path();
 
 		char cCurrentPath[FILENAME_MAX];
-		if (!GetCurrentDir(cCurrentPath, sizeof(cCurrentPath)))
+		if( !GetCurrentDir(cCurrentPath, sizeof(cCurrentPath)) )
 		{
 			//return errno;
 		}
@@ -72,7 +72,7 @@ public:
 
 		workingPath = cCurrentPath;
 
-		moduleSearchPaths.push_back( workingPath );
+		addModuleSearchPath(workingPath);
 		//cout << "Added current directory to module search paths: " << moduleSearchPaths.back() << "\n";
 	}
 
@@ -156,9 +156,10 @@ public:
 
 	}
 
-	void addModuleSearchPath(string set_path)//must end with / currently.
+	void addModuleSearchPath(string set_path)
 	{
-		//REMOVE BOOST boost::filesystem::path currentSearchPath = set_path;
+		if( set_path.back() != '/' )
+			set_path.append("/");
 		moduleSearchPaths.push_back(set_path);	
 	}
 
@@ -169,7 +170,7 @@ public:
 	}
 
 	//REMOVE BOOST: boost::filesystem::path findModuleFileInSearchPaths(boost::filesystem::path set)//param: e.g. "rae/examples/Tester"
-	string findModuleFileInSearchPaths(string set)//param: e.g. "rae/examples/Tester"
+	string findModuleFileInSearchPaths(string set)//param: e.g. "rae/examples/Tester.rae"
 	{
 		for(string a_path : moduleSearchPaths)
 		{
@@ -184,7 +185,7 @@ public:
 
 			string another_copy_path = a_path;
 			another_copy_path += set;
-			another_copy_path += ".rae";
+			// Extension needs to be added already: another_copy_path += ".rae";
 			
 			if( checkPathType(another_copy_path) == PathType::FILE )
 			{
@@ -252,13 +253,20 @@ public:
 	void addSourceFileAsImport(string set_import_name)
 	{
 		#ifdef DEBUG_RAE_PARSER
-		cout<<"ADDING nu import name: "<<set_import_name<<"\n";
+		cout<<"Adding import name: "<<set_import_name<<"\n";
 		#endif
 
 		//REMOVE BOOST: boost::filesystem::path set_import_path = findModuleFileInSearchPaths(set_import_name);
-		string set_import_path = findModuleFileInSearchPaths(set_import_name);
+		string set_import_path = findModuleFileInSearchPaths(set_import_name + ".rae");
 
-		///////////addSourceFile( set_import_path.string() );
+		if(set_import_path != "")
+		{
+			cout << "Found imported module: " << set_import_path << "\n";
+		}
+		else cout << "Didn't find imported module: " << set_import_name << "\n";
+		
+		// JONDE CHECK Do we need this line:
+		//addSourceFile( set_import_path );
 
 		if(force_one_thread == false)
 		{
@@ -286,6 +294,55 @@ public:
 		}
 	}
 
+	void addCppHeaderAsImport(string set_import_name)
+	{
+//#ifdef DEBUG_RAE_PARSER
+		cout<<"Adding C++ import name: "<<set_import_name<<"\n";
+//#endif
+		
+		bool did_we_find_the_file = false;
+		
+		// Check .h
+		string set_import_path = findModuleFileInSearchPaths(set_import_name + ".h");
+		if(set_import_path != "")
+		{
+			did_we_find_the_file = true;
+		}
+		else // Check .hpp
+		{
+			set_import_path = findModuleFileInSearchPaths(set_import_name + ".h");
+			if(set_import_path != "")
+			{
+				did_we_find_the_file = true;
+			}
+			else // Check .hxx
+			{
+				set_import_path = findModuleFileInSearchPaths(set_import_name + ".hxx");
+				if(set_import_path != "")
+				{
+					did_we_find_the_file = true;
+				}
+			}
+		}
+		
+		if(did_we_find_the_file == true)
+			cout << "Found imported C++ header: " << set_import_path << "\n";
+		else cout << "Didn't find imported C++ header: " << set_import_name << "\n";
+		
+		/////////////WHAT DOES THIS DO???: addSourceFile( set_import_path );
+		
+		cout << "TODO parse C++!\n";
+		SourceParser* a_parser = new SourceParser( set_import_path, /*do_parse:*/false);
+		a_parser->parserType(ParserType::CPP);
+
+		string module_name = replaceCharInString(set_import_name, "/\\", '.'); // replace / or \ with a dot
+		cout << "Adding C++ module name: " << module_name << "\n";
+		a_parser->newModule(module_name);
+
+		sourceParsers.push_back(a_parser);
+		a_parser->parse();
+	}
+	
 	bool parse()
 	{
 

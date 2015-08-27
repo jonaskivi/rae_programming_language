@@ -268,7 +268,7 @@
 
 			stringBasedSourceText = "module rae.link\n"
 				"\n"
-				"@c++\n"
+				"@cpp\n"
 				"\n"
 				"namespace rae\n"
 				"{\n"

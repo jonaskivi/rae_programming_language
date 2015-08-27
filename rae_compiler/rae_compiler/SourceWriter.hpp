@@ -111,7 +111,8 @@
 				}
 			break;
 			case Token::UNDEFINED:
-				writer.writeString(" RAE_UNDEFINED: ");		
+				writer.writeString(" RAE_UNDEFINED: ");
+				writer.writeString( set_elem.useNamespaceString() );
 				writer.writeString( set_elem.name() );
 				iterateWrite(writer, set_elem);
 			break;
@@ -401,6 +402,11 @@
 					}
 				}
 
+				// Reverse writing of initdata when it's for a FUNC_PARAM because these are default initializers and need to go
+				// to header and not cpp.
+				if( set_elem.previousElement() && (set_elem.previousElement()->role() == Role::FUNC_PARAMETER || set_elem.previousElement()->role() == Role::FUNC_RETURN) )
+					write_init_data = !write_init_data;
+
 				if( write_init_data == true )
 				{
 					writer.writeString(" = ");
@@ -416,6 +422,7 @@
 				//case Token::BUILT_IN_TYPE_AUTO_INIT:
 				if(set_elem.typeType() == TypeType::BUILT_IN_TYPE && set_elem.containerType() == ContainerType::UNDEFINED)
 				{
+					////////JONDE REMOVE writer.writeString( set_elem.useNamespaceString() );
 					writer.writeString(set_elem.name());
 					//TEMP:
 					//writer.writeString(" = 0");
@@ -439,6 +446,7 @@
 				{
 					//writer.writeString(m_type);
 					//writer.writeString("* ");
+					////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
 					writer.writeString(set_elem.name());
 					writer.writeString("( new ");
 					if(set_elem.containerType() == ContainerType::ARRAY)
@@ -455,6 +463,7 @@
 				}
 				else if(set_elem.typeType() == TypeType::OPT)
 				{
+					////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
 					writer.writeString(set_elem.name());
 
 					if( set_elem.initData() )
@@ -525,6 +534,7 @@
 					//writer.writeString(m_type);
 					//writer.writeString("* ");
 				
+					////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
 					writer.writeString(set_elem.name());
 					writer.writeString(" = new ");
 					writer.writeString( set_elem.templateTypeCombination() );
@@ -551,6 +561,7 @@
 					//writer.writeString("* ");
 				
 					//pointer to vector version:
+					////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
 					writer.writeString(set_elem.name());
 					writer.writeString(" = new std::vector<");
 					writer.writeString( set_elem.templateSecondTypeStringInCpp() );
@@ -596,11 +607,14 @@
 						//These two lines are the ones to use: but we've disabled them for now because we mostly use values and links.
 						writer.lineNeedsSemicolon(false);
 						writer.writeString("if(");
+						////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
 						writer.writeString(set_elem.name());
 						writer.writeString(" != nullptr ) { ");
 						writer.writeString("delete ");
+						////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
 						writer.writeString(set_elem.name());
 						writer.writeString("; ");
+						////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
 						writer.writeString(set_elem.name());
 						writer.writeString(" = nullptr; }");
 					//}
@@ -870,7 +884,12 @@
 				}
 			break;
 			case Token::REFERENCE_DOT:
-				if( writer.previousToken() == Token::NUMBER )
+				if( writer.previousToken() == Token::USE_NAMESPACE )
+				{
+					assert(0); // This shouldn't happen. We skip dots when getting a namespace.
+					writer.writeString( "::" );
+				}
+				else if( writer.previousToken() == Token::NUMBER )
 				{
 					ReportError::reportError("REFERENCE_DOT after NUMBER.", writer.previousElement() );
 					assert(0); // This should not happen.
@@ -946,6 +965,7 @@
 					//Um, C++ is so weird. We need to dereference a pointer to vector to be able to use operator[]. But I guess it makes sense...
 					//since operator[] is sort of like a function call, and otherwise it would think we're using a dynamic array of vectors...
 					writer.writeString("(*");
+					////////JONDE REMOVE writer.writeString( set_elem.useNamespaceString() );
 					writer.writeString( set_elem.name() );
 					writer.writeChar(')');
 				}
@@ -954,10 +974,12 @@
 					if(set_elem.isUnknownType() == true)
 					{
 						writer.writeString("/*possible error, unknown token:*/");
+						writer.writeString( set_elem.useNamespaceString() );
 						writer.writeString( set_elem.name() );
 					}
 					else
 					{
+						////////JONDE REMOVE writer.writeString( set_elem.useNamespaceString() );
 						writer.writeString( set_elem.name() );
 					}
 				}
@@ -1101,6 +1123,7 @@
 					writer.writeString("> ");
 				}
 				else writer.writeChar(' '); //VAL
+				////////JONDE REMOVE writer.writeString( set_elem.useNamespaceString() );
 				writer.writeString( set_elem.name() );
 			break;
 			case Token::BRACKET_DEFINE_STATIC_ARRAY_BEGIN:
@@ -1112,6 +1135,7 @@
 				writer.writeString("std::array<");
 				iterateWrite(writer, set_elem);
 				writer.writeString("> ");
+				////////JONDE REMOVE writer.writeString( set_elem.useNamespaceString() );
 				writer.writeString( set_elem.name() );
 			break;
 
@@ -1120,6 +1144,15 @@
 				//writer.writeString("*");//a dynamic array is a pointer in C/C++
 				//writer.writeString(">");
 			break;
+                
+            case Token::BRACKET_INITIALIZER_LIST_BEGIN:
+                writer.writeString("{");
+                iterateWrite(writer, set_elem);
+            break;
+            case Token::BRACKET_INITIALIZER_LIST_END:
+                writer.writeString("}");
+                iterateWrite(writer, set_elem);
+            break;
 			
 			/*case Token::DEFINE_REFERENCE_IN_CLASS:
 				writeVisibilityForElement(writer, set_elem);
@@ -1135,7 +1168,7 @@
 			case Token::DEFINE_REFERENCE:
 			
 				#ifdef DEBUG_RAE_HUMAN
-				cout<<"this is a reference. name: "<<set_elem.name()<<" type: "<<set_elem.type()<<"\n";
+				cout<<"this is a reference. useNamespace: " << set_elem.useNamespaceString() << "name: "<<set_elem.name()<<" type: "<<set_elem.type()<<"\n";
 				#endif
 
 				if( set_elem.typeType() == TypeType::VAL )
@@ -1176,6 +1209,7 @@
 						writer.writeString("* ");
 						if(set_elem.role() != Role::FUNC_RETURN )
 						{
+							////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
 							writer.writeString(set_elem.name());
 						}
 					}
@@ -1187,6 +1221,7 @@
 							writer.writeString("* ");
 							if(set_elem.role() != Role::FUNC_RETURN)
 							{
+								////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
 								writer.writeString(set_elem.name());
 							}
 							else if(set_elem.role() != Role::FUNC_RETURN && set_elem.role() != Role::FUNC_PARAMETER)
@@ -1204,6 +1239,7 @@
 								writer.writeString("* ");
 								if(set_elem.role() != Role::FUNC_RETURN)
 								{
+									////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
 									writer.writeString(set_elem.name());		
 								}
 							}
@@ -1213,6 +1249,7 @@
 								writer.writeString("* ");
 								if(set_elem.role() != Role::FUNC_RETURN)
 								{
+									////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
 									writer.writeString(set_elem.name());
 								}
 								else if(set_elem.role() != Role::FUNC_RETURN && set_elem.role() != Role::FUNC_PARAMETER)
@@ -1240,6 +1277,7 @@
 						writer.writeString("> ");
 						if(set_elem.role() != Role::FUNC_RETURN )
 						{
+							////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
 							writer.writeString(set_elem.name());
 						}
 					}
@@ -1252,6 +1290,7 @@
 							writer.writeString("> ");
 							if(set_elem.role() != Role::FUNC_RETURN)
 							{
+								////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
 								writer.writeString(set_elem.name());		
 							}
 						}
@@ -1262,6 +1301,7 @@
 							writer.writeString("> ");
 							if(set_elem.role() != Role::FUNC_RETURN)
 							{
+								////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
 								writer.writeString(set_elem.name());
 							}
 						}
@@ -1335,12 +1375,14 @@
 						//pointer to vector version:
 						writer.writeString( set_elem.templateTypeCombination() );
 						writer.writeString("* ");
+						////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
 						writer.writeString(set_elem.name());						
 					}
 					else //notInClass
 					{
 						writer.writeString(set_elem.templateTypeCombination());
 						writer.writeString("* ");
+						////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
 						writer.writeString(set_elem.name());
 						writer.writeString(" = new ");
 						writer.writeString(set_elem.templateTypeCombination());
@@ -1364,6 +1406,7 @@
 						writeVisibilityForElement(writer, set_elem);
 						writer.writeString( set_elem.builtInTypeStringCpp() );
 						writer.writeChar(' ');
+						////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
 						writer.writeString(set_elem.name());
 					}
 					else
@@ -1372,6 +1415,7 @@
 						writer.writeChar(' ');
 						if(set_elem.role() != Role::FUNC_RETURN)
 						{
+							////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
 							writer.writeString(set_elem.name());
 						}
 						else if(set_elem.role() != Role::FUNC_RETURN && set_elem.role() != Role::FUNC_PARAMETER)
@@ -1437,6 +1481,7 @@
 							writer.writeChar('*');
 						}
 						writer.writeString(">* ");
+						////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
 						writer.writeString(set_elem.name());
 						
 						/*
@@ -1469,6 +1514,7 @@
 							writer.writeChar('*');
 						}
 						writer.writeString(">* ");
+						////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
 						writer.writeString(set_elem.name());
 						writer.writeString(" = new std::vector<");
 						writer.writeString( set_elem.templateSecondTypeStringInCpp() );
@@ -1552,6 +1598,7 @@
 				writer.writeString("false");
 			break;
 			case Token::FUNC_CALL:
+				writer.writeString(set_elem.useNamespaceString());
 				writer.writeString(set_elem.name());
 				if( writer.nextToken() != Token::PARENTHESIS_BEGIN)
 					writer.writeString("()");
@@ -1680,6 +1727,7 @@
 
 				writer.lineNeedsSemicolon(false);
 
+				writer.writeString("//");
 				writer.writeString(set_elem.name());
 			break;
 			case Token::PLUS_COMMENT:
@@ -2525,9 +2573,24 @@
 
 				iterateWrite(writer, set_elem);
 			break;
+			case Token::NAMESPACE:
+				writer.lineNeedsSemicolon(false);
+				writer.writeString("namespace ");
+				writer.writeString(set_elem.name());
+				iterateWrite(writer, set_elem);
+				writer.writeString(" // end namespace ");
+				writer.writeString( set_elem.name() );
+			break;
+			case Token::USE_NAMESPACE:
+				writer.writeString(set_elem.name());
+				writer.writeString("::");
+				//iterateWrite(writer, set_elem);
+			break;
+
 			//ignore:
 			case Token::IMPORT_NAME:
 			case Token::MODULE_NAME:
+			case Token::MODULE_DIR:
 				//just ignore this type...
 			break;
 			case Token::IMPORT:
@@ -2587,7 +2650,7 @@
 					writer.writeString( string("#ifndef _") );
 					for( LangElement* elem : set_elem.langElements )
 					{
-						if( elem->token() == Token::MODULE_NAME )
+						if( elem->token() == Token::MODULE_DIR || elem->token() == Token::MODULE_NAME )
 						{
 							writer.writeString( elem->name() );
 							writer.writeChar('_');
@@ -2602,7 +2665,7 @@
 					writer.writeString( string("#define _") );
 					for( LangElement* elem : set_elem.langElements )
 					{
-						if( elem->token() == Token::MODULE_NAME )
+						if( elem->token() == Token::MODULE_DIR || elem->token() == Token::MODULE_NAME )
 						{
 							writer.writeString( elem->name() );
 							writer.writeChar('_');
@@ -2666,7 +2729,7 @@
 					{
 						for( LangElement* elem : set_elem.parent()->langElements )
 						{
-							if( elem->token() == Token::MODULE_NAME )
+							if( elem->token() == Token::MODULE_DIR || elem->token() == Token::MODULE_NAME )
 							{
 								writer.writeString( elem->name() );
 								writer.writeChar('_');
@@ -2687,6 +2750,25 @@
 				{
 					//cpp files end with newline...
 					writer.writeString( "\n" );
+				}
+			break;
+			// C++ specific
+			case Token::CPP_PRE_DEFINE:
+				if( writer.isHeader() == true )
+				{
+					writer.writeString( "#define " );
+					writer.writeString( set_elem.name() ); // We use the name() for the definition name
+					writer.writeString( " " );
+					writer.writeString( set_elem.type() ); // and the type() for the value of that definition
+				}
+			break;
+			case Token::CPP_TYPEDEF:
+				if( writer.isHeader() == true )
+				{
+					writer.writeString( "typedef " );
+					writer.writeString( set_elem.typedefOldTypeInCpp() );
+					writer.writeString( " " );
+					writer.writeString( set_elem.typedefNewType() );
 				}
 			break;
 		}

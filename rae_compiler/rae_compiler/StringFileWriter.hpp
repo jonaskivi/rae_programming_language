@@ -132,6 +132,10 @@ public:
 			&& previousToken() != Token::DESTRUCTOR
 			&& previousToken() != Token::FUNC
 			&& previousToken() != Token::MAIN
+
+			&& previousToken() != Token::COMMA
+			&& previousToken() != Token::ASSIGNMENT
+
 			//&& previousToken() != Token::SCOPE_BEGIN
 			//&& previousToken() != Token::SCOPE_END
 			//&& previousToken() != Token::FUNC

@@ -1,8 +1,16 @@
 module rae.examples.HelloWorld
 
+namespace Rae
+{
+
 class Tester
 {
 pub:
+	func init(int set_data = 5)
+	{
+		data = set_data
+	}
+
 
 	func log_me
 	{
@@ -12,29 +20,31 @@ pub:
 	int data = 2
 }
 
+} # end namespace Rae
+
 class HelloWorld
 {
 pub:
 
-	//constructor:
+	#constructor:
 	func init
 	{
 	}
 	
-	//destructor:
+	#destructor:
 	func free
 	{
 	}
 	
 	func log_int_array (ref[int] someints) let
 	{
-		// foreach loop
+		# foreach loop
 		loop( int a_num in someints )
 		{
 			log("foreach: ", a_num)
 		}
 
-		// for loop
+		# for loop
 		loop( uint i = 0; i < someints.size; ++i )
 		{
 			log("for: ", someints[i])
@@ -45,7 +55,7 @@ pub:
 	()say_hello()
 	{
 		[int] my_numbers
-		my_numbers.emplace_back(1) // TODO rename emplace_back(1) to create(1)
+		my_numbers.emplace_back(1) # TODO rename emplace_back(1) to create(1)
 		my_numbers.emplace_back(2)
 		my_numbers.emplace_back(3)
 		my_numbers.emplace_back(4)
@@ -54,7 +64,7 @@ pub:
 		my_numbers.emplace_back(7)
 		my_numbers.emplace_back(129874234985)
 		
-		//TODO NEXT log_int_array(my_numbers)
+		#TODO NEXT log_int_array(my_numbers)
 		
 		loop( int a_num in my_numbers )
 		{
@@ -77,26 +87,26 @@ pub:
 		return param1 + param2
 	}
 
-	func (val Tester) tester_count (let ref Tester param1, let ref Tester param2) pub
+	func (val Rae.Tester) tester_count (let ref Rae.Tester param1, let ref Rae.Tester param2) pub
 	{
-		//return param1.data + param2.data
-		//return param1 // TODO convert let ref to val by making a copy!
+		#return param1.data + param2.data
+		#return param1 # TODO convert let ref to val by making a copy!
 		return tester
 	}
 
-	func (int result) count (let int param1, let ref Tester param2) pub
+	func (int result) count (let int param1, let ref Rae.Tester param2) pub
 	{
-		if(param2 is null) //TODO oneliner if handling:
+		if(param2 is null) #TODO oneliner if handling:
 			return 0
 
-		if(param1 > 0 )// TODO is not: and param2 is not null)
+		if(param1 > 0 )# TODO is not: and param2 is not null)
 		{
-			//log("whoa.")
+			#log("whoa.")
 		}
 
-		if param1 > 0 // TODO no parentheses
+		if param1 > 0 # TODO no parentheses
 		{
-			//log("whoa.")
+			#log("whoa.")
 		}
 
 		return param1 + param2.data
@@ -104,7 +114,7 @@ pub:
 	
 	pub func (int) number { return m_number }
 	pub func number (int set) { m_number = set }
-	priv int m_number = 5 // default initializers are copied to constructors.
+	priv int m_number = 5 # default initializers are copied to constructors.
 	
 
 	let int let_init_data = 42
@@ -114,30 +124,36 @@ pub:
 	priv int anotherNumber = 42
 	float afloat = 248.52
 
-	Tester tester // val is the default type
-	opt Tester tester_opt // opt is the optional type. This one is allocated automatically.
-	opt Tester tester_not -> null // need to specify that it is null, if you want it to be empty.
-	link Tester tester_link // link is a pointer which can not allocate or free memory.
-	// a non-owning pointer which is also automatically set to null 
-	// when the pointed object is destroyed.
-	ptr Tester tester_ptr // Don't use raw pointers unless interfacing with C.
+	Rae.Tester tester # val is the default type
+	opt Rae.Tester tester_opt # opt is the optional type. This one is allocated automatically.
+	opt Rae.Tester tester_not -> null # need to specify that it is null, if you want it to be empty.
+	link Rae.Tester tester_link # link is a pointer which can not allocate or free memory.
+	# a non-owning pointer which is also automatically set to null 
+	# when the pointed object is destroyed.
+	ptr Rae.Tester tester_ptr # Don't use raw pointers unless interfacing with C.
 
 	string name = "Hello Rae World"
 
 	[string] names
 
+	#syntaksi testailua:
+	#const Rae::Tester* tester;
+	#def tester{let opt Rae.Tester}
+	#[let opt Rae.Tester tester]
+
+
 	opt[int] opt_array_test
 	ref[int] ref_array_test
 	ptr[int] ptr_array_test
-	//TODO link[int] link_array_test
-	[int] array_test //std::vector<int>	
-	[int, 5] static_array_test //std::array<int, 5>
-	[val Tester] testers	
-	[Tester] defaultTesters	
-	[link Tester] tester_links	
-	[opt Tester] tester_opts	
-	[ref Tester] tester_refs
-	[ptr Tester] tester_ptrs
+	#TODO link[int] link_array_test
+	[int] array_test #std::vector<int>	
+	[int, 5] static_array_test #std::array<int, 5>
+	[val Rae.Tester] testers	
+	[Rae.Tester] default_testers	
+	[link Rae.Tester] tester_links	
+	[opt Rae.Tester] tester_opts	
+	[ref Rae.Tester] tester_refs
+	[ptr Rae.Tester] tester_ptrs
 }
 
 func (int) main ([string] args)
@@ -145,16 +161,16 @@ func (int) main ([string] args)
 	string hello_rae = "What? Hello Rae World"
 	log(hello_rae)
 
-	val HelloWorld hello; //semicolons are allowed, but not required.
+	val HelloWorld hello; #semicolons are allowed, but not required.
 
-	HelloWorld hello2 //val is default
+	HelloWorld hello2 #val is default
 
 	log(hello2.name)
 	
-	//Rae does not use = for pointing to an object. Instead use -> to point.
-	//= operator will copy by value, so that the behaviour is consistent,
-	//whether you're using pointers or values.
-	link Tester tester_lnk
+	#Rae does not use = for pointing to an object. Instead use -> to point.
+	#= operator will copy by value, so that the behaviour is consistent,
+	#whether you're using pointers or values.
+	link Rae.Tester tester_lnk
 	tester_lnk -> hello.tester
 
 	log("LINK saying hello:")
@@ -164,13 +180,13 @@ func (int) main ([string] args)
 
 	log_s("5 + 2 = ")
 
-	log(hello.count( hello.number, hello.tester_opt )) // opt to ref
-	log(hello.count( hello.number, hello.tester )) // val to ref
-	log(hello.count( hello.number, tester_lnk )) // link to ref
+	log(hello.count( hello.number, hello.tester_opt )) #opt to ref
+	log(hello.count( hello.number, hello.tester )) #val to ref
+	log(hello.count( hello.number, tester_lnk )) #link to ref
 
-	// Complex validation
-	//NEXT: log(hello.count( hello.int_count( hello.number, (42 - 14) * 3), hello.tester_count(hello.tester, tester_lnk) ))
-	// End complex validation
+	# Complex validation
+	#NEXT: log(hello.count( hello.int_count( hello.number, (42 - 14) * 3), hello.tester_count(hello.tester, tester_lnk) ))
+	# End complex validation
 
 	hello.tester.data = 3
 
@@ -184,7 +200,7 @@ func (int) main ([string] args)
 	hello.tester_links[0].data = 8
 	log("an eight = ", hello.tester_links[0].data );
 
-	if true == 1  // parentheses also allowed.
+	if true == 1  # parentheses also allowed.
 	{
 		log("true")
 	}
@@ -197,8 +213,8 @@ func (int) main ([string] args)
 		log("false")
 	}
 
-	//hello.array_test[0]
-	//log("arrays 9 + 2 = ", hello.count( hello.array_test[0], hello.tester_opts[0] ))
+	#hello.array_test[0]
+	#log("arrays 9 + 2 = ", hello.count( hello.array_test[0], hello.tester_opts[0] ))
 
 	return 0
 }

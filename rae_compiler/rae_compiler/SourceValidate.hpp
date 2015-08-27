@@ -164,6 +164,9 @@
 	// other parenthesis except the ones in the start and the end
 	bool hasListOtherParenthesis(vector<LangElement*>& list)
 	{
+		if( list.size() == 0 )
+			return false;
+
 		// note, we skip first and last index.
 		for(uint i = 1; i < list.size()-1; ++i)
 		{
@@ -184,9 +187,9 @@
 			return;
 		}
 		
-		//DEBUG
+		#ifdef DEBUG_RAE_VALIDATE
 		cout<<"\nValidate Func: "<<set_elem.name()<<"\n";
-		//DEBUG
+		#endif
 
 		//In Rae I'd like to just write:
 		//alias func_definition -> set_elem.definitionElement
@@ -211,12 +214,15 @@
 
 		if( func_params.size() == 0 && set_elem.nextElement() && not set_elem.nextElement()->isParenthesis() )
 		{
+			#ifdef DEBUG_RAE_VALIDATE
 			cout<<"Function validated ok. No parenthesis and 0 params.\n";
+			#endif
 			return;
 		}
 
+		#ifdef DEBUG_RAE_VALIDATE
 		cout<<"Params for function: "<<func_definition->parentClassName()<<"."<<func_definition->name()<<" : params size: "<<func_params.size()<<"\n";
-
+		
 		//nice debugging of funcParameterList:
 		for(LangElement* elem: func_params)
 		{
@@ -228,6 +234,7 @@
 			//else cout<<"types DON'T have definitionElements.\n"; //this mostly happens only for built_in_types.
 			//and I'm happy to tell you that we seem to have definitionElements for user defined types!
 		}
+		#endif
 		
 		if( set_elem.nextElement() && set_elem.nextElement()->isParenthesis() )
 		{
@@ -236,7 +243,9 @@
 
 			if(hasListOtherParenthesis(element_list))
 			{
+				#ifdef DEBUG_RAE_VALIDATE
 				cout<<"Gonna get em pairs.\n";
+				#endif
 
 				/*for(LangElement* elem: element_list)
 				{
@@ -266,7 +275,11 @@
 		}
 		else
 		{
-			ReportError::reportError("Trying to validateFuncCall but nextElement was not a parenthesis.", { &set_elem, set_elem.nextElement() } );
+			#if (_MSC_VER == 1700) // Visual Studio 2012
+				ReportError::reportError("Trying to validateFuncCall but nextElement was not a parenthesis.", set_elem.nextElement() );
+			#else
+				ReportError::reportError("Trying to validateFuncCall but nextElement was not a parenthesis.", { &set_elem, set_elem.nextElement() } );
+			#endif
 		}
 
 
@@ -351,15 +364,16 @@
 
 	void validateLine(vector<LangElement*>& line, int tab_level = 0)
 	{
-		//DEBUG
-		coutIndent(tab_level);
-		cout<<"START validateLine: \n";
+		#ifdef DEBUG_RAE_VALIDATE
+		coutIndent(tab_level);		
+		cout<<"START validateLine: \n";		
 		for(uint i = 0; i < line.size(); ++i)
 		{
 			coutIndent(tab_level);
 			cout<<i<<" : "<<line[i]->toSingleLineString()<<"\n";
 		}
-		//DEBUG
+		#endif
+		
 		
 		if(hasListOtherParenthesis(line))
 		{
@@ -412,18 +426,22 @@
 
 			if( func_params.size() == 0 && set_elem->nextElement() && not set_elem->nextElement()->isParenthesis() )
 			{
+				#ifdef DEBUG_RAE_VALIDATE
 				cout<<"Function validated ok. No parenthesis and 0 params.\n";
+				#endif
 				return;
 			}
 
-			cout<<"Params for function: "<<func_definition->parentClassName()<<"."<<func_definition->name()<<" : params size: "<<func_params.size()<<"\n";
-
 			uint k = 1;
 
+			#ifdef DEBUG_RAE_VALIDATE
+			cout<<"Params for function: "<<func_definition->parentClassName()<<"."<<func_definition->name()<<" : params size: "<<func_params.size()<<"\n";
+			
 			//nice debugging of funcParameterList:
 			for(uint i = 0; i < func_params.size() && k < line.size(); ++i)
 			{
 				cout<<"\tparam: "<<func_params[i]->toSingleLineString()<<"\n";
+
 				if(func_params[i]->definitionElement())
 				{
 					cout<<"\t\tTYPE definitionElement: "<<func_params[i]->definitionElement()->toSingleLineString()<<"\n";
@@ -440,16 +458,20 @@
 				++k;
 			}
 
+			#endif
+
 			// Find commas and split
-			int nroFragments = 0;
-			int start_frag = 1;
+			uint nroFragments = 0;
+			uint start_frag = 1;
 			for(k = 1; k < line.size(); ++k)
 			{
 				if( k > start_frag && line[k]->token() == Token::COMMA )
 				{
+					#ifdef DEBUG_RAE_VALIDATE
 					cout << "Found comma at: " << k << " so fragment is: " << start_frag << " - " << k-1 << "\n";
+					#endif
 					vector<LangElement*> fragment;
-					for(int j = start_frag; j < k; ++j)
+					for(uint j = start_frag; j < k; ++j)
 					{
 						fragment.push_back( line[j] );
 					}
@@ -464,9 +486,11 @@
 
 				if( k == line.size()-1 && k > start_frag)
 				{
+					#ifdef DEBUG_RAE_VALIDATE
 					cout << "Last fragment: " << start_frag << " - " << k << "\n";
+					#endif
 					vector<LangElement*> fragment;
-					for(int j = start_frag; j < k; ++j)
+					for(uint j = start_frag; j < k; ++j)
 					{
 						fragment.push_back( line[j] );
 					}
@@ -480,10 +504,12 @@
 				}
 			}
 
+			#ifdef DEBUG_RAE_VALIDATE
 			if( func_params.size() > nroFragments )
 				cout << "TODO ERROR: too FEW parameters to a function. Check default args.\n";
 			else if(nroFragments > 0)
 				cout << "Just the right amount of parameters to a function. " << func_params.size() << " and " << nroFragments << "\n";
+			#endif
 		}
 
 		bool hasMathOperator = false;
@@ -506,12 +532,14 @@
 
 		if(hasFloats && hasInts && line.size() > 0)
 		{
-			ReportError::reportError("Ints and floats mixed.", line[0]);
-			assert(0);
+			ReportError::reportError("Ints and floats mixed in line.", line[0], line.back());
+			//assert(0);
 		}
 
+		#ifdef DEBUG_RAE_VALIDATE
 		coutIndent(tab_level);
 		cout<<"END validateLine\n";
+		#endif
 		
 	}
 
@@ -521,13 +549,17 @@
 
 		if(hasListOtherParenthesis(line))
 		{
+			#ifdef DEBUG_RAE_VALIDATE
 			cout << "SHIIT: there's parenthesis inside this function call.\n";
+			#endif
 			assert(0);
 		}
 
 		if(line.size() == 1)
 		{
+			#ifdef DEBUG_RAE_VALIDATE
 			cout << "The only thing here is: " << line[0]->toSingleLineString() << "\n";
+			#endif
 			validateParameter(param, *line[0]);
 		}
 		else
@@ -550,26 +582,33 @@
 
 	void validateParameter(LangElement& param, LangElement& line)
 	{
+		#ifdef DEBUG_RAE_VALIDATE
 		cout << "validateParameter START.\n";
+		#endif
 
 		LangElement* ret_value = line.expressionRValue();
 
 		if(ret_value == nullptr)
 		{
-			cout << "TODO ERROR in validateParameter(): expressionRValue is null.\n";
+			//cout << "TODO ERROR in validateParameter(): expressionRValue is null.\n";
+			ReportError::reportError("TODO ERROR in validateParameter(): expressionRValue is null.", &line);
 			assert(0);
 		}
 
 		//if( ret_value->definitionElement() && param.typeType() != ret_value->definitionElement()->typeType() )
 		if( param.typeType() != ret_value->typeType() )
 		{
+			#ifdef DEBUG_RAE_VALIDATE
 			cout << "Setting typeConvert in: " << line.toSingleLineString() << " to: " << TypeType::toString( param.typeType() ) << "\n";
+			#endif
 			line.typeConvert( ret_value->typeType(), param.typeType() );
 		}
 		else
 		{
+			#ifdef DEBUG_RAE_VALIDATE
 			cout << "TODO validateParameter() Unhandled typeConvert.\n";
 			cout << "types are: ret_value: " << ret_value->toSingleLineString() << " param: " << param.toSingleLineString() << " paramTypeType: " << TypeType::toString( param.typeType() ) << "\n";
+			#endif
 		}
 
 		/*
@@ -587,7 +626,9 @@
 		}
 		*/
 
+		#ifdef DEBUG_RAE_VALIDATE
 		cout << "validateParameter END.\n";
+		#endif
 	}
 
 

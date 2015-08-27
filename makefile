@@ -18,12 +18,12 @@ else
         #CCFLAGS += -D LINUX
         #INCLUDES += -I../boost_uusi/usr_local_include/
 		#LIBS     := -L../boost_linux32/usr_local_lib/ -L/usr/lib/ -lboost_chrono -lboost_filesystem -lboost_system
-		LIBS     := -L/usr/lib/ -lboost_chrono -lboost_filesystem -lboost_system
+		#LIBS     := -L/usr/lib/ -lboost_chrono -lboost_filesystem -lboost_system
     endif
     ifeq ($(UNAME_S),Darwin)
         #CCFLAGS += -D OSX
-        INCLUDES += -I../boost_uusi/usr_local_include/
-		LIBS     := -L../boost_uusi/usr_local_lib/ -lboost_chrono -lboost_filesystem -lboost_system
+        #INCLUDES += -I../boost_uusi/usr_local_include/
+		#LIBS     := -L../boost_uusi/usr_local_lib/ -lboost_chrono -lboost_filesystem -lboost_system
     endif
     UNAME_P := $(shell uname -p)
     ifeq ($(UNAME_P),x86_64)
@@ -38,7 +38,7 @@ else
 endif
 
 SRC_DIR := ./rae_compiler/rae_compiler/
-OBJECTS  := rae_compiler.o LangElement.o ReportError.o
+OBJECTS  := rae_compiler.o LangElement.o ReportError.o rae_helpers.o SourceParser.o
 
 all: compile raehello
 
@@ -53,6 +53,13 @@ ReportError.o: $(SRC_DIR)ReportError.hpp $(SRC_DIR)ReportError.cpp
 
 LangElement.o: $(SRC_DIR)LangElement.hpp $(SRC_DIR)LangElement.cpp
 	$(CXX) $(INCLUDES) $(CXXFLAGS) -c $(SRC_DIR)LangElement.cpp -o LangElement.o
+
+SourceParser.o: $(SRC_DIR)SourceParser.cpp $(SRC_DIR)RaeStdLib.hpp $(SRC_DIR)ReportError.hpp $(SRC_DIR)SourceParser.hpp $(SRC_DIR)SourceValidate.hpp $(SRC_DIR)SourceWriter.hpp $(SRC_DIR)LangElement.hpp $(SRC_DIR)StringFileWriter.hpp $(SRC_DIR)rae_helpers.hpp
+	$(CXX) $(INCLUDES) $(CXXFLAGS) -c $(SRC_DIR)SourceParser.cpp -o SourceParser.o
+
+rae_helpers.o: $(SRC_DIR)rae_helpers.hpp $(SRC_DIR)rae_helpers.cpp
+	$(CXX) $(INCLUDES) $(CXXFLAGS) -c $(SRC_DIR)rae_helpers.cpp -o rae_helpers.o
+
 
 #my_program: $(OBJECTS)
 #	$(CXX) $(inputs) -o $(output) $(LIBS)

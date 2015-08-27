@@ -1,4 +1,4 @@
-//this file is automatically created from Rae programming language module:
+// this file is automatically created from Rae programming language module:
 ///Users/joonaz/Dropbox/jonas/2015/ohjelmointi/rae_programming_language/cpp/rae/link
 #ifndef _rae_link_hpp_
 #define _rae_link_hpp_
@@ -10,7 +10,9 @@
 #include <array>
 #include "rae/link.hpp"
 
-//@c++
+
+
+//@cpp
 
 
 namespace rae
@@ -214,5 +216,7 @@ public:
 }//end namespace rae
 
 //@end
+; // line: 206
+
 #endif // _rae_link_hpp_
 

@@ -86,10 +86,22 @@ enum e
 	PASSTHROUGH_SRC, //to c++ source .cpp
 	RAE_ERROR,
 	MODULE,
+	MODULE_DIR,
 	MODULE_NAME,
 	CLOSE_MODULE,
 	IMPORT,
+	//MAYBE NOT TODO: we're probably using namespace list kind of thing instead. IMPORT_DIR, // import GL.glew, where GL is IMPORT_DIR and glew is IMPORT_NAME
 	IMPORT_NAME,
+	
+
+	PROJECT, //project keyword defines a project usually in main
+	TARGET_DIR,  //targetdir keyword for the executable
+	// IMPORT_DIRS is a list within "project" and is defined with the keyword
+	// importdirs = ["list/of/dirs", "other/dir"] 
+	IMPORT_DIRS, // Waiting for a list of import paths
+	
+	NAMESPACE,
+	USE_NAMESPACE,
 	CLASS,
 	//use together with TypeType
 	//to have e.g. CLASS TypeType::TEMPLATE subtype that behaves differently.
@@ -228,6 +240,8 @@ enum e
 	BRACKET_DEFINE_ARRAY_END,
 	BRACKET_DEFINE_STATIC_ARRAY_BEGIN,
 	BRACKET_DEFINE_STATIC_ARRAY_END,
+    BRACKET_INITIALIZER_LIST_BEGIN,
+    BRACKET_INITIALIZER_LIST_END,
 
 	RETURN,
 
@@ -269,6 +283,8 @@ enum e
 	TRUE_TRUE,
 	FALSE_FALSE,
 
+	SIZEOF,
+
 	NEWLINE,
 	NEWLINE_BEFORE_SCOPE_END,
 	PRAGMA_CPP, //@c++ automatically try to figure out where to put this raw c++ code. Usually it goes to header, inside funcs it goes to cpp files.
@@ -280,7 +296,27 @@ enum e
 	PRAGMA_ECMA, //@ecma for raw ecmascript/javascript code.
 	PRAGMA_ECMA_END,
 
-	EXPECTING_NAME
+	EXPECTING_NAME, // Used together with the expectingNameFor mechanism that automates simple "keyword name" pairs.
+	EXPECTING_TYPE, // The same for type
+
+	// -----------------------------------------
+	// C++ specific tokens
+	// -----------------------------------------
+
+	EXPECTING_CPP_PREPROCESSOR, // C++ preprocessor #define #ifdef etc.
+	CPP_PRE_DEFINE, // #define
+	// Notes about CPP_PRE_DEFINE elements: We use the name() for the definition name
+	// and the type() for the value of that definition
+	// That's kind of like the same as in typedef, but C/C++ has got it's typedefs defined backwards.
+	EXPECTING_CPP_PRE_DEFINE_VALUE, // #define SOME_NAME value <- the value in that line.
+	//CPP_PRE_IFDEF, // #ifdef 
+	//CPP_PRE_ELSE, // #else
+	//CPP_PRE_ENDIF, // #endif
+	CPP_UNSIGNED,
+	CPP_SIGNED,
+	CPP_TYPEDEF,
+	EXPECTING_CPP_TYPEDEF_TYPENAME
+
 };
 
 	string toString(Token::e set);
@@ -296,21 +332,28 @@ namespace BuiltInType
 enum e
 {
 	UNDEFINED,
-	BOOL, //bool
-	BYTE, //int8_t
-	UBYTE, //uint8_t
-	CHAR, //for use with UTF-8
-	WCHAR, //UTF-16
-	DCHAR, //for UTF-32
-	INT, //int32_t
-	UINT, //uint32_t
-	LONG, //NOT long, but int64_t (long long in C/C++)
-	ULONG, //uint64_t
-	//what's that 16 bit float type... half? sharp???
-	FLOAT, //float (should be 32 bits)
-	DOUBLE, //double (should be 64 bits)
-	//REAL, //biggest floating point type, maybe 80 bits or something...
+	A_VOID,   // void
+	BOOL,   // bool
+	BYTE,   // int8_t
+	UBYTE,  // uint8_t
+	CHAR,   // for use with UTF-8
+	WCHAR,  // UTF-16
+	DCHAR,  // for UTF-32
+	SHORT,  // int16_t
+	USHORT, // uint16_t
+	INT,    // int32_t
+	UINT,   // uint32_t
+	LONG,   // NOT long, but int64_t (long long in C/C++)
+	ULONG,  // uint64_t
+	//TODO CENT,   // int128_t
+	//TODO UCENT,  // uint128_t
+	// what's that 16 bit float type... half? sharp???
+	FLOAT,  // float (should be 32 bits)
+	DOUBLE, // double (should be 64 bits)
+	//REAL, // TODO biggest floating point type, maybe 80 bits or something...
 	STRING
+	//WSTRING, // TODO
+	//DSTRING, // TODO
 	/*
 	BOOL_IN_CLASS, //bool
 	BYTE_IN_CLASS, //int8_t
@@ -331,6 +374,7 @@ enum e
 	string toString(BuiltInType::e set_type);
 	string toCppString(BuiltInType::e set_type);
 	BuiltInType::e stringToBuiltInType(string set_token);
+	BuiltInType::e cppStringToBuiltInType(string set_token);
 	bool isBuiltInType(string set);
 	bool isBuiltInType(BuiltInType::e set);
 
@@ -344,15 +388,14 @@ struct LineNumber
 	//TODO filename in here as well! Is that wise? maybe too much to have a big string for each letter...
 	int totalCharNumber;
 	int line;
-	int charPosInLine;
+	int column;
 
 	void copyFrom(LineNumber& set);
 
-	/*string toString()
+	string toString()
 	{
-		string ret = 
-		return ret;
-	}*/
+		return std::to_string(line) + ":" + std::to_string(column);
+	}
 
 	void printOut();
 };
@@ -377,6 +420,8 @@ public:
 		m_currentElement(nullptr),
 		m_parent(nullptr),
 		m_initData(nullptr),
+		m_namespaceElement(nullptr),
+		m_useNamespace(nullptr),
 		m_definitionElement(nullptr),
 		m_pairElement(nullptr),
 		m_previousElement(nullptr),
@@ -401,6 +446,8 @@ public:
 		m_currentElement(nullptr),
 		m_parent(nullptr),
 		m_initData(nullptr),
+		m_namespaceElement(nullptr),
+		m_useNamespace(nullptr),
 		m_definitionElement(nullptr),
 		m_pairElement(nullptr),
 		m_previousElement(nullptr),
@@ -465,6 +512,8 @@ public:
 		if(m_initData)
 			res->m_initData = m_initData->copy();
 		else res->m_initData = nullptr;
+		res->m_namespaceElement = m_namespaceElement;
+		res->m_useNamespace = m_useNamespace;
 		res->m_definitionElement = m_definitionElement;
 		res->m_pairElement = m_pairElement;
 		res->m_previousElement = m_previousElement;
@@ -520,15 +569,27 @@ public:
 		#endif
 	}
 	
+    bool isWhiteSpace()
+    {
+        if( ::isWhiteSpace(name()) )
+            return true;
+        return false;
+    }
+    
 	string toString()
 	{
-		string ret = "\tname: " + name() + "\n\t" + tokenString() + "\n\t" + "typetype: " + typeTypeString() + "\n\t" + "type: " + type() + "containerType: " + ContainerType::toString(containerType()) + "\n\t" + "line: " + numberToString(lineNumber().line) + "\n";
+		string ret = "\tname: >" + name() + "<\n\t" + tokenString() + "\n\t" + "typetype: " + typeTypeString() + "\n\t" + "type: " + type() + "containerType: " + ContainerType::toString(containerType()) + "\n\t" + "line: " + numberToString(lineNumber().line) + "\n";
+		if( ::isWhiteSpace(name()) )
+		{
+			ret += "The name is whitespace.\n";
+			ret += toSingleLineString() + "\n";
+		}
 		return ret;
 	}
 
 	string toSingleLineString()
 	{
-		if( m_name.size() > 0 )
+		if( m_name.size() == 1 )
 		{
 			if( m_name[0] == ' ' )
 				return "SPACE";
@@ -543,11 +604,20 @@ public:
 		//string ret = "name: " + name() + " " + tokenString() + " typetype: " + typeTypeString() + " type: " + type() + " line: " + numberToString(lineNumber().line);
 		string ret;
 
-		if(type() != "")
-			ret += type() + " ";
-		
-		if(name() != "")
-			ret += name() + " ";
+		if(token() == Token::CPP_TYPEDEF) // Not a very good thing to have this here just for this one Token type. But as long as this is just for debugging it's maybe ok.
+		{
+			ret += "typedef " + typedefNewType() + " = " + typedefOldType();
+		}
+		else
+		{
+			if(type() != "")
+				ret += "type:<" + type() + "> ";
+			else ret += "type:empty ";
+			
+			if(name() != "")
+				ret += "name:<" + name() + "> ";
+			else ret += "name:empty ";
+		}
 
 		// Add spaces to align next tokenString at 25 chars
 		for(int i = ret.length(); i < 25; ++i)
@@ -563,6 +633,10 @@ public:
 			ret += " containerType: " + containerTypeString();
 		if(isUnknownType() == true)
 			ret += " isUnknownType.";
+
+		if (useNamespace() != nullptr)
+			ret += " usenamespace: " + useNamespaceString();
+		
 		ret += " line: " + numberToString(lineNumber().line);
 
 		return ret;
@@ -704,7 +778,8 @@ public:
 
 	public: bool isEndsExpression()
 	{
-		if( token() == Token::PARENTHESIS_END
+		if(    token() == Token::PARENTHESIS_END
+			|| token() == Token::PARENTHESIS_END_FUNC_PARAM_TYPES
 			|| token() == Token::POINT_TO_END_PARENTHESIS
 			|| token() == Token::PARENTHESIS_BEGIN
 			|| token() == Token::COMMA
@@ -739,6 +814,10 @@ public:
 			|| token() == Token::MAIN
 			//REMOVED: || token() == Token::DEFINE_FUNC_ARGUMENT
 			|| token() == Token::DEFINE_FUNC_RETURN
+			|| token() == Token::NAMESPACE
+			|| token() == Token::MODULE_NAME
+			|| token() == Token::CPP_TYPEDEF
+			|| token() == Token::CPP_PRE_DEFINE
 		)
 		{
 			return true;
@@ -1240,7 +1319,7 @@ public:
 	{
 		if( builtInType() == BuiltInType::UNDEFINED )
 		{
-			return m_type;
+			return useNamespaceString() + m_type;
 		}
 		//else
 		return builtInTypeStringCpp();
@@ -1262,6 +1341,23 @@ public:
 	}
 	protected: string m_type;
 	
+	public: string typedefOldType()
+	{
+		if( builtInType() == BuiltInType::UNDEFINED )
+			return m_name; // else
+		return builtInTypeString();
+	}
+	public: string typedefOldTypeInCpp()
+	{
+		if( builtInType() == BuiltInType::UNDEFINED )
+			return m_name; // else
+		return builtInTypeStringCpp();
+	}
+	public: string typedefNewType()
+	{
+		return m_type;
+	}
+
 	//stuff for templates: first we have a second type for the template
 	//like in:
 	//class FirstType(SecondType)
@@ -1408,14 +1504,14 @@ public:
 
 		if(containerType() == ContainerType::ARRAY )
 		{
-			return "std::vector<" + is_let + BuiltInType::toCppString(m_builtInType) + ">";
+			return "std::vector<" + is_let + useNamespaceString() + BuiltInType::toCppString(m_builtInType) + ">";
 		}
 		else if(containerType() == ContainerType::STATIC_ARRAY )
 		{
-			return "std::array<" + is_let + BuiltInType::toCppString(m_builtInType) + ", " + numberToString(staticArraySize()) + ">";
+			return "std::array<" + is_let + useNamespaceString() + BuiltInType::toCppString(m_builtInType) + ", " + numberToString(staticArraySize()) + ">";
 		}
 		//else
-		return is_let + BuiltInType::toCppString(m_builtInType);
+		return is_let + useNamespaceString() + BuiltInType::toCppString(m_builtInType);
 	}
 
 	//We've moved the UNKNOWN stuff into this property:
@@ -1432,6 +1528,21 @@ public:
 	}
 	protected: bool m_isUnknownType;
 
+	public: LangElement* namespaceElement() { return m_namespaceElement; }
+	public: void namespaceElement(LangElement* set) { m_namespaceElement = set; }
+	protected: LangElement* m_namespaceElement;
+
+	public: string useNamespaceString()
+	{
+		if (m_useNamespace)
+			return m_useNamespace->name() + "::";
+		//else
+		return "";
+	}
+	public: LangElement* useNamespace() { return m_useNamespace; }
+	public: void useNamespace(LangElement* set) { m_useNamespace = set; }
+	protected: LangElement* m_useNamespace;
+
 	//An important addition: a link to the element where this element is defined:
 	//For DEFINE_REFERENCE (and DEFINE_VECTOR and DEFINE_ARRAY) this is the class.
 	//For USE_REFERENCE this is the DEFINE_REFERENCE
@@ -1446,7 +1557,17 @@ public:
 	public: void pairElement(LangElement* set) { m_pairElement = set; }
 	protected: LangElement* m_pairElement;
 
-	public: LangElement* previousElement() { return m_previousElement; }
+    // Hmm. We wanted to skip whitespace in previousElement stuff, because it would mess things up.
+    // So previousElement never returns whitespace elements.
+    public: LangElement* previousElement()
+    {
+        if (m_previousElement && m_previousElement->isWhiteSpace() )
+        {
+            return m_previousElement->previousElement();
+        }
+        return m_previousElement;
+    }
+	//public: LangElement* previousElement() { return m_previousElement; }
 	public: void previousElement(LangElement* set) { m_previousElement = set; }
 	protected: LangElement* m_previousElement;
 
@@ -1455,7 +1576,7 @@ public:
 		if(m_previousElement && m_previousElement->m_previousElement)
 			return m_previousElement->m_previousElement;
 		//else
-		return 0;//null
+		return nullptr;
 	}
 
 	public: LangElement* nextElement() { return m_nextElement; }
@@ -1732,6 +1853,7 @@ public:
 			}
 			else //there's some brackets there... so skip everything between brackets.
 			{
+                // TODO if( res->isBracket() )
 				if( res->token() == Token::BRACKET_BEGIN || res->token() == Token::BRACKET_DEFINE_ARRAY_BEGIN )
 				{
 					found_a_bracket--;
@@ -1975,8 +2097,8 @@ public:
 	protected: LangElement* m_currentElement;
 	
 	//includes the name of this element.
-	//e.g. rae.examples.RaeTester.RaeTester.sayHello.notrees
-	//     module---------------->class---->func---->built_in_type
+	//e.g. rae.examples.RaeTester(.SomeNamespace).RaeTester.sayHello.notrees
+	//     module----------------(>namespace)---->class---->func---->built_in_type
 	public: string namespaceString()
 	{
 		string res = name();

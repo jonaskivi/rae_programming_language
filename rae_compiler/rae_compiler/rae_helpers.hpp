@@ -5,11 +5,12 @@
 #include "rlutil.h"//for colours in console output
 #include <sstream> //for ostringstream
 #include <string>
+#include <algorithm>
 #include <vector>
 #include <sys/stat.h>
 #include <sys/types.h>
 #ifdef _WIN32
-    #include <direct.h>
+	#include <direct.h>
 #endif
 #if __cplusplus >= 201103L //c++11
 	#include <thread>
@@ -44,7 +45,7 @@ typedef unsigned int uint;
 
 //#define DEBUG_RAE_PARSER
 #define DEBUG_DEBUGNAME
-const std::string g_debugName("tester");
+const std::string g_debugName("tanne");
 //#define DEBUG_RAE
 //#define DEBUG_RAE2
 //#define DEBUG_RAE_DESTRUCTORS
@@ -54,40 +55,29 @@ const std::string g_debugName("tester");
 //#define DEBUG_RAE_BRACKET
 
 template <typename T>
-  string numberToString ( T number )
-  {
-     ostringstream ss;
-     ss << number;
-     return ss.str();
-  }
+	string numberToString ( T number )
+	{
+		ostringstream ss;
+		ss << number;
+		return ss.str();
+	}
 
 template <typename T>
-  T stringToNumber( const string& set_text )
-  {
-     istringstream ss(set_text);
-     T result;
-     return ss >> result ? result : 0;
-  }
-/*
-bool isWhiteSpace(const char& set_char)
-{
-  if( set_char == ' ' || set_char == '\n' || set_char == '\t' )
-    return true;
-  //else
-  return false;
-}
+	T stringToNumber( const string& set_text )
+	{
+		istringstream ss(set_text);
+		T result;
+		return ss >> result ? result : 0;
+	}
 
-bool isWhiteSpace(const string& set)
-{
-  if(set.size() == 0)
-    return false;
+bool isWhiteSpace(const char& set_char);
+bool isWhiteSpace(const string& set);
+string removeFromString(const string& set, const char rem);
+string replaceCharInString(string str, const string& replace, char ch);
+// Basically adds ./ to begin and / to end of a directory string in some circumstances.
+string makeDirPathBetter(const string& set_path);
 
-  if( set[0] == ' ' || set[0] == '\n' || set[0] == '\t' )
-    return true;
-  //else
-  return false;
-}
-*/
+
 namespace PathType
 {
 enum e
@@ -98,12 +88,12 @@ enum e
 };
 }
 
-PathType::e checkPathType(string currentFilenamePath);
-int createPathIfNotExist(string set_path);
-int createPath(string s);
-string parentPath(string original_path);
-string getFilenameFromPath(string original_path);
-string replaceExtension(string original_path, string new_extension);
+PathType::e checkPathType(const string& currentFilenamePath);
+int createPathIfNotExist(const string& set_path);
+int createPath(const string& s);
+string parentPath(const string& original_path);
+string getFilenameFromPath(const string& original_path);
+string replaceExtension(const string& original_path, const string& new_extension);
 
 #endif
 

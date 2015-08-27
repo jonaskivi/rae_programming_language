@@ -100,6 +100,12 @@ string toString(Token::e set)
 			return "Token::IMPORT";
 			case Token::IMPORT_NAME:
 			return "Token::IMPORT_NAME";
+			case Token::IMPORT_DIRS:
+			return "Token::IMPORT_DIRS";
+			case Token::NAMESPACE:
+			return "Token::NAMESPACE";
+			case Token::USE_NAMESPACE:
+			return "Token::USE_NAMESPACE";
 			case Token::CLASS:
 			return "Token::CLASS";
 			case Token::CLASS_NAME:
@@ -314,7 +320,11 @@ string toString(Token::e set)
 			return "Token::BRACKET_DEFINE_STATIC_ARRAY_BEGIN";
 			case Token::BRACKET_DEFINE_STATIC_ARRAY_END:
 			return "Token::BRACKET_DEFINE_STATIC_ARRAY_END";
-
+            case Token::BRACKET_INITIALIZER_LIST_BEGIN:
+                return "Token::BRACKET_INITIALIZER_LIST_BEGIN";
+            case Token::BRACKET_INITIALIZER_LIST_END:
+                return "Token::BRACKET_INITIALIZER_LIST_END";
+                
 			case Token::RETURN:
 			return "Token::RETURN";
 			
@@ -381,6 +391,9 @@ string toString(Token::e set)
 			case Token::FALSE_FALSE:
 			return "Token::FALSE_FALSE";
 			
+			case Token::SIZEOF:
+			return "Token::SIZEOF";
+
 			case Token::NEWLINE:
 			return "Token::NEWLINE";
 			case Token::NEWLINE_BEFORE_SCOPE_END:
@@ -405,6 +418,27 @@ string toString(Token::e set)
 			
 			case Token::EXPECTING_NAME:
 			return "Token::EXPECTING_NAME";
+			case Token::EXPECTING_TYPE:
+			return "Token::EXPECTING_TYPE";
+
+			// C++
+
+			case Token::EXPECTING_CPP_PREPROCESSOR:
+			return "Token::EXPECTING_CPP_PREPROCESSOR";
+			case Token::CPP_PRE_DEFINE:
+			return "Token::CPP_PRE_DEFINE";
+			case Token::EXPECTING_CPP_PRE_DEFINE_VALUE:
+			return "Token::EXPECTING_CPP_PRE_DEFINE_VALUE";
+
+			case Token::CPP_UNSIGNED:
+			return "Token::CPP_UNSIGNED";
+			case Token::CPP_SIGNED:
+			return "Token::CPP_SIGNED";
+			case Token::CPP_TYPEDEF:
+			return "Token::CPP_TYPEDEF";
+			case Token::EXPECTING_CPP_TYPEDEF_TYPENAME:
+			return "Token::EXPECTING_CPP_TYPEDEF_TYPENAME";
+			
 
 			/*
 			case Token::BOOL:
@@ -510,7 +544,9 @@ string toString(Token::e set)
 			//case Token::BRACKET_DEFINE_ARRAY_END:
 			return Token::BRACKET_DEFINE_ARRAY_END;
 			case Token::BRACKET_DEFINE_STATIC_ARRAY_BEGIN:
-			return Token::BRACKET_DEFINE_STATIC_ARRAY_END;			
+			return Token::BRACKET_DEFINE_STATIC_ARRAY_END;
+            case Token::BRACKET_INITIALIZER_LIST_BEGIN:
+                return Token::BRACKET_INITIALIZER_LIST_END;
 		}
 
 	}
@@ -582,6 +618,10 @@ namespace BuiltInType
 			return "wchar";//TODO check if it works and is int32_t (or 16 bits better...)
 			case BuiltInType::DCHAR:
 			return "dchar";
+			case BuiltInType::SHORT:
+			return "short";
+			case BuiltInType::USHORT:
+			return "ushort";
 			case BuiltInType::INT:
 			return "int";
 			case BuiltInType::UINT:
@@ -598,8 +638,34 @@ namespace BuiltInType
 			//return "real";
 			case BuiltInType::STRING:
 			return "string";
+			case BuiltInType::A_VOID:
+			return "void";
 		}
 	}
+
+/*
+// From D programming language we have taken the following built in types:
+// In the middle there's the default initializer, but in Rae we've changed
+// D's float nan's to 0.0fs.
+void	-	no type
+bool	false	boolean value
+byte	0	signed 8 bits
+ubyte	0	unsigned 8 bits
+short	0	signed 16 bits
+ushort	0	unsigned 16 bits
+int	0	signed 32 bits
+uint	0	unsigned 32 bits
+long	0L	signed 64 bits
+ulong	0L	unsigned 64 bits
+cent	0	signed 128 bits (reserved for future use)
+ucent	0	unsigned 128 bits (reserved for future use)
+float	float.nan	32 bit floating point
+double	double.nan	64 bit floating point
+real	real.nan	largest FP size implemented in hardwareImplementation Note: 80 bits for x86 CPUs or double size, whichever is larger
+char	0xFF	unsigned 8 bit (UTF-8 code unit)
+wchar	0xFFFF	unsigned 16 bit (UTF-16 code unit)
+dchar	0x0000FFFF	unsigned 32 bit (UTF-32 code unit)
+*/
 
 	string toCppString(BuiltInType::e set_type)
 	{
@@ -619,6 +685,10 @@ namespace BuiltInType
 			return "wchar";//TODO check if it works and is int32_t (or 16 bits better...)
 			case BuiltInType::DCHAR:
 			return "int32_t";
+			case BuiltInType::SHORT:
+			return "int16_t";
+			case BuiltInType::USHORT:
+			return "uint16_t";
 			case BuiltInType::INT:
 			return "int32_t";
 			case BuiltInType::UINT:
@@ -635,67 +705,89 @@ namespace BuiltInType
 			//return "real";
 			case BuiltInType::STRING:
 			return "std::string";
+			case BuiltInType::A_VOID:
+			return "void";
 		}
 	}
 
 	BuiltInType::e stringToBuiltInType(string set_token)
 	{
 		if( set_token == "bool" )
-		{
 			return BuiltInType::BOOL;
-		}
 		else if( set_token == "byte" )
-		{
 			return BuiltInType::BYTE;
-		}
 		else if( set_token == "ubyte" )
-		{
 			return BuiltInType::UBYTE;
-		}
 		else if( set_token == "char" )
-		{
 			return BuiltInType::CHAR;
-		}
 		else if( set_token == "wchar" )
-		{
 			return BuiltInType::WCHAR;
-		}
 		else if( set_token == "dchar" )
-		{
 			return BuiltInType::DCHAR;
-		}
+		else if( set_token == "short" )
+			return BuiltInType::SHORT;
+		else if( set_token == "ushort" )
+			return BuiltInType::USHORT;
 		else if( set_token == "int" )
-		{
 			return BuiltInType::INT;
-		}
 		else if( set_token == "uint" )
-		{
 			return BuiltInType::UINT;
-		}
 		else if( set_token == "long" )
-		{
 			return BuiltInType::LONG;
-		}
 		else if( set_token == "ulong" )
-		{
 			return BuiltInType::ULONG;
-		}
 		else if( set_token == "float" )
-		{
 			return BuiltInType::FLOAT;
-		}
 		else if( set_token == "double" )
-		{
 			return BuiltInType::DOUBLE;
-		}
 		/*else if( set_token == "real" )
-		{
-			return BuiltInType::REAL;
-		}*/
+			return BuiltInType::REAL;*/
 		else if( set_token == "string" )
-		{
 			return BuiltInType::STRING;
-		}
+		else if( set_token == "void" )
+			return BuiltInType::A_VOID;
+
+		return BuiltInType::UNDEFINED;
+	}
+
+	BuiltInType::e cppStringToBuiltInType(string set_token)
+	{
+		if( set_token == "bool" )
+			return BuiltInType::BOOL;
+		//Byte?
+		else if( set_token == "char" ) // C's char -> Rae char
+			return BuiltInType::CHAR;
+		else if( set_token == "int" || set_token == "int32_t" )
+			return BuiltInType::INT; // CHECK should this actually be LONG as in 64 bits
+		else if( set_token == "uint" || set_token == "uint32_t" )
+			return BuiltInType::UINT; // CHECK should this actually be ULONG as in 64 bits
+		else if( set_token == "long" )
+			return BuiltInType::INT; // NOTE! in C++ long is equal to int. Use long long instead.
+		else if( set_token == "ulong" )
+			return BuiltInType::UINT;
+		else if( set_token == "int64_t" || set_token == "long long" )
+			return BuiltInType::LONG;
+		else if( set_token == "uint64_t" || set_token == "unsigned long long" )
+			return BuiltInType::ULONG;
+		else if( set_token == "float" )
+			return BuiltInType::FLOAT;
+		else if( set_token == "double" )
+			return BuiltInType::DOUBLE;
+		/*else if( set_token == "real" )
+			return BuiltInType::REAL;*/
+		else if( set_token == "string" )
+			return BuiltInType::STRING;
+		else if( set_token == "void" )
+			return BuiltInType::A_VOID;
+		// I'm moving these less common types to the bottom as a premature micro-optimization (PMO):
+		else if( set_token == "short" || set_token == "int16_t" )
+			return BuiltInType::SHORT;
+		else if( set_token == "unsigned short" || set_token == "uint16_t" || set_token == "ushort" )
+			return BuiltInType::USHORT;
+		else if( set_token == "uchar" || set_token == "unsigned char" || set_token == "uint8_t") // C's unsigned char -> Rae ubyte
+			return BuiltInType::UBYTE;
+		else if( set_token == "signed char" || set_token == "int8_t")
+			return BuiltInType::BYTE;
 
 		return BuiltInType::UNDEFINED;
 	}
@@ -814,13 +906,13 @@ void LineNumber::copyFrom(LineNumber& set)
 {
 	totalCharNumber = set.totalCharNumber;
 	line = set.line;
-	charPosInLine = set.charPosInLine;
+	column = set.column;
 }
 
 void LineNumber::printOut()
 {
-	cout<<"line: "<<line<<" charpos: "<<charPosInLine;
-	////rae::log("line: ", line, " charpos: ", charPosInLine);
+	cout<<"line: "<<line<<" charpos: "<<column;
+	////rae::log("line: ", line, " charpos: ", column);
 }
 
 }
