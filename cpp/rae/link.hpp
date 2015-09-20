@@ -1,5 +1,5 @@
 // this file is automatically created from Rae programming language module:
-///Users/joonaz/Dropbox/jonas/2015/ohjelmointi/rae_programming_language/cpp/rae/link
+//c:\Users\Joonas\rae_programming_language/cpp/rae/link
 #ifndef _rae_link_hpp_
 #define _rae_link_hpp_
 

@@ -40,12 +40,15 @@ typedef unsigned int uint;
 //#include "rae_log.hpp"
 
 #define DEBUG_RAE_DEBUGTREE
+//#define DEBUG_RAE_DEBUGTREE2
+#define DEBUG_DEBUGNAME
+const std::string g_debugName("NONONONONO");
+const std::string g_debugModuleName("rae.examples.small");
+
 //#define DEBUG_RAE_VALIDATE
 //#define DEBUG_RAE_HUMAN
 
 //#define DEBUG_RAE_PARSER
-#define DEBUG_DEBUGNAME
-const std::string g_debugName("glDeleteBuffers");
 //#define DEBUG_RAE
 //#define DEBUG_RAE2
 //#define DEBUG_RAE_DESTRUCTORS
@@ -53,6 +56,7 @@ const std::string g_debugName("glDeleteBuffers");
 //#define DEBUG_FILEWRITER
 //#define DEBUG_RAE_INDENTS
 //#define DEBUG_RAE_BRACKET
+#define DEBUG_COMMENTS
 
 template <typename T>
 	string numberToString ( T number )

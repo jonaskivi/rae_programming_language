@@ -119,3 +119,13 @@ else
 {
 	rae::reportError();//line 18
 }
+
+
+#28.8.2015 Mikon kanssa. Mikolla oli tästä jotain epäilyksiä. 
+
+if some_opt && other_opt
+		some_opt.callSomeFunc( other_opt.value)
+
+#On sama kuin:
+
+some_opt?.callSomeFunc( other_opt?.value )

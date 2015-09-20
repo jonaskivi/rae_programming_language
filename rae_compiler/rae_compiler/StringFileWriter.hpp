@@ -20,7 +20,8 @@ class StringFileWriter
 {
 public:
 	StringFileWriter()
-	: m_lineNeedsEnding("")
+	: m_lineNeedsEnding(""),
+	m_parenthesisCount(0)
 	{
 		m_isFileOk = false;
 		m_currentIndent = 0;
@@ -32,6 +33,7 @@ public:
 		//m_nextToken = Token::UNDEFINED;
 		//m_previousPreviousToken = Token::UNDEFINED;
 
+		m_isSkipLine = false;
 		m_lineNeedsSemicolon = true;
 
 		m_currentDefaultVisibility = "public";
@@ -125,6 +127,7 @@ public:
 	{
 		bool did_we_write_it = false;
 		if( lineNeedsSemicolon() == true
+			&& parenthesisCount() <= 0 // This system is off for now. Got wrong results. Maybe try to fix it later?
 			&& previousToken() != Token::SEMICOLON
 			&& previousToken() != Token::NEWLINE
 			&& previousToken() != Token::NEWLINE_BEFORE_SCOPE_END
@@ -132,6 +135,19 @@ public:
 			&& previousToken() != Token::DESTRUCTOR
 			&& previousToken() != Token::FUNC
 			&& previousToken() != Token::MAIN
+
+			&& previousToken() != Token::PARENTHESIS_BEGIN
+			&& previousToken() != Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES
+			&& previousToken() != Token::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES
+			&& previousToken() != Token::LOG_SEPARATOR
+			&& previousToken() != Token::PARENTHESIS_BEGIN_LOG
+			&& previousToken() != Token::PARENTHESIS_BEGIN_LOG_S
+			// Brackets didn't work here. Maybe try again later. Brackets are parent elements, so they contain their children,
+			// and that's why previousToken will be a bracket even when there's children in between.
+			//&& previousToken() != Token::BRACKET_BEGIN
+			//&& previousToken() != Token::BRACKET_DEFINE_ARRAY_BEGIN
+			//&& previousToken() != Token::BRACKET_DEFINE_STATIC_ARRAY_BEGIN
+			//&& previousToken() != Token::BRACKET_INITIALIZER_LIST_BEGIN
 
 			&& previousToken() != Token::COMMA
 			&& previousToken() != Token::ASSIGNMENT
@@ -158,6 +174,12 @@ public:
 		return did_we_write_it;
 	}
 
+	public: int parenthesisCount() { return m_parenthesisCount; }
+	public: void addParenthesisCount() { ++m_parenthesisCount; }
+	public: void subParenthesisCount() { --m_parenthesisCount; }
+	protected: void parenthesisCount(int set) { m_parenthesisCount = set; }
+	protected: int m_parenthesisCount;
+
 	public: bool lineNeedsSemicolon() { return m_lineNeedsSemicolon; }
 	public: void lineNeedsSemicolon(bool set) { m_lineNeedsSemicolon = set; }
 	protected: bool m_lineNeedsSemicolon;// = true;
@@ -165,6 +187,10 @@ public:
 	public: string lineNeedsEnding() { return m_lineNeedsEnding; }
 	public: void lineNeedsEnding(string set) { m_lineNeedsEnding = set; }
 	protected: string m_lineNeedsEnding;
+
+	public: bool isSkipLine() { return m_isSkipLine; }
+	public: void isSkipLine(bool set) { m_isSkipLine = set; }
+	protected: bool m_isSkipLine;
 
 	public: string& currentDefaultVisibility() { return m_currentDefaultVisibility; }
 	public: void currentDefaultVisibility(string set) { m_currentDefaultVisibility = set; }

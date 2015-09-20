@@ -3,15 +3,15 @@
 bool isWhiteSpace(const char& set_char)
 {
 	if( set_char == ' ' || set_char == '\n' || set_char == '\t' || set_char == '\r')
-	return true;
+        return true;
 	//else
-	return false;
+        return false;
 }
 
 bool isWhiteSpace(const string& set)
 {
 	if(set.size() == 0)
-	return false;
+        return false;
 
 	for(uint i = 0; i < set.size(); ++i)
 	{

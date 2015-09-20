@@ -40,6 +40,9 @@ endif
 SRC_DIR := ./rae_compiler/rae_compiler/
 OBJECTS  := rae_compiler.o LangElement.o ReportError.o rae_helpers.o SourceParser.o
 
+install:
+	sudo cp $(EXECUTABLE) /usr/local/bin/$(EXECUTABLE)
+
 all: compile raehello
 
 compile: $(OBJECTS)

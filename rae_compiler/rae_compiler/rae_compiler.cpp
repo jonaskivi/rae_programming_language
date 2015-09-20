@@ -13,10 +13,15 @@ int main (int argc, char * const argv[])
 	Rae::ReportError::countErrors(0);
 
 	rlutil::setColor(rlutil::GREEN);
-	cout<<"Rae Compiler version 0.0.2B\n";
+	cout<<"Rae Compiler version 0.0.3\n";
 	rlutil::setColor(rlutil::WHITE);
 
-	if(argc <= 1)
+	string debug_filename = "";
+	string debug_working_dir = "";
+	//string debug_filename = "/Users/joonaz/Dropbox/jonas/2015/ohjelmointi/rae_programming_language/rae/examples/test1.rae";
+	//string debug_working_dir = "/Users/joonaz/Dropbox/jonas/2015/ohjelmointi/rae_programming_language/";
+
+	if(argc <= 1 && debug_filename == "")
 	{
 		rlutil::setColor(rlutil::RED);
 		cout<<"No source files added.\n";
@@ -24,14 +29,22 @@ int main (int argc, char * const argv[])
 		return -1;
 	}
 
-	Rae::g_compiler = new Rae::LangCompiler();
+	Rae::g_compiler = new Rae::LangCompiler(debug_working_dir);
 
 	Rae::g_compiler->createRaeStdLib();
 
-	for(int i = 1; i < argc; ++i)
+	if (debug_filename == "")
 	{
-		cout<<"Adding source file: "<<argv[i]<<"\n";
-		Rae::g_compiler->addSourceFile(argv[i]);
+		for(int i = 1; i < argc; ++i)
+		{
+			cout<<"Adding source file: "<<argv[i]<<"\n";
+			Rae::g_compiler->addSourceFile(argv[i]);
+		}
+	}
+	else
+	{
+		cout<<"Adding DEBUG source file: "<<debug_filename<<"\n";
+		Rae::g_compiler->addSourceFile(debug_filename);
 	}
 
 	Rae::g_compiler->parse();

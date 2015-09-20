@@ -162,7 +162,7 @@
 				"\tfunc ()empty(){}\n"
 				"\tfunc ()push_back(){}\n" //void push_back (const value_type& val);
 				"\tfunc ()pop_back(){}\n"
-				"\tfunc ()size(){}\n" //size_type size() const;
+				"\tfunc (uint)size(){}\n" //size_type size() const;
 
 				"\tfunc ()append(){}\n"
 				"\tfunc ()assign(){}\n"
@@ -223,8 +223,9 @@
 				"{\n"
 				"\tfunc ()empty(){}\n"
 				"\tfunc ()push_back(){}\n" //void push_back (const value_type& val);
+				"\talias add = push_back\n"
 				"\tfunc ()pop_back(){}\n"
-				"\tfunc ()size(){}\n" //size_type size() const;
+				"\tfunc (uint)size(){}\n" //size_type size() const;
 
 				"\tfunc ()assign(){}\n"
 				"\tfunc ()at(){}\n"
@@ -239,6 +240,8 @@
 				"\tfunc ()data(){}\n"
 				"\tfunc ()emplace(){}\n"
 				"\tfunc ()emplace_back(){}\n"
+				"\talias create_front = emplace\n"
+				"\talias create = emplace_back\n"
 				//empty at the beginning!
 				"\tfunc ()end(){}\n"
 				"\tfunc ()erase(){}\n"

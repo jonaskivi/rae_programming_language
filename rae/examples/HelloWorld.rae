@@ -16,6 +16,8 @@ pub:
 	{
 		log_s("Hello ")
 	}
+
+	alias log_it = log_me
 	
 	int data = 2
 }
@@ -55,14 +57,14 @@ pub:
 	()say_hello()
 	{
 		[int] my_numbers
-		my_numbers.emplace_back(1) # TODO rename emplace_back(1) to create(1)
-		my_numbers.emplace_back(2)
-		my_numbers.emplace_back(3)
-		my_numbers.emplace_back(4)
-		my_numbers.emplace_back(5)
-		my_numbers.emplace_back(6)
-		my_numbers.emplace_back(7)
-		my_numbers.emplace_back(129874234985)
+		my_numbers.create(1)
+		my_numbers.create(2)
+		my_numbers.create(3)
+		my_numbers.create(4)
+		my_numbers.create(5)
+		my_numbers.create(6)
+		my_numbers.create(7)
+		my_numbers.create(129874234985)
 		
 		#TODO NEXT log_int_array(my_numbers)
 		
@@ -176,6 +178,9 @@ func (int) main ([string] args)
 	log("LINK saying hello:")
 	tester_lnk.log_me()
 
+	log("LINK saying hello with an alias:")
+	tester_lnk.log_it()
+
 	hello.say_hello()
 
 	log_s("5 + 2 = ")
@@ -190,9 +195,9 @@ func (int) main ([string] args)
 
 	hello.tester.data = 3
 
-	hello.tester_opts.push_back( hello.tester_opt )
+	hello.tester_opts.add( hello.tester_opt )
 
-	hello.tester_links.emplace_back
+	hello.tester_links.create
 	hello.tester_links[0] -> hello.tester
 	log("LINK in an array saying hello: ")
 	hello.tester_links[0].log_me()
@@ -208,7 +213,7 @@ func (int) main ([string] args)
 	bool is_what = false
 	bool is_other = true
 
-	if is_what == true or is_other == true
+	if is_what == true or is_other == false
 	{
 		log("false")
 	}
@@ -216,7 +221,14 @@ func (int) main ([string] args)
 	#hello.array_test[0]
 	#log("arrays 9 + 2 = ", hello.count( hello.array_test[0], hello.tester_opts[0] ))
 
-	[Rae.Tester] tester_stuff = [8, 1]
+	/*
+	#This only works with C++11 so disabling now
+	[Rae.Tester] tester_stuff = [Rae.Tester(8), Rae.Tester(1)]
+	*/
+
+	[Rae.Tester] tester_stuff
+	tester_stuff.create(8)
+	tester_stuff.create(1)
 
 	loop( int i = 0; i < tester_stuff.size; ++i )
 		log(i, ": ", tester_stuff[i].data)

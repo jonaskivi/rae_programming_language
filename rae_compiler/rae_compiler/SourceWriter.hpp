@@ -9,8 +9,15 @@
 	{
 		writer.writeIndents();
 		writer.writeString( set_elem.toSingleLineString() );
-		writer.writeChar('\n');
 
+		writer.writeChar('\n');
+		if (set_elem.initData())
+		{
+			writer.currentIndentPlus();
+			writeDebugTree( writer, *set_elem.initData());	
+			writer.currentIndentMinus();			
+		}
+		
 		writer.currentIndentPlus();
 
 		for(uint i = 0; i < set_elem.langElements.size(); i++)
@@ -20,6 +27,45 @@
 
 		writer.currentIndentMinus();
 	}
+
+/* //JONDE REMOVE this:
+	void writeDebugTree( StringFileWriter* writer, LangElement* set_elem )
+	{
+		static int stack_level = 0;
+		stack_level++;
+
+		static int call_count = 0;
+		call_count++;
+
+		cout << "stack_level: " << stack_level << " call_count: " << call_count << "\n";
+
+		//wtf... JONDE
+		if (set_elem->name() == "name:ISempty 3")
+			assert(0);
+
+		writer->writeIndents();
+		writer->writeString( set_elem->toSingleLineString() );
+
+		writer->writeChar('\n');
+		if (set_elem->initData())
+		{
+			writer->currentIndentPlus();
+			writeDebugTree( writer, set_elem->initData());
+			writer->currentIndentMinus();			
+		}
+		
+		writer->currentIndentPlus();
+
+		for(uint i = 0; i < set_elem->langElements.size(); i++)
+		{
+			writeDebugTree( writer, set_elem->langElements[i]);
+		}
+
+		writer->currentIndentMinus();
+
+		stack_level--;
+	}
+	*/
 
 	void writeDebugTree2( StringFileWriter& writer, LangElement& set_elem )
 	{
@@ -66,6 +112,11 @@
 
 	void writeElement( StringFileWriter& writer, LangElement& set_elem )
 	{
+        //wtf... JONDE
+		if (set_elem.name() == "name:ISempty 3")
+			assert(0);
+        
+        
 		//int count_elem = 0;
 
 		if(set_elem.parseError() == ParseError::SYNTAX_ERROR)
@@ -79,6 +130,17 @@
 		else if(set_elem.parseError() == ParseError::SYNTAX_WARNING)
 		{
 			writer.writeString(" RAE_WARNING: ");
+		}
+
+		// Skipline thing:
+		if( writer.isSkipLine() ) // cpp
+		{
+			if( set_elem.isNewline() )
+			{
+				writer.isSkipLine(false);
+				writer.lineNeedsSemicolon(false);
+			}
+			return;
 		}
 
 		switch(set_elem.token())
@@ -435,6 +497,8 @@
 					}
 					else //NOPE: this should never happen. because initData is set every time a built in type is created.
 					{
+						cout << "this should never happen. because initData is set every time a built in type is created.\n";
+						assert(0);
 						//ReportError::reportError("writeElement: built_in_type auto_init had no initData.", &set_elem);
 						//writer.writeString(" = 0");
 
@@ -693,6 +757,17 @@
 					writer.writeChar( ' ' );
 				}
 			break;
+			case Token::CAST:
+				writer.writeString("static_cast");
+			break;
+			case Token::BRACKET_CAST_BEGIN:
+				writer.writeString("<");
+				iterateWrite(writer, set_elem);
+			break;
+			case Token::BRACKET_CAST_END:
+				writer.writeString(">");
+				iterateWrite(writer, set_elem);
+			break;
 			case Token::ASSIGNMENT:
 				/*
 				if( writer.previousToken() == Token::DEFINE_BUILT_IN_TYPE_IN_CLASS )
@@ -750,6 +825,36 @@
 				writer.writeChar( '-' );
 				writer.writeChar( '-' );
 			break;
+			case Token::PLUS_ASSIGN:
+				writer.writeChar( ' ' );
+				writer.writeChar( '+' );
+				writer.writeChar( '=' );
+				writer.writeChar( ' ' );
+			break;
+			case Token::MINUS_ASSIGN:
+				writer.writeChar( ' ' );
+				writer.writeChar( '-' );
+				writer.writeChar( '=' );
+				writer.writeChar( ' ' );
+			break;
+			case Token::MULTIPLY_ASSIGN:
+				writer.writeChar( ' ' );
+				writer.writeChar( '*' );
+				writer.writeChar( '=' );
+				writer.writeChar( ' ' );
+			break;
+			case Token::DIVIDE_ASSIGN:
+				writer.writeChar( ' ' );
+				writer.writeChar( '/' );
+				writer.writeChar( '=' );
+				writer.writeChar( ' ' );
+			break;
+			case Token::MODULO_ASSIGN:
+				writer.writeChar( ' ' );
+				writer.writeChar( '/' );
+				writer.writeChar( '=' );
+				writer.writeChar( ' ' );
+			break;
 			case Token::EQUALS:
 				writer.writeChar( ' ' );
 				writer.writeChar( '=' );
@@ -799,35 +904,77 @@
 				writer.writeChar( '|' );
 				writer.writeChar( ' ' );
 			break;
+			case Token::BITWISE_OR:
+				writer.writeChar( ' ' );
+				writer.writeChar( '|' );
+				writer.writeChar( ' ' );
+			break;
+			case Token::BITWISE_AND:
+				writer.writeChar( ' ' );
+				writer.writeChar( '&' );
+				writer.writeChar( ' ' );
+			break;
+			case Token::BITWISE_XOR:
+				writer.writeChar( ' ' );
+				writer.writeChar( '^' );
+				writer.writeChar( ' ' );
+			break;
+			case Token::BITWISE_COMPLEMENT:
+				writer.writeChar( ' ' );
+				writer.writeChar( '~' );
+				writer.writeChar( ' ' );
+			break;
 			case Token::POINT_TO: //Umm. Point to in C++ is = and maybe = &.
 			//but now we're using link, so it is usually a function call.
 				
-				if( set_elem.previousToken() == Token::DEFINE_REFERENCE )
+				if(set_elem.previousElement())
 				{
-					writer.writeChar( '(' );
-					//writer.writeChar( ' ' );	
-				}
-				else if( set_elem.previousToken() == Token::USE_REFERENCE || set_elem.previousToken() == Token::BRACKET_END )
-				{
-					writer.writeString(".linkTo(");
-				}
-				else
-				{
-					ReportError::reportError("Using a POINT_TO token with something that is not a DEFINE_REFERENCE or USE_REFERENCE.", set_elem.previousElement() );
+					if( set_elem.previousToken() == Token::DEFINE_REFERENCE )
+					{
+						writer.writeChar( '(' );
+						//writer.writeChar( ' ' );	
+					}
+					else if(set_elem.previousElement()->typeType() == TypeType::PTR)
+					{
+						writer.writeString(" = ");	
+					}
+					else if(set_elem.previousElement()->typeType() == TypeType::OPT)
+					{
+						writer.writeString(" -> ERROR can't reassign OPT.");
+						ReportError::reportError("ERROR can't reassign OPT with the POINT_TO operator.", set_elem.previousElement() );
+					}
+					else if(set_elem.previousElement()->typeType() == TypeType::REF)
+					{
+						writer.writeString(" -> ERROR can't reassign REF.");
+						ReportError::reportError("ERROR can't reassign REF with the POINT_TO operator.", set_elem.previousElement() );
+					}
+					else if( set_elem.previousToken() == Token::USE_REFERENCE || set_elem.previousToken() == Token::BRACKET_END )
+					{
+						writer.writeString(".linkTo(");
+					}
+					else
+					{
+						ReportError::reportError("Using a POINT_TO token with something that is not a DEFINE_REFERENCE or USE_REFERENCE.", set_elem.previousElement() );
+					}
 				}
 
 				//COUT
-				///////ReportError::reportError("WE have a point to.", &set_elem);
+				//ReportError::reportError("WE have a point to.", &set_elem);
 
 				//if( writer.nextToken() == Token::USE_REFERENCE && writer.nextElement()->typeType() == TypeType::VAL )
 				{
 					LangElement* got_expressionRValue = 0;
-					if( writer.nextElement() != 0)
+					if( set_elem.nextElement() != 0)
 					{
 						//COUT
-						////////ReportError::reportError("WE HAVE NEXT ELEMTN.", &set_elem);
+						//ReportError::reportError("WE HAVE NEXT ELEMTN.", &set_elem);
 
-						got_expressionRValue = writer.nextElement()->expressionRValue();
+						cout << "POINT_TO1: set_elem: " << set_elem.toSingleLineString() << "\n";
+						cout << "POINT_TO1: set_elem.next: " << set_elem.nextElement()->toSingleLineString() << "\n";
+						cout << "POINT_TO1: set_elem.next.next: " << set_elem.nextElement()->nextElement()->toSingleLineString() << "\n";
+						cout << "POINT_TO1: set_elem.next.next.next: " << set_elem.nextElement()->nextElement()->nextElement()->toSingleLineString() << "\n";
+
+						got_expressionRValue = set_elem.nextElement()->expressionRValue();
 
 						if( got_expressionRValue != 0 )
 						{
@@ -853,7 +1000,7 @@
 								|| got_expressionRValue->typeType() == TypeType::BUILT_IN_TYPE )
 							{
 								//COUT
-								////////ReportError::reportError("SHOULD_WRITE &", &set_elem);
+								//ReportError::reportError("SHOULD_WRITE &", &set_elem);
 
 								writer.writeChar( '&' );//TODO make this better...
 								//.expressionRValue()
@@ -867,7 +1014,8 @@
 							{
 								//ok.
 								//COUT
-								////////ReportError::reportError("SHOULD_NOT_WRITE &", &set_elem);
+								//writer.writeString("IT IS OPT REF LINK PTR.");
+								//ReportError::reportError("SHOULD_NOT_WRITE &", &set_elem);
 							}
 							else
 							{
@@ -877,11 +1025,13 @@
 						#ifdef DEBUG_RAE_RVALUE
 						else
 						{	
+							writer.writeString("NEVER GOT RVALUE.");
 							ReportError::reportError("Never got rvalue for", set_elem.nextElement() );
 						}
 						#endif
 					}
 				}
+
 			break;
 			case Token::REFERENCE_DOT:
 
@@ -971,6 +1121,7 @@
 			break;
 			case Token::USE_MEMBER:
 			case Token::USE_REFERENCE:
+			{
 				/*if( set_elem.typeType() == TypeType::VECTOR )
 				{
 					if( writer.nextToken() == Token::BRACKET_BEGIN )
@@ -998,13 +1149,24 @@
 				}
 				*/
 
-				if( (set_elem.typeConvertFrom() == TypeType::VAL && set_elem.typeConvertTo() == TypeType::REF)
+				bool we_need_array_to_ptr_conversion = false;
+
+				if( (set_elem.type() == "array" && set_elem.typeConvertFrom() == TypeType::VAL && set_elem.typeConvertTo() == TypeType::PTR)
+					)
+				{
+					we_need_array_to_ptr_conversion = true;
+					writer.writeChar('&');
+				}
+				else if( (set_elem.typeConvertFrom() == TypeType::VAL && set_elem.typeConvertTo() == TypeType::REF)
 					|| (set_elem.typeConvertFrom() == TypeType::VAL && set_elem.typeConvertTo() == TypeType::OPT)
+					|| (set_elem.typeConvertFrom() == TypeType::VAL && set_elem.typeConvertTo() == TypeType::PTR)
+					|| (set_elem.typeConvertFrom() == TypeType::BUILT_IN_TYPE && set_elem.typeConvertTo() == TypeType::PTR)
 				)
 				{
 					// convert val to ref. (in C++ get the pointer of the value type.)
 					writer.writeChar('&');
 				}
+				
 
 				if( set_elem.definitionElement()
 					&& set_elem.definitionElement()->containerType() == ContainerType::ARRAY
@@ -1039,6 +1201,12 @@
 					// convert link to ref.
 					writer.writeString(".obj");
 				}
+
+				if(we_need_array_to_ptr_conversion)
+				{
+					writer.writeString("[0]");
+				}
+			}
 			break;
 			//case Token::UNKNOWN_USE_REFERENCE:
 			//	writer.writeString("/*possible error:*/");
@@ -1049,19 +1217,23 @@
 			//break;
 			case Token::PARENTHESIS_BEGIN:
 			case Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES:
+				writer.addParenthesisCount();
 				writer.writeChar( '(' );
 				iterateWrite(writer, set_elem);
 			break;
 			case Token::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES:
 				//no output.
+				writer.addParenthesisCount();
 				iterateWrite(writer, set_elem);
 			break;
 			case Token::PARENTHESIS_END:
 			case Token::PARENTHESIS_END_FUNC_PARAM_TYPES:
+				writer.subParenthesisCount();
 				writer.writeChar( ')' );
 			break;
 			case Token::PARENTHESIS_END_FUNC_RETURN_TYPES:
 				//no output
+				writer.subParenthesisCount();
 			break;
 			case Token::LOG_SEPARATOR:
 			case Token::PARENTHESIS_BEGIN_LOG:
@@ -1213,11 +1385,21 @@
 				//}	
 			break;
 			*/
+
+			case Token::EXTERN:
+				writer.isSkipLine(true); // Skip the whole line because this was probably defined somewhere in C++ side.
+			break;
 			case Token::DEFINE_REFERENCE:
 			
 				#ifdef DEBUG_RAE_HUMAN
 				cout<<"this is a reference. useNamespace: " << set_elem.useNamespaceString() << "name: "<<set_elem.name()<<" type: "<<set_elem.type()<<"\n";
 				#endif
+
+				if( writer.isHeader() == false && set_elem.parent() && set_elem.parent()->token() == Token::MODULE) // cpp
+				{
+					writer.isSkipLine(true); // Skip the whole line
+					break;
+				}
 
 				if( set_elem.typeType() == TypeType::VAL )
 				{
@@ -1457,25 +1639,32 @@
 						////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
 						writer.writeString(set_elem.name());
 					}
-					else
+					else // inFunc probably... or global...
 					{
 						writer.writeString( set_elem.builtInTypeStringCpp() );
 						writer.writeChar(' ');
+						
 						if(set_elem.role() != Role::FUNC_RETURN)
 						{
 							////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
 							writer.writeString(set_elem.name());
 						}
-						else if(set_elem.role() != Role::FUNC_RETURN && set_elem.role() != Role::FUNC_PARAMETER)
+						
+						// JONDE REFACTOR: INIT_DATA handling has two overlapping ways. As a normal LangElement that is in the array,
+						// or as an initData member for LangElement. Refactor to have only one way to store INIT_DATA.
+
+						if(set_elem.role() != Role::FUNC_RETURN )// WHY WAS THIS HERE: && set_elem.role() != Role::FUNC_PARAMETER)
 						{
-							if( writer.nextToken() == Token::ASSIGNMENT )
+							if( writer.nextToken() == Token::ASSIGNMENT || writer.nextToken() == Token::INIT_DATA)
 							{
 								//don't write initdata. it should come...
 							}
 							else if( set_elem.initData() )
 							{
-								writer.writeString(" = ");
-								writer.writeString( set_elem.initData()->name() );
+								//writer.writeString(" = ");
+								//writer.writeString( set_elem.initData()->name() );
+								//iterateWrite(writer, *set_elem.initData());
+								writeElement(writer, *set_elem.initData());
 							}
 						}
 					}
@@ -1632,6 +1821,16 @@
 				{
 					writer.writeString("(");
 					writer.lineNeedsEnding(")");
+				}
+			break;
+			case Token::ELSE:
+				writer.writeString("else ");
+				if( Token::isNewline(writer.nextToken())
+					|| writer.nextToken() == Token::COMMENT
+					|| writer.nextToken() == Token::SCOPE_BEGIN
+				)
+				{
+					writer.lineNeedsSemicolon(false);
 				}
 			break;
 			case Token::FOR:
@@ -1800,8 +1999,9 @@
 					writer.lineNeedsSemicolon(false);
 				}
 
+				writer.writeString("/*");
 				writer.writeString(set_elem.name());
-				//writer.writeChar('/');
+				writer.writeString("*/");
 			break;
 			case Token::LOG:
 				writer.writeString("std::cout");
@@ -2240,7 +2440,9 @@
 
 
 						{
-							for(unsigned long i = 0; i < set_elem.langElements.size(); i++)
+							bool stop_writing_until_func_return_ends = false;
+
+							for(size_t i = 0; i < set_elem.langElements.size(); i++)
 							{
 								if(i+1 < set_elem.langElements.size())
 								{
@@ -2252,7 +2454,18 @@
 									writer.nextElement( set_elem.langElements[i+1] );
 								}
 
-								if( set_elem.langElements[i]->token() == Token::DEFINE_FUNC_RETURN )
+								if(stop_writing_until_func_return_ends)
+								{
+									//do nothing.
+									if(set_elem.langElements[i]->token() == Token::PARENTHESIS_END_FUNC_RETURN_TYPES)
+										stop_writing_until_func_return_ends = false;
+								}
+								else if( set_elem.langElements[i]->token() == Token::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES )
+								{
+									//do nothing, already written
+									stop_writing_until_func_return_ends = true;
+								}
+								else if( set_elem.langElements[i]->token() == Token::DEFINE_FUNC_RETURN )
 								{
 									//do nothing, already written
 								}
@@ -2371,7 +2584,8 @@
 									{
 										//This should never happen, because we've already bailed out in header.
 										//end loop. Write only one line to the header.
-										assert(0);
+										//////assert(0);
+										writer.writeString("NotSupposedToHappen1");
 										i = set_elem.langElements.size();	
 									}
 									else //cpp
@@ -2635,6 +2849,25 @@
 				//iterateWrite(writer, set_elem);
 			break;
 
+			case Token::ALIAS:
+				writer.lineNeedsSemicolon(false);
+				writer.writeString("#define ");
+				writer.writeString(set_elem.typedefNewType());
+				writer.writeChar(' ');
+				writer.writeString(set_elem.typedefOldType());
+			break;
+
+			case Token::PROJECT:
+				writer.lineNeedsSemicolon(false);
+				/*
+				writer.writeString("#if 0\nproject ");
+				writer.writeString(set_elem.name());
+				writer.writeChar('\n');
+				//iterateWrite(writer, set_elem);
+				writer.writeString("#endif\n");
+				*/
+			break;
+
 			//ignore:
 			case Token::IMPORT_NAME:
 			case Token::MODULE_NAME:
@@ -2642,7 +2875,7 @@
 				//just ignore this type...
 			break;
 			case Token::IMPORT:
-				if( writer.isHeader() == true )
+				//if( writer.isHeader() == true )
 				{
 					writer.lineNeedsSemicolon(false);
 					writer.writeString( string("#include \"") );
@@ -2677,6 +2910,7 @@
 
 					//writer.writeString( string("\n\n") );
 				}
+				/*WHY was this here???
 				else //isHeader == false //cpp
 				{
 					//TODO
@@ -2689,7 +2923,7 @@
 					writer.writeString(".hpp\"");
 
 					iterateWrite(writer, set_elem);
-				}
+				}*/
 			break;
 			case Token::MODULE:
 				if( writer.isHeader() == true )

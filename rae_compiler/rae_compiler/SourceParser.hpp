@@ -265,14 +265,16 @@ public:
 
 		//isInsideLogStatement = false;
 
-		injectPointToEndParenthesis = false;
+		/////////JONDE REMOVE injectPointToEndParenthesis = false;
+
+		isPleaseRehandleChar = false;
 
 		isQuoteReady = false;
 		isWaitingForQuoteEnd = false;
 		
 		isStarCommentReady = false;
 		isWaitingForStarCommentEnd = false;
-		
+
 		isPlusCommentReady = false;
 		nroWaitingForPlusCommentEnd = 0;
 
@@ -281,6 +283,7 @@ public:
 		isPassthroughSourceMode = false;
 
 		isWaitingForNamespaceDot = false;
+		nextElementWillGetNamespace = nullptr;
 
 		isCppBindingsParseMode = false;
 
@@ -312,8 +315,8 @@ public:
         
 		if( returnToExpectTokenStack.empty() )
 		{
-			//expectingToken(Token::UNDEFINED);
-            m_expectingToken = Token::UNDEFINED;
+			expectingToken(Token::UNDEFINED);
+            //m_expectingToken = Token::UNDEFINED;
 			//
 			//cout<<"NO TOKENS: Returned to expectToken: Token::UNDEFINED.\n";
 			return m_expectingToken;
@@ -325,15 +328,16 @@ public:
 
 		if( returnToExpectTokenStack.empty() )
 		{
-			//expectingToken(Token::UNDEFINED);
-            m_expectingToken = Token::UNDEFINED;
+			expectingToken(Token::UNDEFINED);
+            //m_expectingToken = Token::UNDEFINED;
 			//
 			//cout<<"POPPED AND NO TOKENS: Returned to expectToken: Token::UNDEFINED.\n";
 			return m_expectingToken;
 		}
 		else
 		{
-			m_expectingToken = returnToExpectTokenStack.back();
+			//m_expectingToken = returnToExpectTokenStack.back();
+			expectingToken( returnToExpectTokenStack.back() );
             //cout << "POPPED and going to: " << Token::toString(m_expectingToken)<<"\n";
 		}
 
@@ -373,17 +377,18 @@ public:
 	public: Token::e expectingToken(){ return m_expectingToken; }
 	public: void expectingToken(Token::e set)
 	{
-		#ifdef DEBUG_RAE_PARSER
+		//#ifdef DEBUG_RAE_PARSER
 			cout<<"set expectingToken to: "<<Token::toString(set)<<"\n";
-		#endif
+		//#endif
 		m_expectingToken = set;
+		//for debug, doesn't work: newLangElement(Token::EMPTY, TypeType::UNDEFINED, "expectingChangedTo: " + Token::toString(m_expectingToken));
 		//returnToExpectTokenStack.push_back(set);
 	}
 	protected: Token::e m_expectingToken;// = EDLTokenType::TITLE;
 
 	public: void setNameForExpectingName(string set)
 	{
-		cout << "Got name for EXPECTING_NAME: <" << set << "> Now checking it.\n";
+		cout << "Got name: <" <<  set <<"> for EXPECTING_NAME: " << m_expectingNameFor->toSingleLineString() << ". Now checking it.\n";
 
 		setNameAndCheckForPreviousDefinitions( m_expectingNameFor, set );
 		doReturnToExpectToken();
@@ -391,6 +396,11 @@ public:
 	public: LangElement* expectingNameFor(){ return m_expectingNameFor; }
 	public: void expectingNameFor(LangElement* set)
 	{
+		cout << "expectingNameFor: " <<  set->toSingleLineString() << "\n";
+		if(m_expectingRole == Role::FUNC_RETURN)
+		{
+			cout << "expectingNameFor INFO. Now this is a FUNC_RETURN so there might be no name coming.\n";
+		}
 		m_expectingNameFor = set;
 		pushExpectingToken(Token::EXPECTING_NAME);
 	}
@@ -407,7 +417,7 @@ public:
 	public: void expectingTypeFor(LangElement* set)
 	{
 		m_expectingTypeFor = set;
-		pushExpectingToken(Token::EXPECTING_NAME);
+		pushExpectingToken(Token::EXPECTING_TYPE);
 	}
 	protected: LangElement* m_expectingTypeFor;
 	/*
@@ -462,6 +472,7 @@ public:
 	//bool isInsideLogStatement;
 
 	/*for handling star comments like this one.*/
+	// and now also #* rae star comments like this one *#
 	bool isStarCommentReady;
 	bool isWaitingForStarCommentEnd;
 	string currentStarComment;
@@ -478,6 +489,7 @@ public:
 	bool isPassthroughSourceMode;
 
 	bool isWaitingForNamespaceDot;
+	LangElement* nextElementWillGetNamespace;
 
 	//after @cpp_bindings
 	bool isCppBindingsParseMode;
@@ -492,7 +504,7 @@ public:
 	int beforeChar;
 	string handleSlash;
 	
-
+	bool isPleaseRehandleChar;
 
 	bool isWholeToken;
 	string wholeToken;
@@ -524,7 +536,12 @@ public:
 		//{
 		
 			//lang_elem = currentModule->newLangElement(lineNumber, set_lang_token_type, set_type_type, set_name, set_type);
-			if(    set_lang_token_type == Token::MODULE
+
+			if( previousElement() && previousElement()->token() == Token::EXTERN )
+			{
+				// do nothing, no parent
+			}
+			else if(    set_lang_token_type == Token::MODULE
 				|| set_lang_token_type == Token::NAMESPACE
 				|| set_lang_token_type == Token::CLASS
 				|| set_lang_token_type == Token::FUNC //JONDE TODO replace these 4 lines with static isFunc() function.
@@ -532,6 +549,7 @@ public:
 				|| set_lang_token_type == Token::DESTRUCTOR
 				|| set_lang_token_type == Token::MAIN
 				|| set_lang_token_type == Token::INIT_DATA //also init data is now a parent element!
+				|| set_lang_token_type == Token::PROJECT
 				//and it holds all the init_data inside it.
 				)
 			{
@@ -546,17 +564,38 @@ public:
 		{
 			ReportError::compilerError("newLangElement() No current parent element found. Have you defined a module using the module keyword?");
 			cout<<"tried to create:"<<Token::toString(set_lang_token_type)<<" name: "<<set_name<<" type: "<<set_type<<"\n";
-			exit(0);
+			//exit(0);
 		}
 
 		if(lang_elem)
 		{
-			lang_elem->previousElement( previousElement() );
-			previousElement()->nextElement(lang_elem);
+			// Must use raw here because previousElement func call now skips whitespace, which is strange, but maybe helps somewhere.
+			lang_elem->previousElement( m_previousElement );
+			m_previousElement->nextElement(lang_elem);
+			//lang_elem->previousElement( previousElement() );
+			//previousElement()->nextElement(lang_elem);
+
+			bool funny_debug = false;
+			if (m_previousElement->name() == "set_window")
+			{
+				cout << "DONE here. Set nextElement to: " << lang_elem->toSingleLineString() << "\n";
+				funny_debug = true;
+			}
+
+			if(nextElementWillGetNamespace)
+			{
+				lang_elem->useNamespace(nextElementWillGetNamespace);
+				nextElementWillGetNamespace = nullptr;
+			}
 		
 		//previous2ndElement = previousElement;
 		
-			previousElement(lang_elem);//this is where we set previousElement.
+			m_previousElement = lang_elem;//this is where we set previousElement.
+
+			if (funny_debug)
+			{
+				cout << "DONE here2. previous to: " << m_previousElement->toSingleLineString() << "\n";
+			}
 		
 		//Hmm. Now that I think of it. previousElement and currentParentElement are the same! We'll there might be some differences because of those ifs above...
 
@@ -1244,10 +1283,10 @@ public:
 		
 		lang_elem = newLangElement(Token::IMPORT, TypeType::UNDEFINED, set_name);
 			
-			#ifdef DEBUG_RAE
+			//#ifdef DEBUG_RAE
 				cout<<"newImport: "<<Token::toString(Token::IMPORT)<<" name:>"<<set_name<<"\n";
-				//rae::log("newImport: ",Token::toString(Token::IMPORT)," name:>",set_name<<"\n");
-			#endif
+				cout << "currentParentElement: " << currentParentElement()->toSingleLineString() << "\n";
+			//#endif
 
 		currentTempElement = lang_elem;
 
@@ -1368,7 +1407,9 @@ public:
 		//Hmm, we put the name of the class into the name AND type params!!!
 		//lang_elem = newLangElement(Token::CLASS, TypeType::REF, set_name, set_name);
 		lang_elem = newLangElement(Token::CLASS, TypeType::UNDEFINED, set_name, set_name); //Why did we have typeType set to REF?
-		currentClass = lang_elem;
+		
+		if(lang_elem->isExtern() == false)
+			currentClass = lang_elem;
 
 		addToClasses(lang_elem);
 		addToUserDefinedTokens(lang_elem);
@@ -1448,7 +1489,7 @@ public:
 	
 	LangElement* newPlusComment(string set_name = "")
 	{
-		#ifdef DEBUG_RAE_HUMAN
+		#ifdef DEBUG_COMMENTS
 			cout<<"newPlusComment: "<<set_name<<"\n";
 			//rae::log("newPlusComment: ",set_name,"\n");
 		#endif
@@ -1458,7 +1499,7 @@ public:
 
 	LangElement* newStarComment(string set_name = "")
 	{
-		#ifdef DEBUG_RAE_HUMAN
+		#ifdef DEBUG_COMMENTS
 			cout<<"newStarComment: "<<set_name<<"\n";
 			//rae::log("newStarComment: ",set_name,"\n");
 		#endif
@@ -1483,7 +1524,7 @@ public:
 		return lang_elem;
 		*/
 	
-		#ifdef DEBUG_RAE_HUMAN
+		#ifdef DEBUG_COMMENTS
 			cout<<"newComment: "<<set_name<<"\n";
 			//rae::log("newComment: ",set_name,"\n");
 		#endif
@@ -1497,24 +1538,30 @@ public:
 		return newLangElement(Token::COMMENT, TypeType::UNDEFINED, set_name);
 	}
 
-	bool injectPointToEndParenthesis;
+	//JONDE REMOVE bool injectPointToEndParenthesis;
 
 	LangElement* newPointToElement()
 	{
-		injectPointToEndParenthesis = true;
+		/*if (previousElement() && previousElement()->typeType() != TypeType::PTR)
+		{
+			injectPointToEndParenthesis = true;
+			cout << "We're using POINT_TO and the previousElement is: " << previousElement()->toSingleLineString() << "\nSo we injectPointToEndParenthesis here man.\n";
+		}*/
 		return newLangElement(Token::POINT_TO, TypeType::UNDEFINED, "->");
 	}
 
 	void newLine()
 	{
+		cout << "newline at parent: " << currentParentElement()->toSingleLineString() << "\n";
+
 		unfinishedElement(nullptr);
 		currentReference = nullptr;
 
-		if(injectPointToEndParenthesis == true)
+		/*if(injectPointToEndParenthesis == true)
 		{
 			injectPointToEndParenthesis = false;
 			newLangElement(Token::POINT_TO_END_PARENTHESIS, TypeType::UNDEFINED, ")");
-		}
+		}*/
 
 		/*if( currentParentElement() )
 		{
@@ -1707,6 +1754,7 @@ REMOVED:
 		{
 			lang_elem->definitionElement(maybe_found_class);
 		}
+
 		/*
 		if( lang_elem->parent() )
 		{
@@ -1973,7 +2021,7 @@ REMOVED:
 
     // Hmm. We wanted to skip whitespace in previousElement stuff, because it would mess things up.
     // So previousElement never returns whitespace elements.
-	public: LangElement* previousElement()
+	public: LangElement* previousElement() // Hmm. Then rename to previousElementNonWhitespace() for no confusion.
     {
         if (m_previousElement && m_previousElement->isWhiteSpace() )
         {
@@ -2233,6 +2281,9 @@ public:
 	
 	void write(string folder_path_to_write_to)
 	{
+		if(isWriteToFile == false)
+			return;
+
 		/*
 		//if( fileParsedOk == false )
 		if( sourceFiles.empty() )
@@ -2416,8 +2467,12 @@ public:
 			writer3.writeString("// this file is automatically created from Rae programming language module:\n//");
 			writer3.writeString( module_filename );
 			writer3.writeString("\n");
-			writeDebugTree(writer3, *module_elem);	
+			writeDebugTree(writer3, *module_elem);
+			//writeDebugTree(&writer3, module_elem);
 			writer3.close();
+            
+            #endif
+            #ifdef DEBUG_RAE_DEBUGTREE2
 
 			debugFilePath = replaceExtension(debugFilePath, ".debugtree2");
 
@@ -2493,48 +2548,70 @@ public:
 
 	bool readChar()
 	{
-		lineNumber.totalCharNumber++;//Ok, 1 is the first element.
-		lineNumber.column++;//1 is the first char in line. (unlike in C arrays...)
-
-		handleSlash = "";
-		handleSlash += currentChar;//put the char we had in the last "frame" here. So it's the char before the currentChar
-		//that we read in the next line.
-		beforeChar = currentChar;//the same but with an int.
-	
-		if( EOF != (currentChar = getc(currentFile)) )
+		if (isPleaseRehandleChar)
 		{
+			isPleaseRehandleChar = false;
+			handleSlash = "";
+			// rehandle currentChar. Currently only because of minus handling.
 			return handleChar();
 		}
-		//else
-			isDone = true;//Quit parsing
-			return false;
+		else // normal handling:
+		{
+			lineNumber.totalCharNumber++; // Ok, 1 is the first element.
+			lineNumber.column++; // 1 is the first char in line. (unlike in C arrays...)
+
+			handleSlash = "";
+			handleSlash += currentChar; // put the char we had in the last "frame" here. So it's the char before the currentChar
+			// that we read in the next line.
+			beforeChar = currentChar; // the same but with an int.
+		
+			if( EOF != (currentChar = getc(currentFile)) )
+			{
+				return handleChar();
+			}
+			//else
+				isDone = true; // Quit parsing
+				return false;
+		}
+		return false;
 	}
 
 	bool readCharFromString()
 	{
-		lineNumber.totalCharNumber++;//Ok, 1 is the first element.
-		lineNumber.column++;//1 is the first char in line. (unlike in C arrays...)
-
-		handleSlash = "";
-		handleSlash += currentChar;//put the char we had in the last "frame" here. So it's the char before the currentChar
-		//that we read in the next line.
-		beforeChar = currentChar;//the same but with an int.
-	
-		if( stringIndex < stringBasedSourceText.size() )
+		if (isPleaseRehandleChar)
 		{
-			currentChar = stringBasedSourceText.at(stringIndex);
-			stringIndex++;
+			isPleaseRehandleChar = false;
+			handleSlash = "";
+			// rehandle currentChar. Currently only because of minus handling.
 			return handleChar();
 		}
-		//else
-			isDone = true;//Quit parsing
-			return false;
+		else // normal handling:
+		{
+			lineNumber.totalCharNumber++; // Ok, 1 is the first element.
+			lineNumber.column++; // 1 is the first char in line. (unlike in C arrays...)
+
+			handleSlash = "";
+			handleSlash += currentChar; // put the char we had in the last "frame" here. So it's the char before the currentChar
+			// that we read in the next line.
+			beforeChar = currentChar; // the same but with an int.
+		
+			if( stringIndex < stringBasedSourceText.size() )
+			{
+				currentChar = stringBasedSourceText.at(stringIndex);
+				stringIndex++;
+				return handleChar();
+			}
+			//else
+				isDone = true; // Quit parsing
+				return false;
+		}
+		return false;
 	}
 
 	unsigned stringIndex;
 
-	//return false if EOF or other error...
-	//puts result in currentChar.
+	// return false if EOF or other error...
+	// puts result in currentChar.
 	bool handleChar()
 	{
 		
@@ -2561,6 +2638,9 @@ public:
 				}
 			}*/
 			
+			if (moduleName() == "rae.3d.Engine")
+				cout << " cur: " << (char)currentChar << " word: " << currentWord << " wholeToken: " << wholeToken << "\n";
+
 			if( currentChar == '\n')
 			{
 				//just handling the linenumbers here, so that none get lost.
@@ -2716,7 +2796,7 @@ public:
 			//pluscomments:
 			if( nroWaitingForPlusCommentEnd > 0 )
 			{
-				if( currentChar == '/' )
+				if( currentChar == '/' || currentChar == '#' )
 				{
 					if( handleSlash == "+" )
 					{
@@ -2726,13 +2806,15 @@ public:
 						//we need to have a matching number of plus comments to end commenting.
 						if( nroWaitingForPlusCommentEnd == 0 )
 						{
-							wholeToken = "+/";
+							wholeToken = "+";
+							wholeToken += currentChar;
 							isWholeToken = true;
 							currentWord = "";
 							
 							//currentLine += currentChar;
 
-							currentPlusComment += currentChar;
+							//currentPlusComment += currentChar;
+							currentPlusComment.pop_back();
 							isPlusCommentReady = true;	
 						}
 					}
@@ -2747,7 +2829,7 @@ public:
 				else if( currentChar == '+' )
 				{
 					//start a plus comment
-					if( handleSlash == "/" )
+					if( handleSlash == "/" || handleSlash == "#" )
 					{
 						nroWaitingForPlusCommentEnd++;
 					}
@@ -2755,7 +2837,7 @@ public:
 				else if( currentChar == '*' )
 				{
 					//start a star comment, but we don't want to do that.
-					if( handleSlash == "/" )
+					if( handleSlash == "/" || handleSlash == "#" )
 					{
 						currentPlusComment += 'o';//an extra letter between slash and star. /o* like this *o/
 						//currentPlusComment += currentChar;
@@ -2773,7 +2855,7 @@ public:
 			//starcomments:
 			if( isWaitingForStarCommentEnd == true )
 			{
-				if( currentChar == '/' )
+				if( currentChar == '/' || currentChar == '#')
 				{
 					if( handleSlash == "*" )
 					{
@@ -2792,14 +2874,16 @@ public:
 							//wholeToken = currentWord;
 							//isWholeToken = true;
 							
-							wholeToken = "*/";
+							wholeToken = "*";
+							wholeToken += currentChar;
 							isWholeToken = true;
 							currentWord = "";
 							
 							//currentLine += currentChar;
 
 							isWaitingForStarCommentEnd = false;
-							currentStarComment += currentChar;
+							currentStarComment.pop_back();
+							//currentStarComment += currentChar;
 							isStarCommentReady = true;	
 						//}
 
@@ -2861,14 +2945,13 @@ public:
 
 			if( currentChar == '+' )
 			{
-				if( handleSlash == "/" )
+				if( handleSlash == "/" || handleSlash == "#" )
 				{
 					if( nroWaitingForPlusCommentEnd == 0 )
 					{
 						//start plus comment
-						#ifdef DEBUG_RAE
+						#ifdef DEBUG_COMMENTS
 							cout<<"Start plus_comment HandleSlash /+\n";
-							//rae::log("HandleSlash /*\n");
 						#endif
 
 						////////Extended comment.
@@ -2877,14 +2960,16 @@ public:
 						//////currentWord = "";
 						//handleSlash = "";
 						
-						currentPlusComment = "/+";
+						currentPlusComment = "";
+						//currentPlusComment = handleSlash;
+						//currentPlusComment += "+";
 						nroWaitingForPlusCommentEnd++;
 						return true;
 					}
 				}
 				else if(isWaitingForPragmaToken == false)
 				//a very special case for @c++ so that the plusses don't get
-				//passed through as tokens.
+				//passed through as tokens. NOTE: I bet this is deprecated now, and the pragmas are @cpp...
 				{				
 					wholeToken = currentWord;
 					isWholeToken = true;
@@ -2899,14 +2984,13 @@ public:
 			}			
 			else if( currentChar == '*' )
 			{
-				if( handleSlash == "/" )
+				if( handleSlash == "/" || handleSlash == "#" )
 				{
 					if( isWaitingForStarCommentEnd == false )
 					{
 						//start comment
-						#ifdef DEBUG_RAE
-							cout<<"HandleSlash /*\n";
-							//rae::log("HandleSlash /*\n");
+						#ifdef DEBUG_COMMENTS
+							cout<<"Start star_comment HandleSlash /*\n";
 						#endif
 
 						////////Extended comment.
@@ -2915,7 +2999,9 @@ public:
 						//////currentWord = "";
 						//handleSlash = "";
 						
-						currentStarComment = "/*";
+						currentStarComment = "";
+						//currentStarComment = handleSlash;
+						//currentStarComment += currentChar;
 						isWaitingForStarCommentEnd = true;
 						return true;
 					}
@@ -2930,11 +3016,53 @@ public:
 					currentWord = "";
 					
 					currentLine += currentChar;
-					return true; // WHY?
+					return true; // WHY? Why not...
 				}
 			}
 
-//handle simple one line comments:
+// handle simple one line comments:
+
+			if( handleSlash == "#" )
+			{
+				if(currentChar == '*')
+				{
+					assert(0);
+					// We handled this already
+				}
+				else if(currentChar == '+')
+				{
+					assert(0);
+					// We handled this already
+				}
+				else
+				{
+					wholeToken = currentWord;//"#"
+					isWholeToken = true;
+
+					currentWord = string("");
+
+					isPleaseRehandleChar = true;
+
+					return true;
+				}
+			}
+
+			/*if( currentChar == '#' )
+			{
+				#ifdef DEBUG_COMMENTS
+					cout << "Start single_line_comment #\n";
+				#endif
+
+				wholeToken = "#";
+				isWholeToken = true;
+				currentWord = "";
+
+				isSingleLineComment = true;
+
+				currentComment = "";
+
+				return true;
+			}*/
 
 			if( currentChar == '/' )
 			{
@@ -3037,6 +3165,9 @@ public:
 			//got "-".
 			if( handleSlash == "-" )
 			{
+				if(moduleName() == "rae.3d.Engine")
+					cout << " handle_minus. ";
+
 				if(currentChar == '>')
 				{
 					//We got ->
@@ -3054,9 +3185,32 @@ public:
 				}
 				else
 				{
+					if(moduleName() == "rae.3d.Engine")
+						cout << " currentWord is: " << currentWord << "\n";
+
 					wholeToken = currentWord;//"-"
 					isWholeToken = true;
-					currentWord = "";
+
+					// Beware of this bug: causes some strange behaviour
+                    //currentWord = "" + currentChar;
+					currentWord = string("");
+
+					/*
+					//JONDE REMOVE wholeToken2 = "-";
+					//JONDE REMOVE isWholeToken2 = true;
+
+                    
+                    currentWord = string("");
+                    currentWord += currentChar;
+					currentLine += currentChar;
+
+					if(moduleName() == "rae.3d.Engine")
+						cout << " currentWord2 is: " << currentWord << "\n";
+					*/
+
+					isPleaseRehandleChar = true;
+
+					return true;
 				}
 			}
 			
@@ -3079,6 +3233,9 @@ public:
 			//The abnormal way to handle minus:
 			if( currentChar == '-' )
 			{
+				if(moduleName() == "rae.3d.Engine")
+					cout << " abnormal_minus. " << currentWord << "\n";
+
 				//Don't do anything. our - will be in the poorly named
 				//handleSlash, which is really pastLetters...
 
@@ -3088,7 +3245,35 @@ public:
 
 				currentWord = "-"; //Oh, we'll put it here too...
 				currentLine += currentChar;//We'll still put the minus here...
+
+				return true;
 			}
+			else if( currentChar == '#' )
+			{
+				//Don't do anything. our # will be in the poorly named
+				//handleSlash, which is really pastLetters...
+
+				//OK. We'll do something. Cut the incoming word and send it:
+				wholeToken = currentWord;
+				isWholeToken = true;
+
+				currentWord = "#"; //Oh, we'll put it here too...
+				currentLine += currentChar;//We'll still put the minus here...
+
+				return true;
+			}
+			/*
+			else if( currentChar == '#' )
+			{
+				wholeToken = currentWord;
+				isWholeToken = true;
+				
+				wholeToken2 = "#";
+				isWholeToken2 = true;
+				currentWord = "";
+				
+				currentLine += currentChar;
+			}*/
 			else if( currentChar == '@' )
 			{
 				wholeToken = currentWord;
@@ -3101,17 +3286,6 @@ public:
 				isWaitingForPragmaToken = true;
 
 				currentWord = "@";
-				currentLine += currentChar;
-			}
-			else if( currentChar == '#' )
-			{
-				wholeToken = currentWord;
-				isWholeToken = true;
-				
-				wholeToken2 = "#";
-				isWholeToken2 = true;
-				currentWord = "";
-				
 				currentLine += currentChar;
 			}
 			else if( currentChar == '.' )
@@ -3408,7 +3582,8 @@ public:
 				{
 					if( wholeToken != "" )//ignore empty tokens...
 					{
-						//cout<<"TOKEN:>"<<wholeToken<<"<\n";
+						if(!isWhiteSpace(wholeToken))
+							cout << "TOKEN:>" << wholeToken << " line: " << lineNumber.toString() << " mod: " << moduleName() << "<\n";
 						isWholeToken = false;
 						//cout<<"calling handleToken on wholeToken1\n";
 						if (parserType() == ParserType::RAE)
@@ -3422,7 +3597,8 @@ public:
 				{
 					if( wholeToken2 != "" )//ignore empty tokens...
 					{
-						//cout<<"TOKEN2:>"<<wholeToken2<<"<\n";
+						if(!isWhiteSpace(wholeToken2))
+							cout << "TOKEN2:>" << wholeToken2 << " line: " << lineNumber.toString() << " mod: " << moduleName() << "<\n";
 						isWholeToken2 = false;
 						//cout<<"calling handleToken on wholeToken2!!!!\n";
 						if (parserType() == ParserType::RAE)
@@ -4113,7 +4289,6 @@ public:
 		return prev_def;//null if ok.
 	}	
 	
-
 	// This a func to set a name and to check if the name was used before.
 	// The source file should then contain "override" so that no errors come.
 	void setNameAndCheckForPreviousDefinitions(LangElement* elem_to_set, string set_token)
@@ -4170,7 +4345,7 @@ public:
 		if (g_debugName == set_elem->name())
 		{
 			rlutil::setColor(rlutil::LIGHTBLUE);
-			cout << "searchElementAndCheckIfValidLocal. module: " << moduleName() << " looking for: " << set_elem->name() << "\n";
+			cout << "searchElementAndCheckIfValidLocal. module: " << moduleName() << " looking for: " << set_elem->name() << " " << set_elem->toSingleLineString() << "\n";
 			rlutil::setColor(rlutil::WHITE);
 		}
 
@@ -4280,23 +4455,40 @@ public:
 					#endif
 					#ifdef DEBUG_DEBUGNAME
 						if (g_debugName == set_elem->name())
+						{
+							rlutil::setColor(rlutil::RED);
 							cout << "searchElementAndCheckIfValidLocal: found2: " << elem->type() << " : " << elem->toSingleLineString() << "\n";
+							rlutil::setColor(rlutil::WHITE);
+						}
 					#endif
 					if( checkIfTokenIsValidInCurrentContext(set_elem, elem) )
 					{
 						return elem;
 					}
+					else
+					{
+						if (g_debugName == set_elem->name())
+						{
+							rlutil::setColor(rlutil::RED);
+							cout << "searchElementAndCheckIfValidLocal: FOUND IT BUT IT IS NOT VALID: " << elem->type() << " : " << elem->toSingleLineString() << "\n";
+							rlutil::setColor(rlutil::WHITE);
+						}
+					}
 				}
-                /*
+				/*
 				if( set_elem->typedefNewType() == elem->name() ) // Typedef...
 				{
 					cout << "Yammy. It's a typedef definition: " << elem->toSingleLineString() << "\n";
 					return elem;
 				}
-                */
+				*/
 				else if( elem->token() == Token::CPP_TYPEDEF && set_elem->name() == elem->typedefNewType() ) // Typedef...
 				{
+					assert(0);
+					rlutil::setColor(rlutil::RED);
+					//JONDE REMOVE this will not happen now that we've reversed typedef name and type positions.
 					cout << "Yammy. It's a typedef definition2: " << elem->toSingleLineString() << "\n";
+					rlutil::setColor(rlutil::WHITE);
 					return elem;
 				}
 				
@@ -4952,7 +5144,7 @@ public:
 				{
 					default:
 					break;
-                    case Token::CPP_TYPEDEF:
+					case Token::CPP_TYPEDEF:
 						cout << "Found typedef usage111111!!!\n";
 					case Token::CLASS:
 
@@ -4963,7 +5155,7 @@ public:
 
 						if(currentReference == nullptr)
 						{
-							cout << "Default val case. Creating a newDefineReference for a class or typedef definition.\n";
+							cout << "Default val case. Creating a newDefineReference for a class or typedef definition: " << set_token <<"\n";
 							//ReportError::reportError("handleUserDefinedToken. currentReference was null, when we found a class. Compiler error. set_token: " + set_token, previousElement() );
 						
 							// This case is just a class name without any preceeding val or opt, so no currentReference has been created.
@@ -4990,6 +5182,12 @@ public:
 							currentReference->definitionElement(found_elem);
 							currentReference->type(set_token);
 
+							if(nextElementWillGetNamespace)
+							{
+								currentReference->useNamespace(nextElementWillGetNamespace);
+								nextElementWillGetNamespace = nullptr;
+							}
+
 							/*if( clob->parentToken() == Token::CLASS )
 							{
 								//we are inside a class definition, not a func:
@@ -5013,9 +5211,6 @@ public:
 						our_new_element = newUseArray(found_elem);
 					break;
 					*/
-					case Token::CPP_PRE_DEFINE:
-						cout << "Found #define usage!!!\n";
-					break;
 					case Token::BRACKET_DEFINE_ARRAY_BEGIN:
 					case Token::BRACKET_DEFINE_STATIC_ARRAY_BEGIN:
 					case Token::DEFINE_FUNC_RETURN:
@@ -5049,7 +5244,7 @@ public:
 						}*/
 
 					break;
-                    /*
+					/*
 					case Token::USE_VECTOR:
 						ReportError::reportError("handleUserDefinedToken. Found USE_VECTOR. And we're not supposed to find those.");
 					break;
@@ -5060,12 +5255,42 @@ public:
 					case Token::USE_REFERENCE:
 						ReportError::reportError("handleUserDefinedToken. Found USE_REFERENCE. And we're not supposed to find those.", previousElement() );
 					break;
-                    case Token::NAMESPACE:
-                    	rlutil::setColor(rlutil::BLUE);
+					case Token::CPP_PRE_DEFINE:
+					{
+						cout << "Found #define1111 usage!!!" << set_token << "\n";
+						//assert(0);
+						LangElement* our_ref = newLangElement( Token::USE_REFERENCE, TypeType::VAL, set_token, set_token);
+						our_ref->definitionElement(found_elem);
+					}
+					break;
+					case Token::ALIAS:
+						cout << "FOUND use of ALIAS1111. " << set_token << " found_elem: " << found_elem->toSingleLineString();
+						if (found_elem->definitionElement())
+							cout << " definition: " << found_elem->definitionElement()->toSingleLineString() << "\n";
+						else cout << " but no definitionElement for alias.\n";
+
+						//assert(0);
+
+						// Hmm. I wonder if we can just re-handle the alias use as the old_type...
+						//recursive:
+						return handleUserDefinedToken( found_elem->typedefOldType() );
+					break;
+					case Token::NAMESPACE:
+						rlutil::setColor(rlutil::BLUE);
 						cout << "11111111handleUserDefinedToken found a namespace: " << found_elem->name() << " set_token: " << set_token << "\n";
+						rlutil::setColor(rlutil::WHITE);
 						
-						if (currentReference == nullptr)
+						nextElementWillGetNamespace = found_elem;
+						isWaitingForNamespaceDot = true;
+
+						// If we have a currentReference and it's name is set:
+						// val Type something = glm::Type(1,2,3)
+						// so this namespace is after assignment maybe...
+						/*
+						if (currentReference == nullptr || currentReference->name() != "")
 						{
+							currentReference = nullptr; // just in case we got name() != "" case, as mentioned above.
+
 							// In fact, this could be:
 							// a type definition: Rae::SomeType, which would then default to be of kind val
 							// a func call: Rae::CallSomeFunc
@@ -5107,6 +5332,7 @@ public:
 						rlutil::setColor(rlutil::WHITE);
 						//LangElement* lang_elem = newLangElement(Token::USE_NAMESPACE, TypeType::UNDEFINED, set_token);
 						//lang_elem->definitionElement(found_elem);
+						*/
                     break;
 
 				}
@@ -5201,8 +5427,12 @@ public:
 		//handleUnknownUseReferences();
 		//handleUnknownUseMembers();
 
-		for( uint i = 0; i < 4; i++ )
+		for( uint i = 0; i < 4; ++i )
 		{
+			rlutil::setColor(rlutil::RED);
+			cout << "handleUnknownTokens time: " << i << "\n";
+			rlutil::setColor(rlutil::WHITE);
+			
 			handleUnknownTokens( unknownDefinitions );
 			handleCheckForPreviousDefinitionsList();
 			handleUnknownTokens( unknownUseReferences );
@@ -5321,8 +5551,18 @@ public:
 		//rae::log("handleUnknownTokens() START.\n");
 		#endif
 
-		for( LangElement* lang_elem : unknown_tokens )
+		//for( LangElement* lang_elem : unknown_tokens )
+		for(uint i = 0; i < unknown_tokens.size(); ++i) // Had to change this to a normal for, because ALIAS needed to re-handle one index and do a --i;
 		{
+			LangElement* lang_elem = unknown_tokens[i];
+
+			if( lang_elem->isExtern() == true )
+			{
+				cout << "handleUnknownTokens() it is extern.\n";
+				lang_elem->isUnknownType(false);
+				continue;
+			}
+
 			//if(lang_elem->token() != Token::UNKNOWN_DEFINITION)
 			//if(lang_elem->token() != Token::DEFINE_REFERENCE && 
 			if( lang_elem->isUnknownType() == false )
@@ -5491,9 +5731,6 @@ public:
 						lang_elem->isUnknownType(false);
 					break;
 					*/
-					case Token::CPP_PRE_DEFINE:
-						cout << "Found #define usage!!!\n";
-					break;
 					case Token::BRACKET_DEFINE_ARRAY_BEGIN:
 					case Token::BRACKET_DEFINE_STATIC_ARRAY_BEGIN:
 					case Token::DEFINE_FUNC_RETURN:
@@ -5627,11 +5864,44 @@ public:
 					case Token::USE_REFERENCE:
 						ReportError::reportError("handleUnknownDefinitions. Found USE_REFERENCE. And we're not supposed to find those.", lang_elem);
 					break;
+					case Token::CPP_PRE_DEFINE:
+						cout << "Found #define2222 usage!!!" << found_elem->toSingleLineString() << "\n";
+						//assert(0);
+						lang_elem->token(Token::USE_REFERENCE);
+						lang_elem->typeType(TypeType::VAL);
+						lang_elem->definitionElement(found_elem);
+					break;
+					case Token::ALIAS:
+						cout << "FOUND use of ALIAS2222. " << lang_elem->toSingleLineString() << "\nfound_elem: " << found_elem->toSingleLineString();
+						if (found_elem->definitionElement())
+							cout << "\ndefinition: " << found_elem->definitionElement()->toSingleLineString() << "\n";
+						else cout << "\nbut no definitionElement for alias.\n";
+
+						//assert(0);
+
+						// Convert in place:
+						//if (found_elem->typedefOldType() == found_elem->name())
+						//{
+							cout << "alias222 set name to alias name." << found_elem->typedefOldType() << "\n";
+							lang_elem->name(found_elem->typedefOldType());
+							lang_elem->isUnknownType(true);
+							lang_elem->definitionElement(found_elem->definitionElement());
+						/*}
+						else if (lang_elem->typedefOldType() == found_elem->type())
+						{
+							cout << "STRANGER alias222 set type to alias type." << found_elem->name() << "\n";
+							lang_elem->type(found_elem->type());
+						}*/
+						cout << "ALIAS going to step back in time: " << i;
+						--i;
+						cout << " -> " << i << "\n";;
+						continue;
+					break;
 					case Token::NAMESPACE:
 						cout << "22222222handleUnknownTokens found a namespace: " << found_elem->name() << "\n";
 						lang_elem->token(Token::USE_NAMESPACE);
-                        lang_elem->definitionElement(found_elem);
-                        lang_elem->isUnknownType(false);
+						lang_elem->definitionElement(found_elem);
+						lang_elem->isUnknownType(false);
 					break;
 				}
 

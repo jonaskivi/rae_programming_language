@@ -94,12 +94,18 @@ string toString(Token::e set)
 			return "Token::MODULE";
 			case Token::MODULE_NAME:
 			return "Token::MODULE_NAME";
+			case Token::MODULE_DIR:
+			return "Token::MODULE_DIR";
 			case Token::CLOSE_MODULE:
 			return "Token::CLOSE_MODULE";
 			case Token::IMPORT:
 			return "Token::IMPORT";
 			case Token::IMPORT_NAME:
 			return "Token::IMPORT_NAME";
+			case Token::PROJECT:
+			return "Token::PROJECT";
+			case Token::TARGET_DIR:
+			return "Token::TARGET_DIR";
 			case Token::IMPORT_DIRS:
 			return "Token::IMPORT_DIRS";
 			case Token::NAMESPACE:
@@ -165,6 +171,9 @@ string toString(Token::e set)
 			return "Token::DEFINE_BUILT_IN_TYPE_NAME";
 			//case Token::USE_BUILT_IN_TYPE:
 			//return "Token::USE_BUILT_IN_TYPE";
+
+			case Token::ALIAS:
+			return "Token::ALIAS";
 
 			case Token::NUMBER:
 			return "Token::NUMBER";
@@ -320,11 +329,15 @@ string toString(Token::e set)
 			return "Token::BRACKET_DEFINE_STATIC_ARRAY_BEGIN";
 			case Token::BRACKET_DEFINE_STATIC_ARRAY_END:
 			return "Token::BRACKET_DEFINE_STATIC_ARRAY_END";
-            case Token::BRACKET_INITIALIZER_LIST_BEGIN:
-                return "Token::BRACKET_INITIALIZER_LIST_BEGIN";
-            case Token::BRACKET_INITIALIZER_LIST_END:
-                return "Token::BRACKET_INITIALIZER_LIST_END";
-                
+			case Token::BRACKET_INITIALIZER_LIST_BEGIN:
+			return "Token::BRACKET_INITIALIZER_LIST_BEGIN";
+			case Token::BRACKET_INITIALIZER_LIST_END:
+			return "Token::BRACKET_INITIALIZER_LIST_END";
+			case Token::BRACKET_CAST_BEGIN:
+			return "Token::BRACKET_CAST_BEGIN";
+			case Token::BRACKET_CAST_END:
+			return "Token::BRACKET_CAST_END";
+
 			case Token::RETURN:
 			return "Token::RETURN";
 			
@@ -332,6 +345,9 @@ string toString(Token::e set)
 			return "Token::COMMA";
 			case Token::SEMICOLON:
 			return "Token::SEMICOLON";
+
+			case Token::CAST:
+			return "Token::CAST";
 
 			case Token::ASSIGNMENT:
 			return "Token::ASSIGNMENT";
@@ -349,6 +365,16 @@ string toString(Token::e set)
 			return "Token::OPERATOR_INCREMENT";
 			case Token::OPERATOR_DECREMENT:
 			return "Token::OPERATOR_DECREMENT";
+			case Token::PLUS_ASSIGN:
+			return "Token::PLUS_ASSIGN";
+			case Token::MINUS_ASSIGN:
+			return "Token::MINUS_ASSIGN";
+			case Token::MULTIPLY_ASSIGN:
+			return "Token::MULTIPLY_ASSIGN";
+			case Token::DIVIDE_ASSIGN:
+			return "Token::DIVIDE_ASSIGN";
+			case Token::MODULO_ASSIGN:
+			return "Token::MODULO_ASSIGN";
 
 			case Token::EQUALS:
 			return "Token::EQUALS";
@@ -370,6 +396,15 @@ string toString(Token::e set)
 			case Token::OR:
 			return "Token::OR";
 
+			case Token::BITWISE_OR:
+			return "Token::BITWISE_OR";
+			case Token::BITWISE_AND:
+			return "Token::BITWISE_AND";
+			case Token::BITWISE_XOR:
+			return "Token::BITWISE_XOR";
+			case Token::BITWISE_COMPLEMENT:
+			return "Token::BITWISE_COMPLEMENT";
+
 			case Token::POINT_TO:
 			return "Token::POINT_TO";
 			case Token::POINT_TO_END_PARENTHESIS:
@@ -379,6 +414,8 @@ string toString(Token::e set)
 
 			case Token::IF:
 			return "Token::IF";
+			case Token::ELSE:
+			return "Token::ELSE";
 			case Token::FOR:
 			return "Token::FOR";
 			case Token::FOR_EACH:
@@ -393,6 +430,8 @@ string toString(Token::e set)
 			
 			case Token::SIZEOF:
 			return "Token::SIZEOF";
+			case Token::EXTERN:
+			return "Token::EXTERN";
 
 			case Token::NEWLINE:
 			return "Token::NEWLINE";
@@ -545,8 +584,10 @@ string toString(Token::e set)
 			return Token::BRACKET_DEFINE_ARRAY_END;
 			case Token::BRACKET_DEFINE_STATIC_ARRAY_BEGIN:
 			return Token::BRACKET_DEFINE_STATIC_ARRAY_END;
-            case Token::BRACKET_INITIALIZER_LIST_BEGIN:
-                return Token::BRACKET_INITIALIZER_LIST_END;
+			case Token::BRACKET_INITIALIZER_LIST_BEGIN:
+			return Token::BRACKET_INITIALIZER_LIST_END;
+			case Token::BRACKET_CAST_BEGIN:
+			return Token::BRACKET_CAST_END;
 		}
 
 	}

@@ -147,6 +147,8 @@ enum e
 	DEFINE_BUILT_IN_TYPE_NAME,
 	//USE_BUILT_IN_TYPE, //We are using USE_REFERENCE instead of this for now...
 
+	ALIAS, // alias newName = oldName // just string replacement. Doesn't create a new type. Similar to #define newName oldName
+
 	//REAL_IN_CLASS, //biggest floating point type, maybe 80 bits or something...
 	NUMBER, // integer
 	FLOAT_NUMBER,
@@ -240,13 +242,17 @@ enum e
 	BRACKET_DEFINE_ARRAY_END,
 	BRACKET_DEFINE_STATIC_ARRAY_BEGIN,
 	BRACKET_DEFINE_STATIC_ARRAY_END,
-    BRACKET_INITIALIZER_LIST_BEGIN,
-    BRACKET_INITIALIZER_LIST_END,
+	BRACKET_INITIALIZER_LIST_BEGIN,
+	BRACKET_INITIALIZER_LIST_END,
+	BRACKET_CAST_BEGIN,
+	BRACKET_CAST_END,
 
 	RETURN,
 
 	COMMA,//,
 	SEMICOLON,//;
+
+	CAST, // cast[float] someInt
 
 	// Arithmetic operators
 	ASSIGNMENT, // =
@@ -257,6 +263,11 @@ enum e
 	MODULO, // % 
 	OPERATOR_INCREMENT, // ++
 	OPERATOR_DECREMENT, // --
+	PLUS_ASSIGN, // +=
+	MINUS_ASSIGN, // -=
+	MULTIPLY_ASSIGN, // *=
+	DIVIDE_ASSIGN, // /=
+	MODULO_ASSIGN, // %=
 
 	// Comparison operators
 	EQUALS, // == equals keyword
@@ -270,12 +281,21 @@ enum e
 	AND, // and, &&
 	OR, // or, ||
 
+	//The tokens and, and_eq, bitand, bitor, compl, not, not_eq, or, or_eq, xor, xor_eq, <%, %>, <:, and :>
+	//can be used instead of the symbols &&, &=, &, |, ~, !, !=, ||, |=, ^, ^=, {, }, [, and ].
+
+	BITWISE_OR, // bitor, |
+	BITWISE_AND, // bitand, &
+	BITWISE_XOR, // xor, ^
+	BITWISE_COMPLEMENT, //compl, ~ operator
+
 	POINT_TO,// -> used instead of = to point references to objects etc.
 	POINT_TO_END_PARENTHESIS, //we use the link<Object> a_link(arguments); to create links, so we need the closing parenthesis in C++.
 	//these are injected in SourceParser::newPointToElement() and SourceParser::newLine().
 	IS, // is pointing to
 	
 	IF,
+	ELSE,
 	FOR,
 	FOR_EACH,
 	IN_TOKEN,
@@ -284,6 +304,7 @@ enum e
 	FALSE_FALSE,
 
 	SIZEOF,
+	EXTERN,
 
 	NEWLINE,
 	NEWLINE_BEFORE_SCOPE_END,
@@ -620,7 +641,7 @@ public:
 		}
 
 		// Add spaces to align next tokenString at 25 chars
-		for(int i = ret.length(); i < 25; ++i)
+		for(size_t i = ret.length(); i < 25; ++i)
 		{
 			ret += " ";
 		}
@@ -638,6 +659,8 @@ public:
 			ret += " usenamespace: " + useNamespaceString();
 		
 		ret += " line: " + numberToString(lineNumber().line);
+
+		ret += " " + namespaceString();
 
 		return ret;
 	}
@@ -723,6 +746,50 @@ public:
 		return a_module_name;
 	}
 
+	// You probably want to use parentModuleString instead.
+	public: string moduleString(string separator_char_str = ".")
+	{
+		if(token() != Token::MODULE)
+		{
+			cout<<"Error: this is not a module. Can't get moduleName(): "<<toString()<<"\n";
+			return "Not a module.";
+		}
+
+		string a_module_name = "";
+
+		int not_on_first = 0;
+
+		for(LangElement* elem : langElements)
+		{
+			if( elem->token() == Token::MODULE_NAME )
+			{
+				if(not_on_first > 0)
+				{
+					a_module_name += separator_char_str; //add a . between the module_name components
+				}
+				else
+				{
+					not_on_first++;
+				}
+				a_module_name += elem->name();
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		return a_module_name;
+	}
+
+	// This just shows in which module we are at the moment.
+	public: string parentModuleString()
+	{
+		LangElement* our_module = parentModule();
+		if(our_module)
+			return our_module->moduleString();
+		return "No module";
+	}
 
 	public: Token::e token() { return m_token; }
 	public: void token(Token::e set) { m_token = set; }
@@ -784,6 +851,7 @@ public:
 			|| token() == Token::PARENTHESIS_BEGIN
 			|| token() == Token::COMMA
 			|| token() == Token::SEMICOLON
+			|| token() == Token::COMMENT // yes. single line comments also end expressions.
 			|| token() == Token::NEWLINE
 			|| token() == Token::NEWLINE_BEFORE_SCOPE_END
 		)
@@ -818,6 +886,7 @@ public:
 			|| token() == Token::MODULE_NAME
 			|| token() == Token::CPP_TYPEDEF
 			|| token() == Token::CPP_PRE_DEFINE
+			|| token() == Token::ALIAS
 		)
 		{
 			return true;
@@ -948,17 +1017,23 @@ public:
 		)
 		{
 			#ifdef DEBUG_RAE_RVALUE
-			cout<<"LangElement::expressionRValue() it is a USE_REFERENCE or USE_MEMBER.\n";
+			cout<<"LangElement::expressionRValue() it is a USE_REFERENCE or USE_MEMBER." << toSingleLineString() << "\n";
 			#endif
 
-			if( nextElement() == 0
+			if( nextElement() == nullptr
 			|| nextElement()->isEndsExpression()
 			)
 			{
+				#ifdef DEBUG_RAE_RVALUE
+				cout << "IS ENDS EXPRESSION.";
+				#endif
 				return this;
 			}
 			else
 			{
+				#ifdef DEBUG_RAE_RVALUE
+				cout << "IS NOT ENDS EXPRESSION: " << nextElement()->toSingleLineString() << "\n";
+				#endif
 				return nextElement()->expressionRValue();
 			}
 		}
@@ -1002,7 +1077,7 @@ public:
 
 	LangElement* funcReturnType()
 	{
-		if( token() != Token::FUNC && token() != Token::FUNC_CALL )
+		if( !isFunc() && (token() != Token::FUNC_CALL))
 		{
 			ReportError::reportError("Compiler error: Trying to get funcReturnType, but this is not a FUNC or a FUNC_CALL.", this);
 			assert(0);
@@ -1017,7 +1092,7 @@ public:
 			else
 			{
 				ReportError::reportError("Couldn't get funcReturnType for FUNC_CALL, because it's definition is not (yet) found.", this);
-				assert(0);
+				/////////assert(0);
 			}
 		}
 		//else it's a FUNC:
@@ -1160,7 +1235,7 @@ public:
 	// We return by value vector, but we hope move semantics get rid of the copy and just move the vector.
 	vector<LangElement*> funcParameterList()
 	{
-		if( token() != Token::FUNC && token() != Token::FUNC_CALL )
+		if( !isFunc() && (token() != Token::FUNC_CALL))
 		{
 			ReportError::compilerError("Trying to get funcParameterList, but this is not a FUNC or a FUNC_CALL.", this);
 			assert(0);
@@ -1277,7 +1352,17 @@ public:
 
 	//the actual name...
 	public: string& name() { return m_name; }
-	public: void name(string set) { m_name = set; }
+	public: void name(string set)
+	{
+		//wtf... JONDE
+		if (m_name == "name:ISempty 3")
+			assert(0);
+		m_name = set;
+		//wtf... JONDE
+		if (set == "name:ISempty 3")
+			assert(0);
+
+	}
 	protected: string m_name;
 	
 	//type is a user defined Class name like Gradient... etc...
@@ -1344,18 +1429,18 @@ public:
 	public: string typedefOldType()
 	{
 		if( builtInType() == BuiltInType::UNDEFINED )
-			return m_name; // else
+			return m_type; // else
 		return builtInTypeString();
 	}
 	public: string typedefOldTypeInCpp()
 	{
 		if( builtInType() == BuiltInType::UNDEFINED )
-			return m_name; // else
+			return m_type; // else
 		return builtInTypeStringCpp();
 	}
 	public: string typedefNewType()
 	{
-		return m_type;
+		return m_name;
 	}
 
 	public: LangElement* arrayContainedTypeElement()
@@ -1498,7 +1583,18 @@ public:
 
 	public: bool isLet() { return m_isLet; }
 	public: void isLet(bool set) { m_isLet = set; }
-	protected: bool m_isLet;	
+	protected: bool m_isLet;
+
+	public: bool isExtern()
+	{
+		if(previousToken() == Token::EXTERN )
+			return true;
+		//else
+		return false;
+	}
+	//public: bool isExtern() { return m_isLet; }
+	//public: void isExtern(bool set) { m_isLet = set; }
+	//protected: bool m_isLet;
 
 	//the type is here, if it's a built_in_type, NOW:
 	//The reason for this separate builtIntype thing is that
@@ -1576,14 +1672,14 @@ public:
 	public: void pairElement(LangElement* set) { m_pairElement = set; }
 	protected: LangElement* m_pairElement;
 
-    // Hmm. We wanted to skip whitespace in previousElement stuff, because it would mess things up.
+    // NOT TRUE: Hmm. We wanted to skip whitespace in previousElement stuff, because it would mess things up.
     // So previousElement never returns whitespace elements.
     public: LangElement* previousElement()
     {
-        if (m_previousElement && m_previousElement->isWhiteSpace() )
+        /*if (m_previousElement && m_previousElement->isWhiteSpace() )
         {
             return m_previousElement->previousElement();
-        }
+        }*/
         return m_previousElement;
     }
 	//public: LangElement* previousElement() { return m_previousElement; }
@@ -1632,15 +1728,21 @@ public:
 	//Well, that's a bit TODO.
 	//
 
+	// JONDE REFACTOR: INIT_DATA handling has two overlapping ways. As a normal LangElement that is in the array,
+	// or as an initData member for LangElement. Refactor to have only one way to store INIT_DATA.
+
 	public: LangElement* initData() { return m_initData; }
 	public: void initData(LangElement* set) { m_initData = set; }
 	protected: LangElement* m_initData;
 
 	public: LangElement* addDefaultInitData()
 	{
+		cout << "addDefaultInitData START.\n";
+
 		// Currently only adds default data to built in types.
 		if(isBuiltInType() == false || containerType() != ContainerType::UNDEFINED)
 		{
+			cout << "addDefaultInitData: not BUILT_IN_TYPE. Not setting INIT_DATA.\n";
 			return nullptr;
 		}
 
@@ -1703,6 +1805,16 @@ public:
 
 		lang_elem->newLangElement(lineNumber(), Token::NUMBER, TypeType::UNDEFINED, init_string);
 
+		cout << "addDefaultInitData: init_string: " << init_string << "\n";
+
+		if (isInClass() )
+			cout << "YES isInClass.\n";
+		else cout << "Not in a class.\n";
+
+		if (isInFunc() )
+			cout << "YES in func.\n";
+		else cout << "Not in a func.\n";
+
 		//lang_elem = new LangElement(lineNumber(), Token::UNDEFINED, init_string);
 		initData(lang_elem);
 		
@@ -1724,6 +1836,16 @@ public:
 	bool isInClass()
 	{
 		if(parent() && parent()->token() == Token::CLASS)
+		{
+			return true;
+		}
+		//else
+		return false;
+	}
+
+	bool isInFunc()
+	{
+		if(parent() && parent()->isFunc())
 		{
 			return true;
 		}
@@ -1787,6 +1909,23 @@ public:
 		return res;	
 	}
 
+	LangElement* parentModule()
+	{
+		return searchClosestParentToken(Token::MODULE);
+
+		//return null if not found.
+		/*LangElement* res = parent();
+		while( res )
+		{
+			if( res->token() == Token::CLASS )
+			{
+				return res;
+			}
+			res = res->parent();//move up in hierarchy.
+		}
+		return res;//if not found this will be zero in the end, because that's what ends the while loop.
+		*/
+	}
 
 	LangElement* parentClass()
 	{
@@ -2735,7 +2874,7 @@ public:
 	LangElement* searchLast(Token::e set_lang_token_type)
 	{
 		//for( LangElement* elem : langElements )
-		for( long i = langElements.size()-1l; i >= 0l; i-- )
+		for( int i = (int)langElements.size()-1; i >= 0; i-- )
 		{
 			if( langElements[i]->token() == set_lang_token_type )
 			{

@@ -54,23 +54,25 @@ protected:
 class LangCompiler
 {
 public:
-	LangCompiler()
+	LangCompiler(string working_directory = "")
 	{
 		force_one_thread = true;
 
-		//workingPath = boost::filesystem::current_path();
-
-		char cCurrentPath[FILENAME_MAX];
-		if( !GetCurrentDir(cCurrentPath, sizeof(cCurrentPath)) )
+		if (working_directory == "")
 		{
-			//return errno;
+			char cCurrentPath[FILENAME_MAX];
+			if( !GetCurrentDir(cCurrentPath, sizeof(cCurrentPath)) )
+			{
+				//return errno;
+			}
+
+			cCurrentPath[sizeof(cCurrentPath) - 1] = '\0'; /* not really required */
+
+			//cout << "The current working directory is " << cCurrentPath <<"\n";
+
+			workingPath = cCurrentPath;
 		}
-
-		cCurrentPath[sizeof(cCurrentPath) - 1] = '\0'; /* not really required */
-
-		//cout << "The current working directory is " << cCurrentPath <<"\n";
-
-		workingPath = cCurrentPath;
+		else workingPath = working_directory;
 
 		addModuleSearchPath(workingPath);
 		//cout << "Added current directory to module search paths: " << moduleSearchPaths.back() << "\n";
@@ -326,8 +328,15 @@ public:
 		}
 		
 		if(did_we_find_the_file == true)
+		{
 			cout << "Found imported C++ header: " << set_import_path << "\n";
-		else cout << "Didn't find imported C++ header: " << set_import_name << "\n";
+			//assert(0);
+		}
+		else
+		{
+			cout << "Didn't find imported C++ header: " << set_import_name << "\n";
+			assert(0);
+		}
 		
 		/////////////WHAT DOES THIS DO???: addSourceFile( set_import_path );
 		
@@ -458,6 +467,7 @@ public:
 	//Write to default path. Which is workingPath + "/cpp/"
 	bool write()
 	{
+		cout << "working path is: " << workingPath << "\n"; // JONDE WTF debug.
 		return write(workingPath + "/cpp/");
 	}
 

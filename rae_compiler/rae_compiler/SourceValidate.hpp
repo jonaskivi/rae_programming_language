@@ -365,12 +365,19 @@
 	void validateLine(vector<LangElement*>& line, int tab_level = 0)
 	{
 		#ifdef DEBUG_RAE_VALIDATE
-		coutIndent(tab_level);		
-		cout<<"START validateLine: \n";		
-		for(uint i = 0; i < line.size(); ++i)
+		string current_module_name;
+		if (!line.empty())
+			current_module_name = line[0]->parentModuleString();
+
+		if (g_debugModuleName == current_module_name)
 		{
 			coutIndent(tab_level);
-			cout<<i<<" : "<<line[i]->toSingleLineString()<<"\n";
+			cout<<"START validateLine: \n";
+			for(uint i = 0; i < line.size(); ++i)
+			{
+				coutIndent(tab_level);
+				cout<<i<<" : "<<line[i]->toSingleLineString()<<"\n";
+			}
 		}
 		#endif
 		
@@ -378,6 +385,12 @@
 		if(hasListOtherParenthesis(line))
 		{
 			// Parenthesis splitting:
+			#ifdef DEBUG_RAE_VALIDATE
+			if (g_debugModuleName == current_module_name)
+			{
+				cout<<"We still got parens.\n";
+			}
+			#endif
 
 			for(uint i = 0; i < line.size(); ++i)
 			{
@@ -398,12 +411,26 @@
 					}
 				}
 			}
-			return;
+			//return;
 		}
+
+		#ifdef DEBUG_RAE_VALIDATE
+		if (g_debugModuleName == current_module_name)
+		{
+			cout<<"Validate. Continue line with no parens.\n";
+		}
+		#endif
 
 		// These are the parenthesis after a FUNC_CALL
 		if( line.size() > 0 && line[0]->previousElement() && line[0]->previousElement()->token() == Token::FUNC_CALL )// && line[0]->isParenthesis() )
 		{
+			#ifdef DEBUG_RAE_VALIDATE
+			if (g_debugModuleName == current_module_name)
+			{
+				cout<<"Validate function call parenthesis.\n";
+			}
+			#endif
+
 			LangElement* set_elem = line[0]->previousElement();
 			
 			LangElement* func_definition = set_elem->definitionElement();
@@ -427,7 +454,10 @@
 			if( func_params.size() == 0 && set_elem->nextElement() && not set_elem->nextElement()->isParenthesis() )
 			{
 				#ifdef DEBUG_RAE_VALIDATE
-				cout<<"Function validated ok. No parenthesis and 0 params.\n";
+				if (g_debugModuleName == current_module_name)
+				{
+					cout<<"Function validated ok. No parenthesis and 0 params.\n";
+				}
 				#endif
 				return;
 			}
@@ -435,29 +465,31 @@
 			uint k = 1;
 
 			#ifdef DEBUG_RAE_VALIDATE
-			cout<<"Params for function: "<<func_definition->parentClassName()<<"."<<func_definition->name()<<" : params size: "<<func_params.size()<<"\n";
-			
-			//nice debugging of funcParameterList:
-			for(uint i = 0; i < func_params.size() && k < line.size(); ++i)
+			if (g_debugModuleName == current_module_name)
 			{
-				cout<<"\tparam: "<<func_params[i]->toSingleLineString()<<"\n";
-
-				if(func_params[i]->definitionElement())
+				cout<<"Params for function: "<<func_definition->parentClassName()<<"."<<func_definition->name()<<" : params size: "<<func_params.size()<<"\n";
+			
+				//nice debugging of funcParameterList:
+				for(uint i = 0; i < func_params.size() && k < line.size(); ++i)
 				{
-					cout<<"\t\tTYPE definitionElement: "<<func_params[i]->definitionElement()->toSingleLineString()<<"\n";
+					cout<<"\tparam: "<<func_params[i]->toSingleLineString()<<"\n";
+
+					if(func_params[i]->definitionElement())
+					{
+						cout<<"\t\tTYPE definitionElement: "<<func_params[i]->definitionElement()->toSingleLineString()<<"\n";
+					}
+					//else cout<<"types DON'T have definitionElements.\n"; //this mostly happens only for built_in_types.
+					//and I'm happy to tell you that we seem to have definitionElements for user defined types!
+
+					/*if( line[k]->definitionElement() && func_params[i]->typeType() != line[k]->definitionElement()->typeType() )
+					{
+						cout << "Setting typeConvert in: " << line[k]->toSingleLineString() << " to: " << TypeType::toString( func_params[i]->typeType() ) << "\n";
+						line[k]->typeConvert( func_params[i]->typeType() );
+					}*/
+
+					++k;
 				}
-				//else cout<<"types DON'T have definitionElements.\n"; //this mostly happens only for built_in_types.
-				//and I'm happy to tell you that we seem to have definitionElements for user defined types!
-
-				/*if( line[k]->definitionElement() && func_params[i]->typeType() != line[k]->definitionElement()->typeType() )
-				{
-					cout << "Setting typeConvert in: " << line[k]->toSingleLineString() << " to: " << TypeType::toString( func_params[i]->typeType() ) << "\n";
-					line[k]->typeConvert( func_params[i]->typeType() );
-				}*/
-
-				++k;
 			}
-
 			#endif
 
 			// Find commas and split
@@ -468,7 +500,8 @@
 				if( k > start_frag && line[k]->token() == Token::COMMA )
 				{
 					#ifdef DEBUG_RAE_VALIDATE
-					cout << "Found comma at: " << k << " so fragment is: " << start_frag << " - " << k-1 << "\n";
+					if (g_debugModuleName == current_module_name)
+						cout << "Found comma at: " << k << " so fragment is: " << start_frag << " - " << k-1 << "\n";
 					#endif
 					vector<LangElement*> fragment;
 					for(uint j = start_frag; j < k; ++j)
@@ -487,7 +520,8 @@
 				if( k == line.size()-1 && k > start_frag)
 				{
 					#ifdef DEBUG_RAE_VALIDATE
-					cout << "Last fragment: " << start_frag << " - " << k << "\n";
+					if (g_debugModuleName == current_module_name)
+						cout << "Last fragment: " << start_frag << " - " << k << "\n";
 					#endif
 					vector<LangElement*> fragment;
 					for(uint j = start_frag; j < k; ++j)
@@ -505,10 +539,13 @@
 			}
 
 			#ifdef DEBUG_RAE_VALIDATE
-			if( func_params.size() > nroFragments )
-				cout << "TODO ERROR: too FEW parameters to a function. Check default args.\n";
-			else if(nroFragments > 0)
-				cout << "Just the right amount of parameters to a function. " << func_params.size() << " and " << nroFragments << "\n";
+			if (g_debugModuleName == current_module_name)
+			{
+				if( func_params.size() > nroFragments )
+					cout << "TODO ERROR: too FEW parameters to a function. Check default args.\n";
+				else if(nroFragments > 0)
+					cout << "Just the right amount of parameters to a function. " << func_params.size() << " and " << nroFragments << "\n";
+			}
 			#endif
 		}
 
@@ -537,8 +574,11 @@
 		}
 
 		#ifdef DEBUG_RAE_VALIDATE
-		coutIndent(tab_level);
-		cout<<"END validateLine\n";
+		if (g_debugModuleName == current_module_name)
+		{
+			coutIndent(tab_level);
+			cout<<"END validateLine\n";
+		}
 		#endif
 		
 	}
@@ -547,18 +587,26 @@
 	{
 		assert(line.size() > 0); // I bet this assert will cause trouble...
 
+		#ifdef DEBUG_RAE_VALIDATE
+			string current_module_name;
+			if (!line.empty())
+				current_module_name = line[0]->parentModuleString();
+		#endif
+
 		if(hasListOtherParenthesis(line))
 		{
 			#ifdef DEBUG_RAE_VALIDATE
-			cout << "SHIIT: there's parenthesis inside this function call.\n";
+			if (g_debugModuleName == current_module_name)
+				cout << "SHIIT: there's parenthesis inside this function call.\n";
 			#endif
-			assert(0);
+			////assert(0);
 		}
 
 		if(line.size() == 1)
 		{
 			#ifdef DEBUG_RAE_VALIDATE
-			cout << "The only thing here is: " << line[0]->toSingleLineString() << "\n";
+			if (g_debugModuleName == current_module_name)
+				cout << "The only thing here is: " << line[0]->toSingleLineString() << "\n";
 			#endif
 			validateParameter(param, *line[0]);
 		}
@@ -583,7 +631,9 @@
 	void validateParameter(LangElement& param, LangElement& line)
 	{
 		#ifdef DEBUG_RAE_VALIDATE
-		cout << "validateParameter START.\n";
+			string current_module_name = line.parentModuleString();
+			if (g_debugModuleName == current_module_name)
+				cout << "validateParameter START.\n";
 		#endif
 
 		LangElement* ret_value = line.expressionRValue();
@@ -600,15 +650,19 @@
 		if( param.typeType() != ret_value->typeType() )
 		{
 			#ifdef DEBUG_RAE_VALIDATE
-			cout << "Setting typeConvert in: " << line.toSingleLineString() << " to: " << TypeType::toString( param.typeType() ) << "\n";
+			if (g_debugModuleName == current_module_name)
+				cout << "Setting typeConvert in: " << line.toSingleLineString() << " to: " << TypeType::toString( param.typeType() ) << "\n";
 			#endif
 			line.typeConvert( ret_value->typeType(), param.typeType() );
 		}
 		else
 		{
 			#ifdef DEBUG_RAE_VALIDATE
-			cout << "TODO validateParameter() Unhandled typeConvert.\n";
-			cout << "types are: ret_value: " << ret_value->toSingleLineString() << " param: " << param.toSingleLineString() << " paramTypeType: " << TypeType::toString( param.typeType() ) << "\n";
+			if (g_debugModuleName == current_module_name)
+			{
+				cout << "TODO validateParameter() Unhandled typeConvert.\n";
+				cout << "types are: ret_value: " << ret_value->toSingleLineString() << " param: " << param.toSingleLineString() << " paramTypeType: " << TypeType::toString( param.typeType() ) << "\n";
+			}
 			#endif
 		}
 
@@ -628,7 +682,8 @@
 		*/
 
 		#ifdef DEBUG_RAE_VALIDATE
-		cout << "validateParameter END.\n";
+		if (g_debugModuleName == current_module_name)
+			cout << "validateParameter END.\n";
 		#endif
 	}
 
@@ -688,8 +743,12 @@
 						ReportError::reportError("Using value types (val and built in types) with -> point to operator is not possible.", &set_elem );
 					}
 					else if( set_elem.previousElement()->typeType() == TypeType::OPT
-						|| set_elem.previousElement()->typeType() == TypeType::REF
-						|| set_elem.previousElement()->typeType() == TypeType::LINK
+						|| set_elem.previousElement()->typeType() == TypeType::REF)
+					{
+						ReportError::reportError("Using ref or opt owning pointers with -> point to operator is not possible.", &set_elem );	
+					}
+					else if( 
+						set_elem.previousElement()->typeType() == TypeType::LINK
 						|| set_elem.previousElement()->typeType() == TypeType::PTR
 						|| set_elem.previousElement()->token() == Token::BRACKET_END
 					)
