@@ -2387,9 +2387,9 @@ bool SourceParser::handleToken(string set_token)
 		{
 			if (previousToken() == Token::CLASS)
 			{
-#ifdef DEBUG_RAE_HUMAN
-				cout << "( means template class.\n";
-#endif
+				#ifdef DEBUG_RAE_HUMAN
+					cout << "( means template class.\n";
+				#endif
 				//a simple class template
 				previousElement()->kind(Kind::TEMPLATE);
 				expectingToken(Token::CLASS_TEMPLATE_SECOND_TYPE);

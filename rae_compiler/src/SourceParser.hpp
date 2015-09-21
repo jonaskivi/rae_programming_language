@@ -1939,7 +1939,7 @@ REMOVED:
 	//mostly func arguments:
 	vector<Element*> checkForPreviousDefinitionsList;
 
-	//This is the three of all our elements.
+	//This is the tree of all our elements.
 	vector<Element*> elements;
 	//The three is something like this, even though this Compiler class
 	//handles almost all things in the tree.
@@ -4051,7 +4051,7 @@ public:
 				else
 				{
 					#ifdef DEBUG_RAE_PARSER
-					cout<<"not a class type... DANG.\n";
+					cout<<"not a class type...\n";
 					#endif
 				}
 			}
@@ -4115,7 +4115,7 @@ public:
 			{
 				if( set_elem->name() == elem->name() )
 				{
-					cout << "THIS IS DA SAME NAMESPACE. " << set_elem->toSingleLineString() << " and earlier: " << elem->toSingleLineString() << "\n";;
+					cout << "THIS IS THE SAME NAMESPACE. " << set_elem->toSingleLineString() << " and earlier: " << elem->toSingleLineString() << "\n";;
 				}
 			}	
 
@@ -4140,7 +4140,7 @@ public:
 					else
 					{
 						#ifdef DEBUG_RAE_PARSER
-						cout<<"BUT IT*S NOT VALID!!!!\n";
+						cout<<"BUT IT'S NOT VALID!!!!\n";
 						#endif
 						#ifdef DEBUG_DEBUGNAME
 							if (g_debugName == set_elem->name())

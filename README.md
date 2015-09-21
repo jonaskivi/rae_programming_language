@@ -4,7 +4,9 @@ Rae Programming Language
 A native statically typed programming language
 - optionals, no semicolons, single source files, short words instead of sigils
 - compiles to almost readable C++11
-- the compiler will break on about any code you throw at it
+- the compiler will break on about any code you throw at it,
+and it is written in the most horrible style, as it was just intented to be
+a temporary proof of concept. :)
 - influenced by C++, D, Python, Nim, Swift, Rust and Jai
 
 	module hello
@@ -47,7 +49,7 @@ Array syntax is like this:
 # TODO
 - Inheritance, multiple inheritance, interfaces
 - Multiple return values
-- Make the compiler more robust
+- Make the compiler more robust, and well, rewrite it :)
 - Built in types don't handle kind correctly
 - Strings are practically not handled at all in many cases
 
