@@ -10,7 +10,7 @@
 namespace Rae
 {
 
-class LangElement;
+class Element;
 
 class ReportError
 {
@@ -41,47 +41,35 @@ public:
 	}
 	*/
 	
-	static void reportInfo(string set, LangElement* set_elem);
-	static void reportInfo(string set, LangElement* set_elem, LangElement* set_elem2);
+	static void reportInfo(string set, Element* set_elem);
+	static void reportInfo(string set, Element* set_elem, Element* set_elem2);
 	static void reportInfo(string set, string in_which_namespace);
-	static void reportWarning(string set, LangElement* set_elem);
+	static void reportWarning(string set, Element* set_elem);
 //not in vs2012:
 #if (_MSC_VER == 1700) // Visual Studio 2012
 	// Nothing here...
 #else
-	static void reportWarning(string set, std::initializer_list<LangElement*> set_elems);
+	static void reportWarning(string set, std::initializer_list<Element*> set_elems);
 #endif
 
-	static void reportError(string set, LangElement* set_elem);
-	static void reportError(string set, LangElement* set_elem, LangElement* set_elem2);
+	static void reportError(string set, Element* set_elem);
+	static void reportError(string set, Element* set_elem, Element* set_elem2);
 //not in vs2012:
 #if (_MSC_VER == 1700) // Visual Studio 2012
 	// Nothing here...
 #else
-	static void reportError(string set, std::initializer_list<LangElement*> set_elems);
+	static void reportError(string set, std::initializer_list<Element*> set_elems);
 #endif
 	static void reportError(string set, int set_line_number, string in_which_namespace);
-	static void compilerError(string set, LangElement* set_elem);
+	static void compilerError(string set, Element* set_elem);
 	static void compilerError(string set);
 
-	public: static int countWarnings()
-	{
-		return m_countWarnings;
-	}
-	public: static void countWarnings(int set)
-	{
-		m_countWarnings = set;
-	}
+	public: static int countWarnings() { return m_countWarnings; }
+	public: static void countWarnings(int set) { m_countWarnings = set; }
 	protected: static int m_countWarnings;
 	
-	public: static int countErrors()
-	{
-		return m_countErrors;
-	}
-	public: static void countErrors(int set)
-	{
-		m_countErrors = set;
-	}
+	public: static int countErrors() { return m_countErrors; }
+	public: static void countErrors(int set) { m_countErrors = set; }
 	protected: static int m_countErrors;
 };
 

@@ -139,8 +139,8 @@ string Compiler::findModuleFileInSearchPaths(string set)//param: e.g. "rae/examp
 }
 
 //This must return a copy. Otherwise our pointer owning system will crash on destructors.
-//Every SourceParser must own their LangElements.
-LangElement* Compiler::searchElementInOtherModules(SourceParser* set_parser, LangElement* set_elem)
+//Every SourceParser must own their Elements.
+Element* Compiler::searchElementInOtherModules(SourceParser* set_parser, Element* set_elem)
 {
 	if(set_parser == 0 || set_elem == 0)
 	{
@@ -153,7 +153,7 @@ LangElement* Compiler::searchElementInOtherModules(SourceParser* set_parser, Lan
 	cout<<set_parser->moduleName()<<" is looking for "<<set_elem->toString()<<"\n";
 	#endif
 
-	LangElement* result;
+	Element* result;
 	
 	//first search stdlib
 	for(uint i = 0; i < stdLibModules.size(); i++)

@@ -33,7 +33,7 @@ else
 endif
 
 SRC_DIR := ./rae_compiler/src/
-OBJECTS  := rae_compiler.o LangElement.o ReportError.o rae_helpers.o SourceParser.o
+OBJECTS  := rae_compiler.o Element.o ReportError.o rae_helpers.o SourceParser.o
 
 install:
 	ifeq ($(OS),Windows_NT)
@@ -49,16 +49,16 @@ all: compile raehello
 compile: $(OBJECTS)
 	$(CXX) $(OBJECTS) $(LIBS) -o $(EXECUTABLE)
 
-rae_compiler.o: $(SRC_DIR)rae_compiler.cpp $(SRC_DIR)RaeStdLib.hpp $(SRC_DIR)ReportError.hpp $(SRC_DIR)SourceParser.hpp $(SRC_DIR)SourceValidate.hpp $(SRC_DIR)SourceWriter.hpp $(SRC_DIR)LangElement.hpp $(SRC_DIR)StringFileWriter.hpp $(SRC_DIR)rae_helpers.hpp
+rae_compiler.o: $(SRC_DIR)rae_compiler.cpp $(SRC_DIR)RaeStdLib.hpp $(SRC_DIR)ReportError.hpp $(SRC_DIR)SourceParser.hpp $(SRC_DIR)SourceValidate.hpp $(SRC_DIR)SourceWriter.hpp $(SRC_DIR)Element.hpp $(SRC_DIR)StringFileWriter.hpp $(SRC_DIR)rae_helpers.hpp
 	$(CXX) $(INCLUDES) $(CXXFLAGS) -c $(SRC_DIR)rae_compiler.cpp -o rae_compiler.o
 
 ReportError.o: $(SRC_DIR)ReportError.hpp $(SRC_DIR)ReportError.cpp
 	$(CXX) $(INCLUDES) $(CXXFLAGS) -c $(SRC_DIR)ReportError.cpp -o ReportError.o
 
-LangElement.o: $(SRC_DIR)LangElement.hpp $(SRC_DIR)LangElement.cpp
-	$(CXX) $(INCLUDES) $(CXXFLAGS) -c $(SRC_DIR)LangElement.cpp -o LangElement.o
+Element.o: $(SRC_DIR)Element.hpp $(SRC_DIR)Element.cpp
+	$(CXX) $(INCLUDES) $(CXXFLAGS) -c $(SRC_DIR)Element.cpp -o Element.o
 
-SourceParser.o: $(SRC_DIR)SourceParser.cpp $(SRC_DIR)RaeStdLib.hpp $(SRC_DIR)ReportError.hpp $(SRC_DIR)SourceParser.hpp $(SRC_DIR)SourceValidate.hpp $(SRC_DIR)SourceWriter.hpp $(SRC_DIR)LangElement.hpp $(SRC_DIR)StringFileWriter.hpp $(SRC_DIR)rae_helpers.hpp
+SourceParser.o: $(SRC_DIR)SourceParser.cpp $(SRC_DIR)RaeStdLib.hpp $(SRC_DIR)ReportError.hpp $(SRC_DIR)SourceParser.hpp $(SRC_DIR)SourceValidate.hpp $(SRC_DIR)SourceWriter.hpp $(SRC_DIR)Element.hpp $(SRC_DIR)StringFileWriter.hpp $(SRC_DIR)rae_helpers.hpp
 	$(CXX) $(INCLUDES) $(CXXFLAGS) -c $(SRC_DIR)SourceParser.cpp -o SourceParser.o
 
 rae_helpers.o: $(SRC_DIR)rae_helpers.hpp $(SRC_DIR)rae_helpers.cpp

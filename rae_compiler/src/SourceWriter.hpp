@@ -5,7 +5,7 @@
 
 // Write debug tree file:
 
-	void writeDebugTree( StringFileWriter& writer, LangElement& set_elem )
+	void writeDebugTree( StringFileWriter& writer, Element& set_elem )
 	{
 		writer.writeIndents();
 		writer.writeString( set_elem.toSingleLineString() );
@@ -20,16 +20,16 @@
 		
 		writer.currentIndentPlus();
 
-		for(uint i = 0; i < set_elem.langElements.size(); i++)
+		for(uint i = 0; i < set_elem.elements.size(); i++)
 		{
-			writeDebugTree( writer, *set_elem.langElements[i]);
+			writeDebugTree( writer, *set_elem.elements[i]);
 		}
 
 		writer.currentIndentMinus();
 	}
 
 /* //JONDE REMOVE this:
-	void writeDebugTree( StringFileWriter* writer, LangElement* set_elem )
+	void writeDebugTree( StringFileWriter* writer, Element* set_elem )
 	{
 		static int stack_level = 0;
 		stack_level++;
@@ -56,9 +56,9 @@
 		
 		writer->currentIndentPlus();
 
-		for(uint i = 0; i < set_elem->langElements.size(); i++)
+		for(uint i = 0; i < set_elem->elements.size(); i++)
 		{
-			writeDebugTree( writer, set_elem->langElements[i]);
+			writeDebugTree( writer, set_elem->elements[i]);
 		}
 
 		writer->currentIndentMinus();
@@ -67,7 +67,7 @@
 	}
 	*/
 
-	void writeDebugTree2( StringFileWriter& writer, LangElement& set_elem )
+	void writeDebugTree2( StringFileWriter& writer, Element& set_elem )
 	{
 		writer.writeIndents();
 		writer.writeString( set_elem.toSingleLineString() );
@@ -92,25 +92,25 @@
 
 // Writing
 	
-	void iterateWrite( StringFileWriter& writer, LangElement& set_elem )
+	void iterateWrite( StringFileWriter& writer, Element& set_elem )
 	{
-		for(uint i = 0; i < set_elem.langElements.size(); i++)
+		for(uint i = 0; i < set_elem.elements.size(); i++)
 		{
-			if(i+1 < set_elem.langElements.size())
+			if(i+1 < set_elem.elements.size())
 			{
 				//This misses some nextTokens, which are not children of
-				//this LangElement, but maybe that doesn't matter that much,
+				//this Element, but maybe that doesn't matter that much,
 				//they'll be members of different things anyway, and might not
 				//be related.
-				//writer.nextToken( langElements[i+1]->token() );
-				writer.nextElement( set_elem.langElements[i+1] );
+				//writer.nextToken( elements[i+1]->token() );
+				writer.nextElement( set_elem.elements[i+1] );
 			}
-			//set_elem.langElements[i]->write(writer);
-			writeElement( writer, *set_elem.langElements[i]);
+			//set_elem.elements[i]->write(writer);
+			writeElement( writer, *set_elem.elements[i]);
 		}
 	}
 
-	void writeElement( StringFileWriter& writer, LangElement& set_elem )
+	void writeElement( StringFileWriter& writer, Element& set_elem )
 	{
         //wtf... JONDE
 		if (set_elem.name() == "name:ISempty 3")
@@ -149,24 +149,24 @@
 				//writer.writeIndents();
 				writer.writeString( set_elem.name() );
 				//writer.writeChar( '\n' );
-				//for( LangElement* elem : langElements )
+				//for( Element* elem : elements )
 				//{
 				//	elem->write(writer);
 				//}
 				{
 					/*
-					for(uint i = 0; i < set_elem.langElements.size(); i++)
+					for(uint i = 0; i < set_elem.elements.size(); i++)
 					{
-						if(i+1 < set_elem.langElements.size())
+						if(i+1 < set_elem.elements.size())
 						{
 							//This misses some nextTokens, which are not children of
-							//this LangElement, but maybe that doesn't matter that much,
+							//this Element, but maybe that doesn't matter that much,
 							//they'll be members of different things anyway, and might not
 							//be related.
-							//writer.nextToken( langElements[i+1]->token() );
-							writer.nextElement( set_elem.langElements[i+1] );
+							//writer.nextToken( elements[i+1]->token() );
+							writer.nextElement( set_elem.elements[i+1] );
 						}
-						langElements[i]->write(writer);
+						elements[i]->write(writer);
 					}
 					*/
 					iterateWrite(writer, set_elem);
@@ -963,7 +963,7 @@
 
 				//if( writer.nextToken() == Token::USE_REFERENCE && writer.nextElement()->kind() == Kind::VAL )
 				{
-					LangElement* got_expressionRValue = 0;
+					Element* got_expressionRValue = 0;
 					if( set_elem.nextElement() != 0)
 					{
 						#if defined(DEBUG_RAE_WRITER) || defined(DEBUG_RAE_POINT_TO)
@@ -1068,7 +1068,7 @@
 				{
 					// Using an array: some_array[5].something
 					// A difficult case: some_array[Rae::GetSomeThing.whatIsIt(123 + 321)].something
-					/*JONDE REMOVE LangElement* bracketPair = writer.previousElement()->pairElement();
+					/*JONDE REMOVE Element* bracketPair = writer.previousElement()->pairElement();
 					if(bracketPair)
 					{
 						cout << "bracketPair: " << bracketPair->toSingleLineString() << "\n";
@@ -1076,11 +1076,11 @@
 					else cout << "OH NOEW. There's no bracketPair.\n";
 					*/
 
-					LangElement* array_ob = writer.previousElement()->previousElement();
+					Element* array_ob = writer.previousElement()->previousElement();
 					if(array_ob)
 					{
 						cout << "array_ob: " << array_ob->toSingleLineString() << "\n";
-						LangElement* type_element = array_ob->arrayContainedTypeElement();
+						Element* type_element = array_ob->arrayContainedTypeElement();
 						if(type_element)
 						{
 							if(type_element->kind() == Kind::VAL)
@@ -1289,7 +1289,7 @@
 				if( set_elem.nextElement() && set_elem.nextElement()->token() != Token::POINT_TO ) // There are other cases where we want LINK instead of LINK.obj
 				{
 					//REMOVE: cout<<"interesting. ARRAYSTUFF:.\n";
-					LangElement* prev_ref = set_elem.searchClosestPreviousUseReferenceOrUseVector();
+					Element* prev_ref = set_elem.searchClosestPreviousUseReferenceOrUseVector();
 					if(prev_ref)
 					{
 						//REMOVE: cout<<"interesting. ARRAYSTUFF:2.\n";
@@ -1297,7 +1297,7 @@
 						{
 							//REMOVE: cout<<"interesting. ARRAYSTUFF:3.\n";
 							//REMOVE: cout<<prev_ref->definitionElement()->toString();
-							LangElement* temp_second_type = prev_ref->definitionElement()->templateSecondType();
+							Element* temp_second_type = prev_ref->definitionElement()->templateSecondType();
 							if(temp_second_type)
 							{
 								//REMOVE: cout<<"interesting. ARRAYSTUFF:4.\n";
@@ -1649,8 +1649,8 @@
 							writer.writeString(set_elem.name());
 						}
 						
-						// JONDE REFACTOR: INIT_DATA handling has two overlapping ways. As a normal LangElement that is in the array,
-						// or as an initData member for LangElement. Refactor to have only one way to store INIT_DATA.
+						// JONDE REFACTOR: INIT_DATA handling has two overlapping ways. As a normal Element that is in the array,
+						// or as an initData member for Element. Refactor to have only one way to store INIT_DATA.
 
 						if(set_elem.role() != Role::FUNC_RETURN )// WHY WAS THIS HERE: && set_elem.role() != Role::FUNC_PARAMETER)
 						{
@@ -1887,7 +1887,7 @@
 				}
 
 
-				/*for( LangElement* elem : langElements )
+				/*for( Element* elem : elements )
 				{
 					elem->write(writer);
 				}*/
@@ -1927,7 +1927,7 @@
 					/////writer.writeChar( '\n' );
 				}
 				/*
-				for( LangElement* elem : langElements )
+				for( Element* elem : elements )
 				{
 					elem->write(writer);
 				}*/
@@ -2017,7 +2017,7 @@
 					writer.writeString( set_elem.parent()->name() );//for a c++ constructor, the name of the class...
 					//writer.writeString( "__new" + set_elem.parent()->name() );//for a struct "constructor"
 				}
-				for( LangElement* elem : set_elem.langElements )
+				for( Element* elem : set_elem.elements )
 				{
 					elem->write(writer);
 				}
@@ -2031,7 +2031,7 @@
 					//writer.writeString( "__delete" + set_elem.parent()->name() );//for a struct "constructor"
 				}
 				writer.writeChar( '\n' );
-				for( LangElement* elem : set_elem.langElements )
+				for( Element* elem : set_elem.elements )
 				{
 					elem->write(writer);
 				}
@@ -2045,7 +2045,7 @@
 				
 				{
 
-				LangElement* first_return_elem;//we want to keep track of the first return type
+				Element* first_return_elem;//we want to keep track of the first return type
 				//so we don't write it twice.
 
 				if( writer.isHeader() == false )//cpp
@@ -2059,11 +2059,11 @@
 
 					//visibility means public, protected, private, library (which we need to not write here).
 					/*
-					LangElement* viselem = set_elem.hasVisibilityFuncChild();
+					Element* viselem = set_elem.hasVisibilityFuncChild();
 
 					if( viselem )
 					{
-						if( LangElement::isVisibilityNameAllowedInCpp(viselem->name()) )
+						if( Element::isVisibilityNameAllowedInCpp(viselem->name()) )
 						{
 							writer.writeString( viselem->name() );
 							writer.writeChar( ':' );
@@ -2101,12 +2101,12 @@
 					if( set_elem.token() == Token::FUNC || (set_elem.token() == Token::MAIN && writer.isHeader() == false) )
 					{
 						//NOT: reuse myelem //<-- That might be a good keyword for Rae! Not really.
-						//LangElement* myelem = set_elem.langElements.front();
+						//Element* myelem = set_elem.elements.front();
 						
 						/*
 						//THIS is how we used to do it. YAGNI.
 
-						LangElement* myelem = set_elem.searchFirst(Token::DEFINE_FUNC_RETURN);
+						Element* myelem = set_elem.searchFirst(Token::DEFINE_FUNC_RETURN);
 
 						if( myelem != 0 )
 						{
@@ -2131,7 +2131,7 @@
 						}
 						*/
 
-						LangElement* myelem = set_elem.searchFirst(Token::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES);
+						Element* myelem = set_elem.searchFirst(Token::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES);
 
 						if( myelem != 0 )
 						{
@@ -2243,7 +2243,7 @@
 						}
 					}
 
-				//WAS HERE BEFORE: }//just to make a nu LangElement*
+				//WAS HERE BEFORE: }//just to make a nu Element*
 
 				
 				////////////////////////writer.writeChar( '(' );
@@ -2255,7 +2255,7 @@
 					{
 						writer.writeString( "(int argc, char* const argv[])" );
 						/*
-						for( LangElement* elem : set_elem.langElements )
+						for( Element* elem : set_elem.elements )
 						{
 							if( elem->token() == Token::DEFINE_FUNC_RETURN )
 							{
@@ -2295,29 +2295,29 @@
 						{
 							bool got_first_scope = false;
 
-							for(uint i = 0; i < set_elem.langElements.size(); i++)
+							for(uint i = 0; i < set_elem.elements.size(); i++)
 							{
-								if(i+1 < set_elem.langElements.size())
+								if(i+1 < set_elem.elements.size())
 								{
 									//This misses some nextTokens, which are not children of
-									//this LangElement, but maybe that doesn't matter that much,
+									//this Element, but maybe that doesn't matter that much,
 									//they'll be members of different things anyway, and might not
 									//be related.
-									//writer.nextToken( set_elem.langElements[i+1]->token() );
-									writer.nextElement( set_elem.langElements[i+1] );
+									//writer.nextToken( set_elem.elements[i+1]->token() );
+									writer.nextElement( set_elem.elements[i+1] );
 								}
 
 								/*CAN REMOVE:
-								if( set_elem.langElements[i]->token() == Token::DEFINE_FUNC_RETURN )
+								if( set_elem.elements[i]->token() == Token::DEFINE_FUNC_RETURN )
 								{
 									//do nothing
 								}
-								else if( set_elem.langElements[i]->token() == Token::VISIBILITY )
+								else if( set_elem.elements[i]->token() == Token::VISIBILITY )
 								{
 									//do nothing
 								}
 								*/
-								//REMOVED: else if( set_elem.langElements[i]->token() == Token::DEFINE_FUNC_ARGUMENT )
+								//REMOVED: else if( set_elem.elements[i]->token() == Token::DEFINE_FUNC_ARGUMENT )
 								//REMOVED: {
 									//DON'T WANT THESE FOR MAIN, FOR NOW...
 									
@@ -2327,19 +2327,19 @@
 									
 								//REMOVED: }
 								/*REMOVE
-								else if( set_elem.langElements[i]->token() == Token::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES )
+								else if( set_elem.elements[i]->token() == Token::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES )
 								{
 									//already written for main
 								}
-								else if( set_elem.langElements[i]->token() == Token::PARENTHESIS_END_FUNC_RETURN_TYPES )
+								else if( set_elem.elements[i]->token() == Token::PARENTHESIS_END_FUNC_RETURN_TYPES )
 								{
 									//already written for main
 								}
-								else if( set_elem.langElements[i]->token() == Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES )
+								else if( set_elem.elements[i]->token() == Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES )
 								{
 									//already written for main
 								}
-								else if( set_elem.langElements[i]->token() == Token::PARENTHESIS_END_FUNC_PARAM_TYPES )
+								else if( set_elem.elements[i]->token() == Token::PARENTHESIS_END_FUNC_PARAM_TYPES )
 								{
 									//already written for main...
 
@@ -2348,21 +2348,21 @@
 									//writer.writeChar( '\n' );
 								}
 
-								else if(set_elem.langElements[i]->token() == Token::DEFINE_REFERENCE
-									&& (set_elem.langElements[i]->role() == Role::FUNC_RETURN || set_elem.langElements[i]->role() == Role::FUNC_PARAMETER))
+								else if(set_elem.elements[i]->token() == Token::DEFINE_REFERENCE
+									&& (set_elem.elements[i]->role() == Role::FUNC_RETURN || set_elem.elements[i]->role() == Role::FUNC_PARAMETER))
 								{
 									*/
 									//Don't want these for MAIN for now. Maybe later TODO.
 
 									//just to check that the first return type doesn't get written twice.
 									//TODO multiple return types handling.
-									/*if( set_elem.langElements[i] == first_return_elem )
+									/*if( set_elem.elements[i] == first_return_elem )
 									{
 										//don't write it.
 									}
 									else
 									{
-										writeElement(writer, *set_elem.langElements[i]);
+										writeElement(writer, *set_elem.elements[i]);
 										cout<<"TODO multiple return types handling.\n";
 									}*/
 								//}
@@ -2371,16 +2371,16 @@
 								//don't write anything until first scope.
 								if(got_first_scope == false)
 								{ 
-									if( set_elem.langElements[i]->token() == Token::SCOPE_BEGIN )
+									if( set_elem.elements[i]->token() == Token::SCOPE_BEGIN )
 									{
 										got_first_scope = true;
 										writer.writeChar('\n'); //one extra newline, because we missed it.
-										writeElement(writer, *set_elem.langElements[i]);
+										writeElement(writer, *set_elem.elements[i]);
 									}
 								}
 								else
 								{									
-									writeElement(writer, *set_elem.langElements[i]);
+									writeElement(writer, *set_elem.elements[i]);
 								}
 							}
 						}
@@ -2398,7 +2398,7 @@
 					else //a normal FUNC
 					{
 						/*
-						for( LangElement* elem : set_elem.langElements )
+						for( Element* elem : set_elem.elements )
 						{
 							if( elem->token() == Token::DEFINE_FUNC_RETURN )
 							{
@@ -2428,7 +2428,7 @@
 						}
 						*/
 
-						LangElement* myparam_start = set_elem.searchFirst(Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES, Token::SCOPE_BEGIN);
+						Element* myparam_start = set_elem.searchFirst(Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES, Token::SCOPE_BEGIN);
 
 						if( myparam_start == nullptr || myparam_start->token() == Token::SCOPE_BEGIN)
 						{
@@ -2441,38 +2441,38 @@
 						{
 							bool stop_writing_until_func_return_ends = false;
 
-							for(size_t i = 0; i < set_elem.langElements.size(); i++)
+							for(size_t i = 0; i < set_elem.elements.size(); i++)
 							{
-								if(i+1 < set_elem.langElements.size())
+								if(i+1 < set_elem.elements.size())
 								{
 									//This misses some nextTokens, which are not children of
-									//this LangElement, but maybe that doesn't matter that much,
+									//this Element, but maybe that doesn't matter that much,
 									//they'll be members of different things anyway, and might not
 									//be related.
-									//writer.nextToken( set_elem.langElements[i+1]->token() );
-									writer.nextElement( set_elem.langElements[i+1] );
+									//writer.nextToken( set_elem.elements[i+1]->token() );
+									writer.nextElement( set_elem.elements[i+1] );
 								}
 
 								if(stop_writing_until_func_return_ends)
 								{
 									//do nothing.
-									if(set_elem.langElements[i]->token() == Token::PARENTHESIS_END_FUNC_RETURN_TYPES)
+									if(set_elem.elements[i]->token() == Token::PARENTHESIS_END_FUNC_RETURN_TYPES)
 										stop_writing_until_func_return_ends = false;
 								}
-								else if( set_elem.langElements[i]->token() == Token::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES )
+								else if( set_elem.elements[i]->token() == Token::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES )
 								{
 									//do nothing, already written
 									stop_writing_until_func_return_ends = true;
 								}
-								else if( set_elem.langElements[i]->token() == Token::DEFINE_FUNC_RETURN )
+								else if( set_elem.elements[i]->token() == Token::DEFINE_FUNC_RETURN )
 								{
 									//do nothing, already written
 								}
-								else if( set_elem.langElements[i]->token() == Token::VISIBILITY )
+								else if( set_elem.elements[i]->token() == Token::VISIBILITY )
 								{
 									//do nothing, already written
 								}
-								else if( set_elem.langElements[i]->token() == Token::AUTO_INIT )
+								else if( set_elem.elements[i]->token() == Token::AUTO_INIT )
 								{
 									// Special handling to write the IMHO strange C++ class initializers, known as AUTO_INIT here.
 									if( writer.isHeader() == false ) // cpp
@@ -2489,34 +2489,34 @@
 											writer.writeString( ", " );	
 										}
 
-										writeElement(writer, *set_elem.langElements[i]);
+										writeElement(writer, *set_elem.elements[i]);
 									}
 								}
-								//REMOVED: else if( set_elem.langElements[i]->token() == Token::DEFINE_FUNC_ARGUMENT )
+								//REMOVED: else if( set_elem.elements[i]->token() == Token::DEFINE_FUNC_ARGUMENT )
 								/*//REMOVED: {
 									cout<<"DEFINE_FUNC_ARGUMENT should be removed now We'll see.\n";
 									assert(0);
 									
-									//if( set_elem.langElements[i]->isBuiltInType() )
-									if( set_elem.langElements[i]->kind() == Kind::BUILT_IN_TYPE )
+									//if( set_elem.elements[i]->isBuiltInType() )
+									if( set_elem.elements[i]->kind() == Kind::BUILT_IN_TYPE )
 									{
 										//cout<<"Why NOOOOOOOOOOOOOOOOOOOOOOOOOOOOT\n";
-										writer.writeString( set_elem.langElements[i]->typeInCpp() );
+										writer.writeString( set_elem.elements[i]->typeInCpp() );
 									}
-									else if( set_elem.langElements[i]->kind() == Kind::REF )
+									else if( set_elem.elements[i]->kind() == Kind::REF )
 									{
-										writer.writeString( set_elem.langElements[i]->typeInCpp() );
+										writer.writeString( set_elem.elements[i]->typeInCpp() );
 										writer.writeChar('*');	
 									}
-									else if( set_elem.langElements[i]->kind() == Kind::VECTOR )
+									else if( set_elem.elements[i]->kind() == Kind::VECTOR )
 									{
 										writer.writeString( "std::vector<" );
-										//writer.writeString( set_elem.langElements[i]->typeInCpp() );
-										writer.writeString( set_elem.langElements[i]->templateSecondTypeStringInCpp() );
+										//writer.writeString( set_elem.elements[i]->typeInCpp() );
+										writer.writeString( set_elem.elements[i]->templateSecondTypeStringInCpp() );
 										writer.writeString( "*>*" );	
 									}
 									writer.writeChar(' ');
-									writer.writeString( set_elem.langElements[i]->name() );
+									writer.writeString( set_elem.elements[i]->name() );
 
 									if( set_elem.initData() )
 									{
@@ -2526,13 +2526,13 @@
 									
 								}
 								*/
-								/*else if( set_elem.langElements[i]->token() == Token::PARENTHESIS_END_FUNC_PARAM_TYPES )
+								/*else if( set_elem.elements[i]->token() == Token::PARENTHESIS_END_FUNC_PARAM_TYPES )
 								{
 									/////////writer.writeChar( ' ' );
 									writer.writeChar( ')' );
 									///////writer.writeChar( '\n' );
 								}*/
-								else if( set_elem.langElements[i]->token() == Token::NEWLINE)
+								else if( set_elem.elements[i]->token() == Token::NEWLINE)
 								{
 									//handle this separately because of isHeader.
 
@@ -2543,17 +2543,17 @@
 										writer.writeChar(';'); // automatic semicolon handling case
 									}
 
-									//set_elem.langElements[i]->write(writer);
-									writeElement(writer, *set_elem.langElements[i]);
+									//set_elem.elements[i]->write(writer);
+									writeElement(writer, *set_elem.elements[i]);
 
 									if( writer.isHeader() == true )//hpp
 									{
 										//end loop. Write only one line to the header.
-										i = set_elem.langElements.size();
+										i = set_elem.elements.size();
 									}
 
 								}
-								else if( set_elem.langElements[i]->token() == Token::SCOPE_BEGIN)
+								else if( set_elem.elements[i]->token() == Token::SCOPE_BEGIN)
 								{
 									//TODO check if this is called at all!!
 
@@ -2564,7 +2564,7 @@
 											writer.writeChar(';');
 										}
 										//end loop. Write only one line to the header.
-										i = set_elem.langElements.size();
+										i = set_elem.elements.size();
 									}
 									else //cpp
 									{
@@ -2572,10 +2572,10 @@
 										{
 											writer.writeChar(' '); // Some extra spaces for oneliners.
 										}
-										writeElement(writer, *set_elem.langElements[i]);
+										writeElement(writer, *set_elem.elements[i]);
 									}
 								}
-								else if( set_elem.langElements[i]->token() == Token::SCOPE_END)
+								else if( set_elem.elements[i]->token() == Token::SCOPE_END)
 								{
 									// This will actually never happen at all, because SCOPE_ENDs are children of SCOPE_BEGIN,
 									// and they will be handled in normal case.
@@ -2585,7 +2585,7 @@
 										//end loop. Write only one line to the header.
 										//////assert(0);
 										writer.writeString("NotSupposedToHappen1");
-										i = set_elem.langElements.size();	
+										i = set_elem.elements.size();	
 									}
 									else //cpp
 									{
@@ -2595,29 +2595,29 @@
 											writer.writeChar(' ');
 											writer.currentIndentMinus();
 										}
-										writeElement(writer, *set_elem.langElements[i]);
+										writeElement(writer, *set_elem.elements[i]);
 									}
 								}
 								/*
-								else if( set_elem.langElements[i]->token() == Token::PARENTHESIS_BEGIN
-									|| set_elem.langElements[i]->token() == Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES)
+								else if( set_elem.elements[i]->token() == Token::PARENTHESIS_BEGIN
+									|| set_elem.elements[i]->token() == Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES)
 								{
 									has_param_parentheses = true;
-									writeElement(writer, *set_elem.langElements[i]);
+									writeElement(writer, *set_elem.elements[i]);
 								}
 								*/
-								else if(set_elem.langElements[i]->token() == Token::DEFINE_REFERENCE
-									&& set_elem.langElements[i]->role() == Role::FUNC_RETURN)
+								else if(set_elem.elements[i]->token() == Token::DEFINE_REFERENCE
+									&& set_elem.elements[i]->role() == Role::FUNC_RETURN)
 								{
 									//just to check that the first return type doesn't get written twice.
 									//TODO multiple return types handling.
-									if( set_elem.langElements[i] == first_return_elem )
+									if( set_elem.elements[i] == first_return_elem )
 									{
 										//don't write it.
 									}
 									else
 									{
-										writeElement(writer, *set_elem.langElements[i]);
+										writeElement(writer, *set_elem.elements[i]);
 										cout<<"TODO multiple return types handling.\n";
 									}
 								}
@@ -2627,9 +2627,9 @@
 									debug:
 									if( token() == Token::CONSTRUCTOR )
 									{
-										//rae::log("const: elem: ", i, " is ", set_elem.langElements[i]->toString(), "\n");
+										//rae::log("const: elem: ", i, " is ", set_elem.elements[i]->toString(), "\n");
 
-										if( set_elem.langElements[i]->parentToken() == Token::CLASS || set_elem.langElements[i]->parentToken() == Token::ENUM )
+										if( set_elem.elements[i]->parentToken() == Token::CLASS || set_elem.elements[i]->parentToken() == Token::ENUM )
 										{
 											//rae::log("STRANGE. This thing has set_elem.parent CLASS and not func.", "\n");
 										}
@@ -2640,19 +2640,19 @@
 									//{
 										//ok, we don't need this isHeader here, because
 										//now we check for newline and end the loop.
-										//set_elem.langElements[i]->write(writer);
+										//set_elem.elements[i]->write(writer);
 
-										writeElement(writer, *set_elem.langElements[i]);
+										writeElement(writer, *set_elem.elements[i]);
 									//}
 								}
 							}
 						}
 					}
-				}//just to make a nu LangElement*
+				}//just to make a nu Element*
 				
 /*
 				uint count_elem = 0;
-				for( LangElement* elem : set_elem.langElements )
+				for( Element* elem : set_elem.elements )
 				{
 					if( count_elem == 0)
 					{
@@ -2695,7 +2695,7 @@
 					//writer.writeChars("\n{\n", 3);
 					//writer.writeChar('\n');
 
-					/*for( LangElement* elem : set_elem.langElements )
+					/*for( Element* elem : set_elem.elements )
 					{
 						elem->write(writer);
 					}*/
@@ -2713,27 +2713,27 @@
 						writer.writeString( set_elem.name() );
 						writer.writeString( "\n\n" );
 
-						for(uint i = 0; i < set_elem.langElements.size(); i++)
+						for(uint i = 0; i < set_elem.elements.size(); i++)
 						{
 							//OK. This is important:
 							//Only write funcs, destructors and constructors for
 							//cpp. Add an extra newline between.
-							if( set_elem.langElements[i]->token() == Token::FUNC
-								|| set_elem.langElements[i]->token() == Token::CONSTRUCTOR
-								|| set_elem.langElements[i]->token() == Token::DESTRUCTOR
+							if( set_elem.elements[i]->token() == Token::FUNC
+								|| set_elem.elements[i]->token() == Token::CONSTRUCTOR
+								|| set_elem.elements[i]->token() == Token::DESTRUCTOR
 							)
 							{
-								if(i+1 < set_elem.langElements.size())
+								if(i+1 < set_elem.elements.size())
 								{
 									//This misses some nextTokens, which are not children of
-									//this LangElement, but maybe that doesn't matter that much,
+									//this Element, but maybe that doesn't matter that much,
 									//they'll be members of different things anyway, and might not
 									//be related.
-									//writer.nextToken( set_elem.langElements[i+1]->token() );
-									writer.nextElement( set_elem.langElements[i+1] );
+									//writer.nextToken( set_elem.elements[i+1]->token() );
+									writer.nextElement( set_elem.elements[i+1] );
 								}
-								//set_elem.langElements[i]->write(writer);
-								writeElement(writer, *set_elem.langElements[i]);
+								//set_elem.elements[i]->write(writer);
+								writeElement(writer, *set_elem.elements[i]);
 
 								writer.writeString("\n\n");
 							}
@@ -2756,7 +2756,7 @@
 						writer.lineNeedsSemicolon(false);
 					}
 					/*
-					if( LangElement::isVisibilityNameAllowedInCpp(set_elem.name()) )
+					if( Element::isVisibilityNameAllowedInCpp(set_elem.name()) )
 					{
 							writer.writeString( set_elem.name() );
 							writer.writeChar( ':' );
@@ -2770,13 +2770,13 @@
 					}
 					*/
 
-					writer.writeString( LangElement::getVisibilityNameInCpp(set_elem.name()) );
+					writer.writeString( Element::getVisibilityNameInCpp(set_elem.name()) );
 
 					//writer.writeString( set_elem.name() );
 					//writer.writeString( ": " );
 					/////writer.writeChar( '\n' );
 					//writer.writeChar( '\n' ); //let's put a line after public: ...
-					/*for( LangElement* elem : set_elem.langElements )
+					/*for( Element* elem : set_elem.elements )
 					{
 						elem->write(writer);
 					}*/
@@ -2791,7 +2791,7 @@
 			case Token::VISIBILITY_DEFAULT:
 				if( writer.isHeader() == true )
 				{
-					//if( LangElement::isVisibilityNameAllowedInCpp(set_elem.name()) )
+					//if( Element::isVisibilityNameAllowedInCpp(set_elem.name()) )
 					//{
 						writer.currentDefaultVisibility(set_elem.name());
 						writer.nextNeedsDefaultVisibility(false);
@@ -2802,7 +2802,7 @@
 							writer.lineNeedsSemicolon(false);
 						}
 
-						writer.writeString( LangElement::getVisibilityNameInCpp(set_elem.name()) );
+						writer.writeString( Element::getVisibilityNameInCpp(set_elem.name()) );
 
 						//writer.writeString( set_elem.name() );
 						//writer.writeString( ": " );
@@ -2822,7 +2822,7 @@
 					
 					/////writer.writeChar( '\n' );
 					//writer.writeChar( '\n' ); //let's put a line after public: ...
-					/*for( LangElement* elem : set_elem.langElements )
+					/*for( Element* elem : set_elem.elements )
 					{
 						elem->write(writer);
 					}*/
@@ -2879,7 +2879,7 @@
 					writer.lineNeedsSemicolon(false);
 					writer.writeString( string("#include \"") );
 					int not_on_first = 0;
-					for( LangElement* elem : set_elem.langElements )
+					for( Element* elem : set_elem.elements )
 					{
 						if( elem->token() == Token::IMPORT_NAME )
 						{
@@ -2895,7 +2895,7 @@
 						}
 						else
 						{
-							break;//break the for... hope this works.
+							break;
 						}
 					}
 					writer.writeString( string(".hpp\"") );
@@ -2916,7 +2916,7 @@
 					writer.lineNeedsSemicolon(false);
 
 					//writer.writeString("#include \"helloworld.hpp\"\n");
-					LangElement* last_module_name_element = set_elem.searchLast( Token::IMPORT_NAME );
+					Element* last_module_name_element = set_elem.searchLast( Token::IMPORT_NAME );
 					writer.writeString("#include \"");
 					writer.writeString( last_module_name_element->name() );
 					writer.writeString(".hpp\"");
@@ -2929,7 +2929,7 @@
 				{
 					writer.lineNeedsSemicolon(false);
 					writer.writeString( string("#ifndef _") );
-					for( LangElement* elem : set_elem.langElements )
+					for( Element* elem : set_elem.elements )
 					{
 						if( elem->token() == Token::MODULE_DIR || elem->token() == Token::MODULE_NAME )
 						{
@@ -2938,13 +2938,13 @@
 						}
 						else
 						{
-							break;//break the for... hope this works.
+							break;
 						}
 					}
 					writer.writeString( string("hpp_\n") );
 					
 					writer.writeString( string("#define _") );
-					for( LangElement* elem : set_elem.langElements )
+					for( Element* elem : set_elem.elements )
 					{
 						if( elem->token() == Token::MODULE_DIR || elem->token() == Token::MODULE_NAME )
 						{
@@ -2953,7 +2953,7 @@
 						}
 						else
 						{
-							break;//break the for... hope this works.
+							break;
 						}
 					}
 					writer.writeString( string("hpp_\n\n") );
@@ -2966,7 +2966,7 @@
 					writer.writeString("#include \"rae/link.hpp\"\n\n");
 					//writer.writeString("using namespace std;"); //not this... I guess.
 					
-					/*for( LangElement* elem : set_elem.langElements )
+					/*for( Element* elem : set_elem.elements )
 					{
 						elem->write(writer);
 					}*/
@@ -2978,12 +2978,12 @@
 				{
 					//TODO
 					//writer.writeString("#include \"helloworld.hpp\"\n");
-					LangElement* last_module_name_element = set_elem.searchLast( Token::MODULE_NAME );
+					Element* last_module_name_element = set_elem.searchLast( Token::MODULE_NAME );
 					writer.writeString("#include \"");
 					writer.writeString( last_module_name_element->name() );
 					writer.writeString(".hpp\"\n");
 
-					//for( LangElement* elem : set_elem.langElements )
+					//for( Element* elem : set_elem.elements )
 					//{
 					//	elem->write(writer);
 					//}
@@ -2996,7 +2996,7 @@
 					writer.lineNeedsSemicolon(false);
 					writer.writeString( string("#endif // _") );
 					
-					/*for( LangElement* elem : set_elem.langElements )
+					/*for( Element* elem : set_elem.elements )
 					{
 						if( elem->token() == Token::MODULE_NAME )
 						{
@@ -3008,7 +3008,7 @@
 					//our set_elem.parent is the module now:
 					if( set_elem.parent() && set_elem.parent()->token() == Token::MODULE)
 					{
-						for( LangElement* elem : set_elem.parent()->langElements )
+						for( Element* elem : set_elem.parent()->elements )
 						{
 							if( elem->token() == Token::MODULE_DIR || elem->token() == Token::MODULE_NAME )
 							{
@@ -3017,7 +3017,7 @@
 							}
 							else
 							{
-								break;//break the for... hope this works.
+								break;
 							}
 						}
 					}
@@ -3060,13 +3060,13 @@
 		writer.previousElement( &set_elem );
 	}
 
-	void writeVisibilityForElement( StringFileWriter& writer, LangElement& set_elem )
+	void writeVisibilityForElement( StringFileWriter& writer, Element& set_elem )
 	{
-		LangElement* viselem = set_elem.hasVisibilityFuncChild();
+		Element* viselem = set_elem.hasVisibilityFuncChild();
 		if( viselem )
 		{
 			/*
-			if( LangElement::isVisibilityNameAllowedInCpp(viselem->name()) )
+			if( Element::isVisibilityNameAllowedInCpp(viselem->name()) )
 			{
 				writer.writeString( viselem->name() );
 				writer.writeChar( ':' );
@@ -3087,7 +3087,7 @@
 			}
 			*/
 
-			writer.writeString( LangElement::getVisibilityNameInCpp(viselem->name()) );
+			writer.writeString( Element::getVisibilityNameInCpp(viselem->name()) );
 			//writer.writeChar( ':' );
 			//writer.writeChar( ' ' );
 			
@@ -3108,7 +3108,7 @@
 		else if(writer.nextNeedsDefaultVisibility() == true)//use default visibility
 		{
 			writer.nextNeedsDefaultVisibility(false);
-			writer.writeString( LangElement::getVisibilityNameInCpp(writer.currentDefaultVisibility()) );
+			writer.writeString( Element::getVisibilityNameInCpp(writer.currentDefaultVisibility()) );
 			//writer.writeChar( ':' );
 			//writer.writeChar( ' ' );
 		}

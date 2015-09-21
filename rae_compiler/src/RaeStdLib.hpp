@@ -28,7 +28,7 @@
 	*/
 
 
-	void injectClassBoilerPlate(StringFileWriter& writer, LangElement& set_elem)
+	void injectClassBoilerPlate(StringFileWriter& writer, Element& set_elem)
 	{
 		//string linkHandlingBoilerplate;
 		//linkHandlingBoilerplate = 
@@ -110,7 +110,7 @@
 
 	}
 
-	void injectConstructorBoilerPlate(StringFileWriter& writer, LangElement& set_elem)
+	void injectConstructorBoilerPlate(StringFileWriter& writer, Element& set_elem)
 	{
 		//string our_class_name = set_elem.parentClassName();
 
@@ -122,7 +122,7 @@
 			"");
 	}
 
-	void injectDestructorBoilerPlate(StringFileWriter& writer, LangElement& set_elem)
+	void injectDestructorBoilerPlate(StringFileWriter& writer, Element& set_elem)
 	{
 		//string our_class_name = set_elem.parentClassName();
 

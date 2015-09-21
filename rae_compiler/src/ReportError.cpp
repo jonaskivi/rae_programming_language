@@ -1,11 +1,11 @@
 
 #include "ReportError.hpp"
-#include "LangElement.hpp"
+#include "Element.hpp"
 
 namespace Rae
 {
 
-	void ReportError::reportInfo(string set, LangElement* set_elem)
+	void ReportError::reportInfo(string set, Element* set_elem)
 	{
 		//set_elem->parseError(ParseError::SYNTAX_ERROR);
 		rlutil::setColor(rlutil::LIGHTBLUE);
@@ -21,7 +21,7 @@ namespace Rae
 		cout<<"\n";
 	}
 
-	void ReportError::reportInfo(string set, LangElement* set_elem, LangElement* set_elem2)
+	void ReportError::reportInfo(string set, Element* set_elem, Element* set_elem2)
 	{
 		cout << "RAE_INFO FROM:\n";
 		reportInfo(set, set_elem);
@@ -43,7 +43,7 @@ namespace Rae
 	}
 
 	/*
-	void ReportError::reportWarning(string set, LangElement* set_elem)
+	void ReportError::reportWarning(string set, Element* set_elem)
 	{
 		//set_elem->parseError(ParseError::SYNTAX_ERROR);
 		rlutil::setColor(rlutil::YELLOW);
@@ -62,7 +62,7 @@ namespace Rae
 	}
 	*/
 
-	void ReportError::reportWarning(string set, LangElement* set_elem)
+	void ReportError::reportWarning(string set, Element* set_elem)
 	{
 		rlutil::setColor(rlutil::YELLOW);
 		cout<<"WARNING: ";
@@ -101,7 +101,7 @@ namespace Rae
 		ReportError::m_countWarnings++;
 	}
 
-	void ReportError::reportError(string set, LangElement* set_elem)
+	void ReportError::reportError(string set, Element* set_elem)
 	{
 		rlutil::setColor(rlutil::RED);
 		cout<<"RAE_ERROR: ";
@@ -134,7 +134,7 @@ namespace Rae
 		ReportError::m_countErrors++;
 	}
 
-	void ReportError::reportError(string set, LangElement* set_elem, LangElement* set_elem2)
+	void ReportError::reportError(string set, Element* set_elem, Element* set_elem2)
 	{
 		cout << "RAE_ERROR FROM:\n";
 		reportError(set, set_elem);
@@ -147,7 +147,7 @@ namespace Rae
 #if (_MSC_VER == 1700) // Visual Studio 2012
 	// Nothing here
 #else
-	void ReportError::reportWarning(string set, std::initializer_list<LangElement*> set_elems)
+	void ReportError::reportWarning(string set, std::initializer_list<Element*> set_elems)
 	{
 		rlutil::setColor(rlutil::YELLOW);
 		cout<<"WARNING: ";
@@ -156,7 +156,7 @@ namespace Rae
 
 		bool is_first = true;
 
-		for( LangElement* set_elem: set_elems )
+		for( Element* set_elem: set_elems )
 		{
 			if(set_elem)
 			{
@@ -189,7 +189,7 @@ namespace Rae
 		ReportError::m_countWarnings++;
 	}
 
-	void ReportError::reportError(string set, std::initializer_list<LangElement*> set_elems)
+	void ReportError::reportError(string set, std::initializer_list<Element*> set_elems)
 	{
 		rlutil::setColor(rlutil::RED);
 		cout<<"RAE_ERROR: ";
@@ -198,7 +198,7 @@ namespace Rae
 
 		bool is_first = true;
 
-		for( LangElement* set_elem: set_elems )
+		for( Element* set_elem: set_elems )
 		{
 			if(set_elem)
 			{
@@ -244,7 +244,7 @@ namespace Rae
 		ReportError::m_countErrors++;
 	}
 
-	void ReportError::compilerError(string set, LangElement* set_elem)
+	void ReportError::compilerError(string set, Element* set_elem)
 	{
 		rlutil::setColor(rlutil::RED);
 		cout<<"COMPILER RAE_ERROR: ";

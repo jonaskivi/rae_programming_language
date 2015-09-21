@@ -1007,7 +1007,7 @@ alias is a bit like a link, but it is just done with string replacement:
 //In Rae I'd like to just write:
 alias func_definition -> set_elem.definitionElement
 //instead of creating a temporary in these situations, we're just doing this for clarity:
-LangElement* func_definition = set_elem.definitionElement();
+Element* func_definition = set_elem.definitionElement();
 
 Rectangle rect1
 alias reca -> rect1

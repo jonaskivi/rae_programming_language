@@ -10,7 +10,7 @@
     #define GetCurrentDir getcwd
  #endif
 
-#include "LangElement.hpp"
+#include "Element.hpp"
 #include "StringFileWriter.hpp"
 #include "SourceParser.hpp"
 #include "ReportError.hpp"
@@ -34,8 +34,8 @@ public:
 	string findModuleFileInSearchPaths(string set);
 
 	// This must return a copy. Otherwise our pointer owning system will crash on destructors.
-	// Every SourceParser must own their LangElements.
-	LangElement* searchElementInOtherModules(SourceParser* set_parser, LangElement* set_elem);
+	// Every SourceParser must own their Elements.
+	Element* searchElementInOtherModules(SourceParser* set_parser, Element* set_elem);
 	
 	void addSourceFileAsImport(string set_import_name);
 	void addCppHeaderAsImport(string set_import_name);

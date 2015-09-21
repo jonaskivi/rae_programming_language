@@ -66,17 +66,17 @@ public:
 	public: void currentIndent(int set) { m_currentIndent = set; }
 	protected: int m_currentIndent;
 
-	public: LangElement* previousElement() { return m_previousElement; }
-	public: void previousElement(LangElement* set) { m_previousElement = set; }
-	protected: LangElement* m_previousElement;
+	public: Element* previousElement() { return m_previousElement; }
+	public: void previousElement(Element* set) { m_previousElement = set; }
+	protected: Element* m_previousElement;
 
-	public: LangElement* previous2ndElement() { return m_previous2ndElement; }
-	public: void previous2ndElement(LangElement* set) { m_previous2ndElement = set; }
-	protected: LangElement* m_previous2ndElement;
+	public: Element* previous2ndElement() { return m_previous2ndElement; }
+	public: void previous2ndElement(Element* set) { m_previous2ndElement = set; }
+	protected: Element* m_previous2ndElement;
 
-	public: LangElement* nextElement() { return m_nextElement; }
-	public: void nextElement(LangElement* set) { m_nextElement = set; }
-	protected: LangElement* m_nextElement;
+	public: Element* nextElement() { return m_nextElement; }
+	public: void nextElement(Element* set) { m_nextElement = set; }
+	protected: Element* m_nextElement;
 
 	public: Token::e previousToken()
 	{

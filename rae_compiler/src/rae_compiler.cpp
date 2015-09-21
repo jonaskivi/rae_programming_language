@@ -13,7 +13,7 @@ int main (int argc, char * const argv[])
 	Rae::ReportError::countErrors(0);
 
 	rlutil::setColor(rlutil::GREEN);
-	cout<<"Rae Compiler version 0.0.3\n";
+	cout<<"Rae Compiler version 0.0.4\n";
 	rlutil::setColor(rlutil::WHITE);
 
 	string debug_filename = "";
@@ -52,38 +52,10 @@ int main (int argc, char * const argv[])
 	//cout << "Validate is TODO.\n";
 	Rae::g_compiler->write();
 
-	/*
-	Rae::Compiler langCompiler;
-
-	langCompiler.createRaeStdLib();
-
-	for(uint i = 1; i < argc; i++)
-	{
-		cout<<"Adding source file: "<<argv[i]<<"\n";
-		langCompiler.addSourceFile(argv[i]);
-	}
-
-	langCompiler.parse();
-	langCompiler.validate();
-	langCompiler.write();
-	*/
 	rlutil::setColor(rlutil::GREEN);
 	cout<<"Rae Finished.\n";
 	rlutil::setColor(rlutil::WHITE);	
 
 	return 0;
 }
-
-
-
-/*
-int main(int argc, char *argv[])
-{    
-	//rae::log("wahat\n");
-    Foo* f = new Foo();
-    f->startThread();
-    f->joinIt();
-    return 0;
-}
-*/
 

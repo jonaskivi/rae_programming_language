@@ -5,6 +5,7 @@ A native statically typed programming language
 - optionals, no semicolons, single source files, short words instead of sigils
 - compiles to almost readable C++11
 - the compiler will break on about any code you throw at it
+- influenced by C++, D, Python, Nim, Swift, Rust and Jai
 
 	module hello
 
@@ -44,6 +45,7 @@ Array syntax is like this:
 
 
 # TODO
+- Inheritance, multiple inheritance, interfaces
 - Multiple return values
 - Make the compiler more robust
 - Built in types don't handle kind correctly
