@@ -12,9 +12,9 @@
 namespace Rae
 {
 
-class LangCompiler;
+class Compiler;
 
-extern LangCompiler* g_compiler;
+extern Compiler* g_compiler;
 
 /*
 Rae TODO
@@ -1941,7 +1941,7 @@ REMOVED:
 
 	//This is the three of all our langElements.
 	vector<LangElement*> langElements;
-	//The three is something like this, even though this LangCompiler class
+	//The three is something like this, even though this Compiler class
 	//handles almost all things in the tree.
 	/*
 	Module1

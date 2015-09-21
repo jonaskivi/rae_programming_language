@@ -1,6 +1,6 @@
 #include "SourceParser.hpp"
 
-#include "LangCompiler.hpp"
+#include "Compiler.hpp"
 
 namespace Rae
 {

@@ -1,10 +1,10 @@
 #include "rae_helpers.hpp"
 #include "ReportError.hpp"
-#include "LangCompiler.hpp"
+#include "Compiler.hpp"
 
 namespace Rae
 {
-	LangCompiler* g_compiler;
+	Compiler* g_compiler;
 }
 
 int main (int argc, char * const argv[])
@@ -29,7 +29,7 @@ int main (int argc, char * const argv[])
 		return -1;
 	}
 
-	Rae::g_compiler = new Rae::LangCompiler(debug_working_dir);
+	Rae::g_compiler = new Rae::Compiler(debug_working_dir);
 
 	Rae::g_compiler->createRaeStdLib();
 
@@ -53,7 +53,7 @@ int main (int argc, char * const argv[])
 	Rae::g_compiler->write();
 
 	/*
-	Rae::LangCompiler langCompiler;
+	Rae::Compiler langCompiler;
 
 	langCompiler.createRaeStdLib();
 
