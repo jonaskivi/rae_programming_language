@@ -42,7 +42,7 @@ enum e
 };	
 }
 
-namespace TypeType
+namespace Kind
 {
 enum e
 {
@@ -58,8 +58,8 @@ enum e
 	TEMPLATE //REMOVE
 };
 
-string toString(TypeType::e set);
-TypeType::e fromString(const string& set);
+string toString(Kind::e set);
+Kind::e fromString(const string& set);
 }
 
 namespace ContainerType
@@ -103,13 +103,13 @@ enum e
 	NAMESPACE,
 	USE_NAMESPACE,
 	CLASS,
-	//use together with TypeType
-	//to have e.g. CLASS TypeType::TEMPLATE subtype that behaves differently.
+	//use together with Kind
+	//to have e.g. CLASS Kind::TEMPLATE subtype that behaves differently.
 	CLASS_NAME,
 	//just something for expectinToken:
 	CLASS_TEMPLATE_SECOND_TYPE, //class FirstType(SecondType)
 	DEFINE_REFERENCE,//SomeClass aNewObject
-	//use together with TypeType to have different kind of
+	//use together with Kind to have different kind of
 	//DEFINE_REFERENCEs.
 
 	//DEFINE_REFERENCE_IN_CLASS,//the same as above inside a class definition.
@@ -431,9 +431,9 @@ public:
 		m_token(Token::UNDEFINED),
 		m_name(""),
 		m_type(""),
-		m_typeType(TypeType::UNDEFINED),
-		m_typeConvertFrom(TypeType::UNDEFINED),
-		m_typeConvertTo(TypeType::UNDEFINED),
+		m_kind(Kind::UNDEFINED),
+		m_typeConvertFrom(Kind::UNDEFINED),
+		m_typeConvertTo(Kind::UNDEFINED),
 		m_builtInType(BuiltInType::UNDEFINED),
 		m_containerType(ContainerType::UNDEFINED),
 		m_role(Role::UNDEFINED),
@@ -453,13 +453,13 @@ public:
 	}
 	
 	//init2
-	LangElement(LineNumber& set_line_number, Token::e set_lang_token_type, TypeType::e set_type_type, string set_name = "", string set_type = "")
+	LangElement(LineNumber& set_line_number, Token::e set_lang_token_type, Kind::e set_type_type, string set_name = "", string set_type = "")
 	:
 		m_token(set_lang_token_type),
 		m_name(set_name),	
-		m_typeType(set_type_type),
-		m_typeConvertFrom(TypeType::UNDEFINED),
-		m_typeConvertTo(TypeType::UNDEFINED),
+		m_kind(set_type_type),
+		m_typeConvertFrom(Kind::UNDEFINED),
+		m_typeConvertTo(Kind::UNDEFINED),
 		m_builtInType(BuiltInType::UNDEFINED),
 		m_containerType(ContainerType::UNDEFINED),
 		m_role(Role::UNDEFINED),
@@ -521,7 +521,7 @@ public:
 		res->m_token = m_token;
 		res->m_name = m_name;
 		res->m_type = m_type;
-		res->m_typeType = m_typeType;
+		res->m_kind = m_kind;
 		res->m_typeConvertFrom = m_typeConvertFrom;
 		res->m_typeConvertTo = m_typeConvertTo;
 		res->m_builtInType = m_builtInType;
@@ -599,7 +599,7 @@ public:
     
 	string toString()
 	{
-		string ret = "\tname: >" + name() + "<\n\t" + tokenString() + "\n\t" + "typetype: " + typeTypeString() + "\n\t" + "type: " + type() + "containerType: " + ContainerType::toString(containerType()) + "\n\t" + "line: " + numberToString(lineNumber().line) + "\n";
+		string ret = "\tname: >" + name() + "<\n\t" + tokenString() + "\n\t" + "typetype: " + kindString() + "\n\t" + "type: " + type() + "containerType: " + ContainerType::toString(containerType()) + "\n\t" + "line: " + numberToString(lineNumber().line) + "\n";
 		if( ::isWhiteSpace(name()) )
 		{
 			ret += "The name is whitespace.\n";
@@ -622,7 +622,7 @@ public:
 				return "TAB";
 		}
 		//else
-		//string ret = "name: " + name() + " " + tokenString() + " typetype: " + typeTypeString() + " type: " + type() + " line: " + numberToString(lineNumber().line);
+		//string ret = "name: " + name() + " " + tokenString() + " typetype: " + kindString() + " type: " + type() + " line: " + numberToString(lineNumber().line);
 		string ret;
 
 		if(token() == Token::CPP_TYPEDEF) // Not a very good thing to have this here just for this one Token type. But as long as this is just for debugging it's maybe ok.
@@ -648,8 +648,8 @@ public:
 
 		ret += tokenString();
 
-		if(typeType() != TypeType::UNDEFINED)
-			ret += " typetype: " + typeTypeString();
+		if(kind() != Kind::UNDEFINED)
+			ret += " typetype: " + kindString();
 		if(containerType() != ContainerType::UNDEFINED)
 			ret += " containerType: " + containerTypeString();
 		if(isUnknownType() == true)
@@ -797,7 +797,7 @@ public:
 
 	public: string tokenString() { return Token::toString(m_token); }
 
-	public: string typeTypeString() { return TypeType::toString(m_typeType); }
+	public: string kindString() { return Kind::toString(m_kind); }
 
 	public: string containerTypeString() { return ContainerType::toString(m_containerType); }
 	
@@ -1414,14 +1414,14 @@ public:
 		BuiltInType::e test_built_in_type = BuiltInType::stringToBuiltInType(set);
 		if( test_built_in_type != BuiltInType::UNDEFINED )
 		{			
-			////////NOOOOO: typeType(TypeType::BUILT_IN_TYPE);
+			////////NOOOOO: kind(Kind::BUILT_IN_TYPE);
 			builtInType(test_built_in_type);
 			m_type = set;
 			//cout<<"SEEEEEEEEEEEEET type to BUILT_IN_TYPE. "<<m_type<<" name: "<<m_name<<" line: "<<lineNumber().line<<"\n";
 			return;
 		}
 		//else //it's some other type...
-		//////////NOOOOO don't do this: typeType(TypeType::REF);//We'll just mark it as reference for now.
+		//////////NOOOOO don't do this: kind(Kind::REF);//We'll just mark it as reference for now.
 		m_type = set;
 	}
 	protected: string m_type;
@@ -1491,7 +1491,7 @@ public:
 		}
 		else
 		{
-			newLangElement(lineNumber(), Token::TEMPLATE_SECOND_TYPE, TypeType::TEMPLATE/*are you sure this is not confusing...*/, /*string set_name:*/ "undefined", /*string set_type:*/ set_type );
+			newLangElement(lineNumber(), Token::TEMPLATE_SECOND_TYPE, Kind::TEMPLATE/*are you sure this is not confusing...*/, /*string set_name:*/ "undefined", /*string set_type:*/ set_type );
 		}
 	}
 
@@ -1540,29 +1540,29 @@ public:
 		return "_" + type() + "_" + templateSecondTypeString() + "_";
 	}
 
-	// TypeType doesn't have anything to do with templates anymore. But it is very important
+	// Kind doesn't have anything to do with templates anymore. But it is very important
 	// secondary type for e.g. DEFINE_REFERENCE.
 
-	public: TypeType::e typeType() { return m_typeType; }
-	public: void typeType(TypeType::e set) { m_typeType = set; }
-	protected: TypeType::e m_typeType;
+	public: Kind::e kind() { return m_kind; }
+	public: void kind(Kind::e set) { m_kind = set; }
+	protected: Kind::e m_kind;
 
 	// Convert from e.g. val to ref
-	public: void typeConvert(TypeType::e from, TypeType::e to)
+	public: void typeConvert(Kind::e from, Kind::e to)
 	{
 		m_typeConvertFrom = from;
 		m_typeConvertTo = to;
 	}
 
-	public: TypeType::e typeConvertFrom() { return m_typeConvertFrom; }
-	public: void typeConvertFrom(TypeType::e set) { m_typeConvertFrom = set; }
-	protected: TypeType::e m_typeConvertFrom;
+	public: Kind::e typeConvertFrom() { return m_typeConvertFrom; }
+	public: void typeConvertFrom(Kind::e set) { m_typeConvertFrom = set; }
+	protected: Kind::e m_typeConvertFrom;
 
-	public: TypeType::e typeConvertTo() { return m_typeConvertTo; }
-	public: void typeConvertTo(TypeType::e set) { m_typeConvertTo = set; }
-	protected: TypeType::e m_typeConvertTo;
+	public: Kind::e typeConvertTo() { return m_typeConvertTo; }
+	public: void typeConvertTo(Kind::e set) { m_typeConvertTo = set; }
+	protected: Kind::e m_typeConvertTo;
 
-	// ContainerType is an addition to TypeType and DefineReference.
+	// ContainerType is an addition to Kind and DefineReference.
 	// It tells if we're just single or an array, or something else.
 	public: ContainerType::e containerType() { return m_containerType; }
 	public: void containerType(ContainerType::e set) { m_containerType = set; }
@@ -1606,7 +1606,7 @@ public:
 	public: void builtInType(BuiltInType::e set)
 	{
 		m_builtInType = set;
-		////////NOOOOOO: typeType(TypeType::BUILT_IN_TYPE);
+		////////NOOOOOO: kind(Kind::BUILT_IN_TYPE);
 	}
 	protected: BuiltInType::e m_builtInType;
 
@@ -1790,9 +1790,9 @@ public:
 
 		}
 		
-		lang_elem = new LangElement(lineNumber(), Token::INIT_DATA, TypeType::UNDEFINED, "=");
+		lang_elem = new LangElement(lineNumber(), Token::INIT_DATA, Kind::UNDEFINED, "=");
 
-		lang_elem->newLangElement(lineNumber(), Token::NUMBER, TypeType::UNDEFINED, init_string);
+		lang_elem->newLangElement(lineNumber(), Token::NUMBER, Kind::UNDEFINED, init_string);
 
 		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_INIT_DATA)
 			cout << "addDefaultInitData: init_string: " << init_string << "\n";
@@ -2140,25 +2140,25 @@ public:
 					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::OBJECT_AUTO_INIT, init_ob->name(), init_ob->type() );
 				}
 				*/
-				/*if( init_ob->typeType() == TypeType::VECTOR )//TODO maybe get rid of these and just use typeType and AUTO_INIT.
+				/*if( init_ob->kind() == Kind::VECTOR )//TODO maybe get rid of these and just use kind and AUTO_INIT.
 				{
-					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::VECTOR_AUTO_INIT, TypeType::VECTOR, init_ob->name(), init_ob->type() );
+					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::VECTOR_AUTO_INIT, Kind::VECTOR, init_ob->name(), init_ob->type() );
 				}
-				else if( init_ob->typeType() == TypeType::TEMPLATE )
+				else if( init_ob->kind() == Kind::TEMPLATE )
 				{
-					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::TEMPLATE_AUTO_INIT, TypeType::TEMPLATE, init_ob->name(), init_ob->type() );
+					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::TEMPLATE_AUTO_INIT, Kind::TEMPLATE, init_ob->name(), init_ob->type() );
 				}
-				else if( init_ob->typeType() == TypeType::ARRAY )
+				else if( init_ob->kind() == Kind::ARRAY )
 				{
-					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::ARRAY_AUTO_INIT, TypeType::ARRAY, init_ob->name(), init_ob->type() );
+					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::ARRAY_AUTO_INIT, Kind::ARRAY, init_ob->name(), init_ob->type() );
 				}
-				else if( init_ob->typeType() == TypeType::REF )
+				else if( init_ob->kind() == Kind::REF )
 				{	
-					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::OBJECT_AUTO_INIT, TypeType::REF, init_ob->name(), init_ob->type() );
+					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::OBJECT_AUTO_INIT, Kind::REF, init_ob->name(), init_ob->type() );
 				}
-				else if( init_ob->typeType() == TypeType::BUILT_IN_TYPE )
+				else if( init_ob->kind() == Kind::BUILT_IN_TYPE )
 				{	
-					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::BUILT_IN_TYPE_AUTO_INIT, TypeType::BUILT_IN_TYPE, init_ob->name(), init_ob->type() );
+					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::BUILT_IN_TYPE_AUTO_INIT, Kind::BUILT_IN_TYPE, init_ob->name(), init_ob->type() );
 				}
 				else
 				{
@@ -2166,7 +2166,7 @@ public:
 				}
 				*/
 				
-				//elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::AUTO_INIT, init_ob->typeType(), init_ob->name(), init_ob->type() );				
+				//elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::AUTO_INIT, init_ob->kind(), init_ob->name(), init_ob->type() );				
 			
 				LangElement* auto_init_elem = init_ob->copy();
 				auto_init_elem->definitionElement(init_ob);//our init_ob can be found through the definitionElement.
@@ -2202,23 +2202,23 @@ public:
 				}
 				*/
 				/*
-				if( init_ob->typeType() == TypeType::VECTOR )
+				if( init_ob->kind() == Kind::VECTOR )
 				{
-					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::VECTOR_AUTO_FREE, TypeType::VECTOR, init_ob->name(), init_ob->type() );
+					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::VECTOR_AUTO_FREE, Kind::VECTOR, init_ob->name(), init_ob->type() );
 				}
-				else if( init_ob->typeType() == TypeType::TEMPLATE )
+				else if( init_ob->kind() == Kind::TEMPLATE )
 				{
-					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::TEMPLATE_AUTO_FREE, TypeType::TEMPLATE, init_ob->name(), init_ob->type() );
+					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::TEMPLATE_AUTO_FREE, Kind::TEMPLATE, init_ob->name(), init_ob->type() );
 				}
-				else if( init_ob->typeType() == TypeType::ARRAY )
+				else if( init_ob->kind() == Kind::ARRAY )
 				{
-					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::ARRAY_AUTO_FREE, TypeType::ARRAY, init_ob->name(), init_ob->type() );
+					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::ARRAY_AUTO_FREE, Kind::ARRAY, init_ob->name(), init_ob->type() );
 				}
-				else if( init_ob->typeType() == TypeType::REF )
+				else if( init_ob->kind() == Kind::REF )
 				{	
-					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::OBJECT_AUTO_FREE, TypeType::REF, init_ob->name(), init_ob->type() );
+					elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::OBJECT_AUTO_FREE, Kind::REF, init_ob->name(), init_ob->type() );
 				}
-				//No need to free built ins: else if( init_ob->typeType() == TypeType::BUILT_IN_TYPE )
+				//No need to free built ins: else if( init_ob->kind() == Kind::BUILT_IN_TYPE )
 				//{	
 				//	elem->newLangElementToTopWithNewline( init_ob->lineNumber(), Token::BUILT_IN_TYPE_AUTO_FREE, init_ob->name(), init_ob->type() );
 				//}
@@ -2261,7 +2261,7 @@ public:
 	}
 
 public:	
-	LangElement* newLangElement(LineNumber& set_line_number, Token::e set_lang_token_type, TypeType::e set_type_type = TypeType::UNDEFINED, string set_name = "", string set_type = "" )
+	LangElement* newLangElement(LineNumber& set_line_number, Token::e set_lang_token_type, Kind::e set_type_type = Kind::UNDEFINED, string set_name = "", string set_type = "" )
 	{
 		LangElement* lang_elem = new LangElement(set_line_number, set_lang_token_type, set_type_type, set_name, set_type);
 		//lang_elem->lineNumber( set_line_number );
@@ -2276,7 +2276,7 @@ public:
 		return lang_elem;
 	}
 
-	LangElement* newLangElementToTop( LineNumber& set_line_number, Token::e set_lang_token_type, TypeType::e set_type_type, string set_name = "", string set_type = "" )
+	LangElement* newLangElementToTop( LineNumber& set_line_number, Token::e set_lang_token_type, Kind::e set_type_type, string set_name = "", string set_type = "" )
 	{
 		LangElement* lang_elem = new LangElement(set_line_number, set_lang_token_type, set_type_type, set_name, set_type);
 		addElementToTop(lang_elem);
@@ -2290,7 +2290,7 @@ public:
 		return lang_elem;	
 	}
 
-	LangElement* newLangElementToTopAfterNewlineWithNewline( LineNumber& set_line_number, Token::e set_lang_token_type, TypeType::e set_type_type, string set_name = "", string set_type = "", BuiltInType::e set_built_in_type = BuiltInType::UNDEFINED )
+	LangElement* newLangElementToTopAfterNewlineWithNewline( LineNumber& set_line_number, Token::e set_lang_token_type, Kind::e set_type_type, string set_name = "", string set_type = "", BuiltInType::e set_built_in_type = BuiltInType::UNDEFINED )
 	{
 		LangElement* lang_elem = new LangElement(set_line_number, set_lang_token_type, set_type_type, set_name, set_type);
 		lang_elem->builtInType(set_built_in_type);
@@ -2305,7 +2305,7 @@ public:
 		return lang_elem;	
 	}
 
-	LangElement* newLangElementToTopOfFunc( LineNumber& set_line_number, Token::e set_lang_token_type, TypeType::e set_type_type, string set_name = "", string set_type = "", BuiltInType::e set_built_in_type = BuiltInType::UNDEFINED )
+	LangElement* newLangElementToTopOfFunc( LineNumber& set_line_number, Token::e set_lang_token_type, Kind::e set_type_type, string set_name = "", string set_type = "", BuiltInType::e set_built_in_type = BuiltInType::UNDEFINED )
 	{
 		LangElement* lang_elem = new LangElement(set_line_number, set_lang_token_type, set_type_type, set_name, set_type);
 		lang_elem->builtInType(set_built_in_type);
@@ -2320,7 +2320,7 @@ public:
 		return lang_elem;	
 	}
 
-	LangElement* newLangElementToTopOfClass( LineNumber& set_line_number, Token::e set_lang_token_type, TypeType::e set_type_type, string set_name = "", string set_type = "", BuiltInType::e set_built_in_type = BuiltInType::UNDEFINED )
+	LangElement* newLangElementToTopOfClass( LineNumber& set_line_number, Token::e set_lang_token_type, Kind::e set_type_type, string set_name = "", string set_type = "", BuiltInType::e set_built_in_type = BuiltInType::UNDEFINED )
 	{
 		LangElement* lang_elem = new LangElement(set_line_number, set_lang_token_type, set_type_type, set_name, set_type);
 		lang_elem->builtInType(set_built_in_type);
@@ -2345,7 +2345,7 @@ public:
 
 	void addNewLine()
 	{
-		LangElement* elem_newline = new LangElement( lineNumber(), Token::NEWLINE, TypeType::UNDEFINED, "\n" );
+		LangElement* elem_newline = new LangElement( lineNumber(), Token::NEWLINE, Kind::UNDEFINED, "\n" );
 		langElements.push_back(elem_newline);
 		m_currentElement = elem_newline;
 	}
@@ -2401,7 +2401,7 @@ public:
 			cout<<"we are adding: "<<set->toString();
 		}
 
-		LangElement* elem_newline = new LangElement( set->lineNumber(), Token::NEWLINE, TypeType::UNDEFINED, "\n" );
+		LangElement* elem_newline = new LangElement( set->lineNumber(), Token::NEWLINE, Kind::UNDEFINED, "\n" );
 
 		for( uint i = 0; i < langElements.size(); ++i )
 		{
@@ -2440,7 +2440,7 @@ public:
 				#endif
 
 				(*my_it)->token(Token::NEWLINE); // it is not before a scope anymore.
-				LangElement* elem_newline = new LangElement( set->lineNumber(), Token::NEWLINE_BEFORE_SCOPE_BEGIN, TypeType::UNDEFINED, "\n" );
+				LangElement* elem_newline = new LangElement( set->lineNumber(), Token::NEWLINE_BEFORE_SCOPE_BEGIN, Kind::UNDEFINED, "\n" );
 
 				//if( my_it < langElements.end() )
 				{
@@ -2548,7 +2548,7 @@ public:
 		#endif
 
 		//LangElement* elem_newline = newLangElement( set->lineNumber(), Token::NEWLINE, "\n" );
-		LangElement* elem_newline = new LangElement( set->lineNumber(), Token::NEWLINE, TypeType::UNDEFINED, "\n" );
+		LangElement* elem_newline = new LangElement( set->lineNumber(), Token::NEWLINE, Kind::UNDEFINED, "\n" );
 
 		if( langElements.empty() == true )
 		{
@@ -2635,7 +2635,7 @@ public:
 		#endif
 
 		//LangElement* elem_newline = newLangElement( set->lineNumber(), Token::NEWLINE, "\n" );
-		LangElement* elem_newline = new LangElement( set->lineNumber(), Token::NEWLINE, TypeType::UNDEFINED, "\n" );
+		LangElement* elem_newline = new LangElement( set->lineNumber(), Token::NEWLINE, Kind::UNDEFINED, "\n" );
 
 		if( langElements.empty() == true )
 		{

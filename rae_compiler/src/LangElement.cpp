@@ -4,53 +4,53 @@
 namespace Rae
 {
 
-namespace TypeType
+namespace Kind
 {
-string toString(TypeType::e set)
+string toString(Kind::e set)
 {
 	switch(set)
 	{
 		default:
-			return "RAE_ERROR TypeType:: not recognized.";
-		case TypeType::UNDEFINED:
-			return "TypeType::UNDEFINED";
-		case TypeType::VAL:
-			return "TypeType::VAL";
-		case TypeType::REF:
-			return "TypeType::REF";
-		case TypeType::OPT:
-			return "TypeType::OPT";
-		case TypeType::LINK:
-			return "TypeType::LINK";
-		case TypeType::PTR:
-			return "TypeType::PTR";
-		case TypeType::BUILT_IN_TYPE:
-			return "TypeType::BUILT_IN_TYPE";
-		//case TypeType::ARRAY:
-			//return "TypeType::ARRAY";
-		case TypeType::VECTOR:
-			return "TypeType::VECTOR";
-		case TypeType::TEMPLATE:
-			return "TypeType::TEMPLATE";
+			return "RAE_ERROR Kind:: not recognized.";
+		case Kind::UNDEFINED:
+			return "Kind::UNDEFINED";
+		case Kind::VAL:
+			return "Kind::VAL";
+		case Kind::REF:
+			return "Kind::REF";
+		case Kind::OPT:
+			return "Kind::OPT";
+		case Kind::LINK:
+			return "Kind::LINK";
+		case Kind::PTR:
+			return "Kind::PTR";
+		case Kind::BUILT_IN_TYPE:
+			return "Kind::BUILT_IN_TYPE";
+		//case Kind::ARRAY:
+			//return "Kind::ARRAY";
+		case Kind::VECTOR:
+			return "Kind::VECTOR";
+		case Kind::TEMPLATE:
+			return "Kind::TEMPLATE";
 	}
 }
 
-TypeType::e fromString(const string& set)
+Kind::e fromString(const string& set)
 {
 	if( set == "val" )
-		return TypeType::VAL;
+		return Kind::VAL;
 	else if( set == "ref" )
-		return TypeType::REF;
+		return Kind::REF;
 	else if( set == "opt" )
-		return TypeType::OPT;
+		return Kind::OPT;
 	else if( set == "link" )
-		return TypeType::LINK;
+		return Kind::LINK;
 	else if( set == "ptr" )
-		return TypeType::PTR;
+		return Kind::PTR;
 	else if( BuiltInType::isBuiltInType(set) )
-		return TypeType::BUILT_IN_TYPE;
+		return Kind::BUILT_IN_TYPE;
 	//else
-	return TypeType::UNDEFINED;
+	return Kind::UNDEFINED;
 }
 }
 

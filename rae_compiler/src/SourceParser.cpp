@@ -12,8 +12,8 @@ LangElement* SourceParser::newDefineVector(string set_template_second_type, stri
 	#endif
 
 	//LangElement* lang_elem = newLangElement(Token::DEFINE_VECTOR, set_name, set_type);
-	LangElement* lang_elem = newLangElement(Token::DEFINE_REFERENCE, TypeType::VECTOR, set_name, "vector");
-	//lang_elem->typeType(TypeType::VECTOR);
+	LangElement* lang_elem = newLangElement(Token::DEFINE_REFERENCE, Kind::VECTOR, set_name, "vector");
+	//lang_elem->kind(Kind::VECTOR);
 	currentTemplate = lang_elem;//Oh, remove this.
 	currentReference = lang_elem;
 
@@ -194,7 +194,7 @@ bool SourceParser::handleTokenRaeCppCommon(string set_token)
 		}
 		else if (set_token == ";")
 		{
-			LangElement* lang_elem = newLangElement(Token::SEMICOLON, TypeType::UNDEFINED, set_token);
+			LangElement* lang_elem = newLangElement(Token::SEMICOLON, Kind::UNDEFINED, set_token);
 			if( lang_elem->previousToken() == Token::PARENTHESIS_END_FUNC_PARAM_TYPES
 				||  lang_elem->isFunc() )
 			{
@@ -229,7 +229,7 @@ bool SourceParser::handleTokenRaeCppCommon(string set_token)
 				// Ignore.
 				//cout << "Got namespace dot.\n";
 				//isWaitingForNamespaceDot = false;
-				//newLangElement(Token::REFERENCE_DOT, TypeType::UNDEFINED, "temp_got_namespace_dot");	
+				//newLangElement(Token::REFERENCE_DOT, Kind::UNDEFINED, "temp_got_namespace_dot");	
 				if(set_token == ".")
 				{
 					#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_NAMESPACE)
@@ -258,7 +258,7 @@ bool SourceParser::handleTokenRaeCppCommon(string set_token)
 			}
 			else
 			{
-				newLangElement(Token::REFERENCE_DOT, TypeType::UNDEFINED, set_token);
+				newLangElement(Token::REFERENCE_DOT, Kind::UNDEFINED, set_token);
 			}
 			return true;
 		}
@@ -314,24 +314,24 @@ bool SourceParser::handleTokenRaeCppCommon(string set_token)
 			}
 			else
 			{
-				newLangElement(Token::ASSIGNMENT, TypeType::UNDEFINED, set_token);
+				newLangElement(Token::ASSIGNMENT, Kind::UNDEFINED, set_token);
 			}
 
 			return true;
 		}
 		else if (set_token == "not" || set_token == "!")
 		{
-			newLangElement(Token::NOT, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::NOT, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "and" || set_token == "&&")
 		{
-			newLangElement(Token::AND, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::AND, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "or" || set_token == "||")
 		{
-			newLangElement(Token::OR, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::OR, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "+")
@@ -339,7 +339,7 @@ bool SourceParser::handleTokenRaeCppCommon(string set_token)
 			if (previousElement() && previousElement()->name() == "+")
 				previousElement()->token(Token::OPERATOR_INCREMENT);
 			else
-				newLangElement(Token::PLUS, TypeType::UNDEFINED, set_token);
+				newLangElement(Token::PLUS, Kind::UNDEFINED, set_token);
 
 			return true;
 		}
@@ -353,33 +353,33 @@ bool SourceParser::handleTokenRaeCppCommon(string set_token)
 			if (previousElement() && previousElement()->name() == "-")
 				previousElement()->token(Token::OPERATOR_DECREMENT);
 			else
-				newLangElement(Token::MINUS, TypeType::UNDEFINED, set_token);
+				newLangElement(Token::MINUS, Kind::UNDEFINED, set_token);
 
 			return true;
 		}
 		else if (set_token == "*")
 		{
-			newLangElement(Token::MULTIPLY, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::MULTIPLY, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "/")
 		{
-			newLangElement(Token::DIVIDE, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::DIVIDE, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "%")
 		{
-			newLangElement(Token::MODULO, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::MODULO, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "<")
 		{
-			newLangElement(Token::LESS_THAN, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::LESS_THAN, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == ">")
 		{
-			newLangElement(Token::GREATER_THAN, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::GREATER_THAN, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "\"")
@@ -397,22 +397,22 @@ bool SourceParser::handleTokenRaeCppCommon(string set_token)
 		}
 		else if (set_token == "if")
 		{
-			newLangElement(Token::IF, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::IF, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "else")
 		{
-			newLangElement(Token::ELSE, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::ELSE, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "true")
 		{
-			newLangElement(Token::TRUE_TRUE, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::TRUE_TRUE, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "false")
 		{
-			newLangElement(Token::FALSE_FALSE, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::FALSE_FALSE, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "return")
@@ -422,7 +422,7 @@ bool SourceParser::handleTokenRaeCppCommon(string set_token)
 			//rae::log("Got return.\n");
 #endif
 			//expectingToken = Token::PARENTHESIS_BEGIN_RETURN;
-			newLangElement(Token::RETURN, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::RETURN, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "new")
@@ -435,7 +435,7 @@ bool SourceParser::handleTokenRaeCppCommon(string set_token)
 		}
 		else if (set_token == "override")
 		{
-			newLangElement(Token::OVERRIDE, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::OVERRIDE, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "class" || set_token == "struct") // Do we really want to support struct too? Probably not!
@@ -453,32 +453,32 @@ bool SourceParser::handleTokenRaeCppCommon(string set_token)
 		}
 		else if (set_token == "sizeof")
 		{
-			newLangElement(Token::SIZEOF, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::SIZEOF, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "bitor" || set_token == "|") // bit_or etc. are not really common with C++...
 		{
-			newLangElement(Token::BITWISE_OR, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::BITWISE_OR, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "bitand" || set_token == "&")
 		{
-			newLangElement(Token::BITWISE_AND, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::BITWISE_AND, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "xor" || set_token == "^")
 		{
-			newLangElement(Token::BITWISE_XOR, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::BITWISE_XOR, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "compl" || set_token == "~" )
 		{
-			newLangElement(Token::BITWISE_AND, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::BITWISE_AND, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "extern")
 		{
-			newLangElement(Token::EXTERN, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::EXTERN, Kind::UNDEFINED, set_token);
 			return true;
 		}
 	}
@@ -585,7 +585,7 @@ bool SourceParser::handleTokenCpp(string set_token)
 			#endif
 			pushExpectingToken(Token::EXPECTING_CPP_PRE_DEFINE_VALUE); // A funny hack to put this in line first, and then
 			// wait for the name in between. expectingName will then doReturnToExpectToken() which will then expect this one.
-			LangElement* lang_elem = newLangElement(Token::CPP_PRE_DEFINE, TypeType::UNDEFINED, set_token);
+			LangElement* lang_elem = newLangElement(Token::CPP_PRE_DEFINE, Kind::UNDEFINED, set_token);
 			expectingNameFor(lang_elem);
 			addToUserDefinedTokens(lang_elem);
 		}
@@ -718,10 +718,10 @@ bool SourceParser::handleTokenCpp(string set_token)
 		{
 			//TODO pointer type...
 			//ReportError::reportError("TODO C++ pointer type.", previousElement());
-			//newLangElement(Token::MULTIPLY, TypeType::UNDEFINED, set_token);
+			//newLangElement(Token::MULTIPLY, Kind::UNDEFINED, set_token);
             if (currentReference)
             {
-                currentReference->typeType(TypeType::PTR);
+                currentReference->kind(Kind::PTR);
             }
             
 			//assert(0);
@@ -784,7 +784,7 @@ bool SourceParser::handleTokenCpp(string set_token)
 		// C++ reserved words:
 		else if (set_token == ",")
 		{
-			newLangElement(Token::COMMA, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::COMMA, Kind::UNDEFINED, set_token);
 			currentReference = nullptr;
 			return true;
 		}
@@ -798,7 +798,7 @@ bool SourceParser::handleTokenCpp(string set_token)
 		else if (set_token == ";") // This is a stupid hack ATM. only support headers in C++ side for now.
 		{
 			cout << "C++ semicolon handling.\n";
-			newLangElement(Token::SEMICOLON, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::SEMICOLON, Kind::UNDEFINED, set_token);
 			currentReference = nullptr;
 			LangElement* scope_elem = scopeElementStack.back();
 			if( scope_elem->isFunc() )
@@ -940,8 +940,8 @@ bool SourceParser::handleTokenCpp(string set_token)
 				// Maybe it's a C++ func returning something.
 				currentReference = nullptr;
 				previousElement()->token(Token::FUNC);
-				TypeType::e ret_typetype = previousElement()->typeType();
-				previousElement()->typeType(TypeType::UNDEFINED);
+				Kind::e ret_typetype = previousElement()->kind();
+				previousElement()->kind(Kind::UNDEFINED);
 				previousElement()->definitionElement(nullptr);
 				currentParentElement(previousElement());
 				addToUserDefinedTokens(previousElement()); // This is important. Otherwise it won't be found.
@@ -1004,49 +1004,49 @@ bool SourceParser::handleTokenCpp(string set_token)
 		else if (set_token == "->")
 		{
 			// We don't separate . and -> while parsing... even with C++.
-			newLangElement(Token::REFERENCE_DOT, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::REFERENCE_DOT, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "for")
 		{
-			newLangElement(Token::FOR, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::FOR, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "NULL" || set_token == "nullptr")
 		{
-			newLangElement(Token::RAE_NULL, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::RAE_NULL, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "const")
 		{
-			newLangElement(Token::LET, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::LET, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "mutable")
 		{
-			newLangElement(Token::MUT, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::MUT, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "typedef")
 		{
-			LangElement* lang_elem = newLangElement(Token::CPP_TYPEDEF, TypeType::UNDEFINED, set_token);
+			LangElement* lang_elem = newLangElement(Token::CPP_TYPEDEF, Kind::UNDEFINED, set_token);
 			currentReference = lang_elem; // TODO this currentReference mechanism is stupid. We should remove it, and maybe just use previousElement() and rename it to currentElement, or something.
 			addToUserDefinedTokens(lang_elem);
 			return true;
 		}
 		else if (set_token == "public")
 		{
-			newLangElement(Token::VISIBILITY, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::VISIBILITY, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "protected")
 		{
-			newLangElement(Token::VISIBILITY, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::VISIBILITY, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "private")
 		{
-			newLangElement(Token::VISIBILITY, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::VISIBILITY, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == ":")
@@ -1119,7 +1119,7 @@ bool SourceParser::handleToken(string set_token)
 		if (set_token == "@end")
 		{
 			isPassthroughMode = false;
-			newLangElement(Token::PRAGMA_CPP_END, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::PRAGMA_CPP_END, Kind::UNDEFINED, set_token);
 			doReturnToExpectToken();
 		}
 		else
@@ -1127,11 +1127,11 @@ bool SourceParser::handleToken(string set_token)
 			// If we're inside a func, then it goes to cpp. Otherwise to header.
 			if( currentParentElement() != nullptr && currentParentElement()->isFunc() )
 			{
-				newLangElement(Token::PASSTHROUGH_SRC, TypeType::UNDEFINED, set_token);
+				newLangElement(Token::PASSTHROUGH_SRC, Kind::UNDEFINED, set_token);
 			}
 			else
 			{
-				newLangElement(Token::PASSTHROUGH_HDR, TypeType::UNDEFINED, set_token);
+				newLangElement(Token::PASSTHROUGH_HDR, Kind::UNDEFINED, set_token);
 			}
 		}
 
@@ -1142,12 +1142,12 @@ bool SourceParser::handleToken(string set_token)
 		if (set_token == "@end")
 		{
 			isPassthroughSourceMode = false;
-			newLangElement(Token::PRAGMA_CPP_END, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::PRAGMA_CPP_END, Kind::UNDEFINED, set_token);
 			doReturnToExpectToken();
 		}
 		else
 		{
-			newLangElement(Token::PASSTHROUGH_SRC, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::PASSTHROUGH_SRC, Kind::UNDEFINED, set_token);
 		}
 
 		return true;
@@ -1206,7 +1206,7 @@ bool SourceParser::handleToken(string set_token)
 					cout << "string init_data: " << currentQuote << " Special handling for newQuote. INIT_DATA.\n";
 //#endif
 					//special handling for quote i.e. string initData.
-					LangElement* in_dat = newLangElement(Token::INIT_DATA, TypeType::UNDEFINED, currentQuote);
+					LangElement* in_dat = newLangElement(Token::INIT_DATA, Kind::UNDEFINED, currentQuote);
 					currentReference->initData(in_dat);
 					doReturnToExpectToken();
 					return true;
@@ -1244,7 +1244,7 @@ bool SourceParser::handleToken(string set_token)
 			LangElement* prev_elem = previousElement();
 
 			//create a init_data element and continue waiting for the actual data!
-			LangElement* in_dat = newLangElement(Token::INIT_DATA, TypeType::UNDEFINED, set_token);
+			LangElement* in_dat = newLangElement(Token::INIT_DATA, Kind::UNDEFINED, set_token);
 			//currentReference->initData(in_dat);
 			if (prev_elem)
 			{
@@ -1324,7 +1324,7 @@ bool SourceParser::handleToken(string set_token)
 					endInitData();//This is important. This ends our init_data being the currentParentElement (which receives the init_data.)
 				}
 
-				newLangElement(Token::COMMA, TypeType::UNDEFINED, ",");
+				newLangElement(Token::COMMA, Kind::UNDEFINED, ",");
 				//expectingToken(Token::UNDEFINED);
 				doReturnToExpectToken();
 			}
@@ -1419,7 +1419,7 @@ bool SourceParser::handleToken(string set_token)
 			else
 			{
 				ReportError::reportError("A strange dot while waiting for INIT_DATA. Floating point numbers are written: 0.0", previousElement());
-				newLangElement(Token::REFERENCE_DOT, TypeType::UNDEFINED, set_token);
+				newLangElement(Token::REFERENCE_DOT, Kind::UNDEFINED, set_token);
 			}
 		}
 		else if (set_token == ";")
@@ -1445,7 +1445,7 @@ bool SourceParser::handleToken(string set_token)
 				doReturnToExpectToken();
 			}
 
-			newLangElement(Token::SEMICOLON, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::SEMICOLON, Kind::UNDEFINED, set_token);
 		}
 		else if (set_token == "\n")
 		{
@@ -1497,7 +1497,7 @@ bool SourceParser::handleToken(string set_token)
 					endInitData();//This is important. This ends our init_data being the currentParentElement (which receives the init_data.)
 				}
 
-				newLangElement(Token::COMMA, TypeType::UNDEFINED, ",");
+				newLangElement(Token::COMMA, Kind::UNDEFINED, ",");
 				//expectingToken(Token::UNDEFINED);
 				doReturnToExpectToken();
 			}
@@ -1541,7 +1541,7 @@ bool SourceParser::handleToken(string set_token)
 			if (currentParentElement() && currentParentElement()->token() == Token::INIT_DATA)
 			{
 				//cout<<"And created null initdata for element: "<<dang->toString()<<"\n";
-				LangElement* in_dat = newLangElement(Token::RAE_NULL, TypeType::UNDEFINED, set_token);
+				LangElement* in_dat = newLangElement(Token::RAE_NULL, Kind::UNDEFINED, set_token);
 			}
 			else
 			{
@@ -1566,7 +1566,7 @@ bool SourceParser::handleToken(string set_token)
 				else
 				{
 					//we should have a handleInitData() func!
-					//newLangElement(Token::STRING, TypeType::UNDEFINED, set_token); //Hmm STRINGs like "a string" are Token::QUOTES.
+					//newLangElement(Token::STRING, Kind::UNDEFINED, set_token); //Hmm STRINGs like "a string" are Token::QUOTES.
 					cout << "TODO better handling of init_data in initialization. " << set_token << "\n";
 
 					//if (isReceivingInitData == true)
@@ -1593,7 +1593,7 @@ bool SourceParser::handleToken(string set_token)
 			/*
 			if( currentReference && previousElement()->token() != Token::QUOTE )
 			{
-			LangElement* in_dat = newLangElement(Token::INIT_DATA, TypeType::UNDEFINED, set_token);
+			LangElement* in_dat = newLangElement(Token::INIT_DATA, Kind::UNDEFINED, set_token);
 			currentReference->initData(in_dat);
 
 			#ifdef DEBUG_RAE_HUMAN
@@ -1745,7 +1745,7 @@ bool SourceParser::handleToken(string set_token)
 				#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_IMPORT)
 					cout << "Import DEBUG got: " << set_token << "\n";
 				#endif
-				currentTempElement->newLangElement(lineNumber, Token::IMPORT_NAME, TypeType::UNDEFINED, set_token);
+				currentTempElement->newLangElement(lineNumber, Token::IMPORT_NAME, Kind::UNDEFINED, set_token);
 			}
 
 			expectingToken(Token::IMPORT_NAME);
@@ -1797,7 +1797,7 @@ bool SourceParser::handleToken(string set_token)
 		{
 			if (currentModule)
 			{
-				LangElement* lang_elem = currentModule->newLangElement(lineNumber, Token::MODULE_DIR, TypeType::UNDEFINED, set_token);
+				LangElement* lang_elem = currentModule->newLangElement(lineNumber, Token::MODULE_DIR, Kind::UNDEFINED, set_token);
 				//addToUserDefinedTokens(lang_elem); // Module names are NOT in userDefinedTokens
 			}
 
@@ -1871,8 +1871,8 @@ bool SourceParser::handleToken(string set_token)
 	else //a name hopefully...
 	{
 	if( previousElement() &&
-	previousElement()->typeType() == TypeType::C_ARRAY
-	//|| previousElement()->token() == TypeType::DEFINE_ARRAY_IN_CLASS)
+	previousElement()->kind() == Kind::C_ARRAY
+	//|| previousElement()->token() == Kind::DEFINE_ARRAY_IN_CLASS)
 	)
 	{
 	#ifdef DEBUG_RAE_PARSER
@@ -1912,7 +1912,7 @@ bool SourceParser::handleToken(string set_token)
 
 
 
-					//previousElement()->typeType(TypeType::VECTOR);
+					//previousElement()->kind(Kind::VECTOR);
 					//previousElement()->createTemplateSecondType( previousElement()->type() );
 					//previousElement()->type("vector");
 					//expectingToken(Token::VECTOR_NAME);
@@ -2015,7 +2015,7 @@ bool SourceParser::handleToken(string set_token)
 #ifdef DEBUG_RAE_HUMAN
 				cout << "Add template second type to simple template class: " << set_token << " for: " << currentClass->toString() << "\n";
 #endif
-				//currentClass->newLangElement(lineNumber, Token::TEMPLATE_SECOND_TYPE, TypeType::TEMPLATE/*are you sure this is not confusing...*/, /*string set_name:*/ "undefined", /*string set_type:*/ set_token );
+				//currentClass->newLangElement(lineNumber, Token::TEMPLATE_SECOND_TYPE, Kind::TEMPLATE/*are you sure this is not confusing...*/, /*string set_name:*/ "undefined", /*string set_type:*/ set_token );
 				currentClass->createTemplateSecondType(set_token);
 			}
 			//expectingToken(Token::TEMPLATE_STUFF);
@@ -2049,7 +2049,7 @@ bool SourceParser::handleToken(string set_token)
 				cout << "Add subtype template definition type. to: " << set_token << " for: " << currentReference->toString() << "\n";
 #endif
 				//currentReference->type(set_token);
-				//currentReference->newLangElement(lineNumber, Token::TEMPLATE_SECOND_TYPE, TypeType::TEMPLATE/*are you sure this is not confusing...*/, /*string set_name:*/ "undefined", /*string set_type:*/ set_token );
+				//currentReference->newLangElement(lineNumber, Token::TEMPLATE_SECOND_TYPE, Kind::TEMPLATE/*are you sure this is not confusing...*/, /*string set_name:*/ "undefined", /*string set_type:*/ set_token );
 				currentReference->createTemplateSecondType(set_token);
 			}
 			//expectingToken(Token::TEMPLATE_STUFF);
@@ -2195,16 +2195,16 @@ bool SourceParser::handleToken(string set_token)
 				{
 					our_array_definition->token(Token::BRACKET_DEFINE_STATIC_ARRAY_BEGIN);
 				}
-				newLangElement(Token::COMMA, TypeType::UNDEFINED, set_token);
+				newLangElement(Token::COMMA, Kind::UNDEFINED, set_token);
 			}
 			else if (expectingRole() == Role::FUNC_RETURN)
 			{
 				//TODO: Hmm. These are the same as normal case. So we could just remove the expectingRoles here...
-				newLangElement(Token::COMMA, TypeType::UNDEFINED, set_token);
+				newLangElement(Token::COMMA, Kind::UNDEFINED, set_token);
 			}
 			else if (expectingRole() == Role::FUNC_PARAMETER || expectingRole() == Role::TEMPLATE_PARAMETER)
 			{
-				newLangElement(Token::COMMA, TypeType::UNDEFINED, set_token);
+				newLangElement(Token::COMMA, Kind::UNDEFINED, set_token);
 			}
 			else //Role::UNDEFINED or something. Normal function body etc.
 			{
@@ -2212,11 +2212,11 @@ bool SourceParser::handleToken(string set_token)
 
 				if (parenthesis_type == Token::PARENTHESIS_BEGIN_LOG || parenthesis_type == Token::PARENTHESIS_BEGIN_LOG_S)
 				{
-					newLangElement(Token::LOG_SEPARATOR, TypeType::UNDEFINED, set_token);//it is still a comma "," but we write it out as << for C++
+					newLangElement(Token::LOG_SEPARATOR, Kind::UNDEFINED, set_token);//it is still a comma "," but we write it out as << for C++
 				}
 				else
 				{
-					newLangElement(Token::COMMA, TypeType::UNDEFINED, set_token);
+					newLangElement(Token::COMMA, Kind::UNDEFINED, set_token);
 				}
 			}
 		}
@@ -2391,7 +2391,7 @@ bool SourceParser::handleToken(string set_token)
 				cout << "( means template class.\n";
 #endif
 				//a simple class template
-				previousElement()->typeType(TypeType::TEMPLATE);
+				previousElement()->kind(Kind::TEMPLATE);
 				expectingToken(Token::CLASS_TEMPLATE_SECOND_TYPE);
 				return true;
 			}
@@ -2454,7 +2454,7 @@ bool SourceParser::handleToken(string set_token)
 		}
 		else if (set_token == "cast")
 		{
-			newLangElement(Token::CAST, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::CAST, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "[")
@@ -2533,12 +2533,12 @@ bool SourceParser::handleToken(string set_token)
 			//SomeClass[] someVector
 			//----here->------------
 			//OLD behaviour turned it into a C_ARRAY, but now it's the preferred way to use vectors.
-			previousElement()->typeType(TypeType::C_ARRAY);
+			previousElement()->kind(Kind::C_ARRAY);
 			expectingToken(Token::DEFINE_C_ARRAY_NAME);
 			*/
 			//cout<<"A bracket but we didn't have a DEFINE_REFERENCE? Maybe it is an error.\n";
 			/*not up to date, as it won't be called...
-			previousElement()->typeType(TypeType::VECTOR);
+			previousElement()->kind(Kind::VECTOR);
 			previousElement()->createTemplateSecondType( previousElement()->type() );
 			previousElement()->type("vector");
 			expectingToken(Token::VECTOR_NAME);
@@ -2587,12 +2587,12 @@ bool SourceParser::handleToken(string set_token)
 		}
 		else if (set_token == "->")
 		{
-			//newLangElement(Token::POINT_TO, TypeType::UNDEFINED, set_token);
+			//newLangElement(Token::POINT_TO, Kind::UNDEFINED, set_token);
 			newPointToElement();
 		}
 		else if (set_token == "loop")
 		{
-			newLangElement(Token::FOR, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::FOR, Kind::UNDEFINED, set_token);
 		}
 		else if (set_token == "for")
 		{
@@ -2601,18 +2601,18 @@ bool SourceParser::handleToken(string set_token)
 		/*
 		else if( set_token == "foreach" )
 		{
-		newLangElement(Token::FOR_EACH, TypeType::UNDEFINED, set_token);
+		newLangElement(Token::FOR_EACH, Kind::UNDEFINED, set_token);
 		}*/
 		else if (set_token == "in")
 		{
-			newLangElement(Token::IN_TOKEN, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::IN_TOKEN, Kind::UNDEFINED, set_token);
 		}
 		else if (set_token == "alias")
 		{
 			#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_ALIAS)
 				cout << "Got alias keyword. Going to alias mode.\n";
 			#endif
-			LangElement* lang_elem = newLangElement(Token::ALIAS, TypeType::UNDEFINED, set_token);
+			LangElement* lang_elem = newLangElement(Token::ALIAS, Kind::UNDEFINED, set_token);
 			addToUserDefinedTokens(lang_elem);
 			pushExpectingToken(Token::ALIAS);
 			expectingNameFor(lang_elem);
@@ -2621,23 +2621,23 @@ bool SourceParser::handleToken(string set_token)
 		else if (set_token == "log_s")
 		{
 			//isInsideLogStatement = true;
-			newLangElement(Token::LOG_S, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::LOG_S, Kind::UNDEFINED, set_token);
 			expectingToken(Token::PARENTHESIS_BEGIN_LOG_S);
 
 		}
 		else if (set_token == "log")
 		{
 			//isInsideLogStatement = true;
-			newLangElement(Token::LOG, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::LOG, Kind::UNDEFINED, set_token);
 			expectingToken(Token::PARENTHESIS_BEGIN_LOG);
 		}
 		else if (set_token == "null")
 		{
-			newLangElement(Token::RAE_NULL, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::RAE_NULL, Kind::UNDEFINED, set_token);
 		}
 		else if (set_token == "is")
 		{
-			newLangElement(Token::IS, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::IS, Kind::UNDEFINED, set_token);
 		}
 		/*
 		//These don't work anymore as : is now it's own token. We must wait for it...
@@ -2661,47 +2661,47 @@ bool SourceParser::handleToken(string set_token)
 		/*//TODO errors for these old LONG visibility keywords:
 		else if( set_token == "public" )
 		{
-		newLangElement(Token::VISIBILITY, TypeType::UNDEFINED, set_token );
+		newLangElement(Token::VISIBILITY, Kind::UNDEFINED, set_token );
 		}
 		else if( set_token == "protected" )
 		{
-		newLangElement(Token::VISIBILITY, TypeType::UNDEFINED, set_token);
+		newLangElement(Token::VISIBILITY, Kind::UNDEFINED, set_token);
 		}
 		else if( set_token == "library" )
 		{
 		//TODO
-		newLangElement(Token::VISIBILITY, TypeType::UNDEFINED, set_token);
+		newLangElement(Token::VISIBILITY, Kind::UNDEFINED, set_token);
 		}
 		else if( set_token == "hidden" )
 		{
 		//TODO
-		newLangElement(Token::VISIBILITY, TypeType::UNDEFINED, set_token);
+		newLangElement(Token::VISIBILITY, Kind::UNDEFINED, set_token);
 		}
 		else if( set_token == "private" )//what's the real use of private, anyway?
 		{
-		newLangElement(Token::VISIBILITY, TypeType::UNDEFINED, set_token);
+		newLangElement(Token::VISIBILITY, Kind::UNDEFINED, set_token);
 		}
 		*/
 		else if (set_token == "let")
 		{
-			newLangElement(Token::LET, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::LET, Kind::UNDEFINED, set_token);
 		}
 		else if (set_token == "mut")
 		{
-			newLangElement(Token::MUT, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::MUT, Kind::UNDEFINED, set_token);
 		}
 		else if (set_token == "pub")
 		{
-			newLangElement(Token::VISIBILITY, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::VISIBILITY, Kind::UNDEFINED, set_token);
 		}
 		else if (set_token == "lib")
 		{
 			//TODO
-			newLangElement(Token::VISIBILITY, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::VISIBILITY, Kind::UNDEFINED, set_token);
 		}
 		else if (set_token == "priv") // -> protected
 		{
-			newLangElement(Token::VISIBILITY, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::VISIBILITY, Kind::UNDEFINED, set_token);
 		}
 		else if (set_token == ":")
 		{
@@ -2738,7 +2738,7 @@ bool SourceParser::handleToken(string set_token)
 		//{
 
 		//change the typetype.
-		previousElement()->typeType(TypeType::TEMPLATE);
+		previousElement()->kind(Kind::TEMPLATE);
 		//}
 		}
 		expectingToken(Token::TEMPLATE_STUFF);
@@ -2793,7 +2793,7 @@ bool SourceParser::handleToken(string set_token)
 		{
 			//cout << "TODO project keyword.\n";
 			// TODO save the project to m_projectName variable
-			LangElement* lang_elem = newLangElement(Token::PROJECT, TypeType::UNDEFINED, set_token);
+			LangElement* lang_elem = newLangElement(Token::PROJECT, Kind::UNDEFINED, set_token);
 			expectingNameFor(lang_elem);
 		}
 		else if (set_token == "targetdir")
@@ -2832,7 +2832,7 @@ bool SourceParser::handleToken(string set_token)
 		{
 			isPassthroughMode = true;
 			//cout<<"To PASSTHROUGH_HDR mode.\n";
-			newLangElement(Token::PRAGMA_CPP, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::PRAGMA_CPP, Kind::UNDEFINED, set_token);
 			expectingToken(Token::PRAGMA_CPP);
 		}
 		//copy to c++ header .hpp:
@@ -2840,7 +2840,7 @@ bool SourceParser::handleToken(string set_token)
 		{
 			isPassthroughMode = true;
 			//cout<<"To PASSTHROUGH_HDR mode.\n";
-			newLangElement(Token::PRAGMA_CPP_HDR, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::PRAGMA_CPP_HDR, Kind::UNDEFINED, set_token);
 			expectingToken(Token::PRAGMA_CPP_HDR);
 		}
 		//copy to c++ source file .cpp:
@@ -2848,7 +2848,7 @@ bool SourceParser::handleToken(string set_token)
 		{
 			isPassthroughSourceMode = true;
 			//cout<<"To PASSTHROUGH_HDR mode.\n";
-			newLangElement(Token::PRAGMA_CPP_SRC, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::PRAGMA_CPP_SRC, Kind::UNDEFINED, set_token);
 			expectingToken(Token::PRAGMA_CPP_SRC);
 		}
 		else if (set_token == "@dont_generate_code")
@@ -3024,7 +3024,7 @@ bool SourceParser::handleToken(string set_token)
 	else if (expectingToken() == Token::FREE_NAME)
 	{
 		//TODO check if name is a valid name...
-		newLangElement(Token::FREE, TypeType::UNDEFINED, set_token);
+		newLangElement(Token::FREE, Kind::UNDEFINED, set_token);
 		//expectingToken = Token::UNDEFINED;
 		doReturnToExpectToken();
 	}
@@ -3194,7 +3194,7 @@ bool SourceParser::handleToken(string set_token)
 		{
 			//TODO pointer type...
 			ReportError::reportError("TODO pointer type.", previousElement());
-			newLangElement(Token::MULTIPLY, TypeType::UNDEFINED, set_token);
+			newLangElement(Token::MULTIPLY, Kind::UNDEFINED, set_token);
 
 			assert(0);
 		}
@@ -3217,7 +3217,7 @@ bool SourceParser::handleToken(string set_token)
 		//{
 
 		//change the typetype.
-		previousElement()->typeType(TypeType::TEMPLATE);
+		previousElement()->kind(Kind::TEMPLATE);
 		//}
 		}
 		expectingToken(Token::TEMPLATE_STUFF);
@@ -3453,7 +3453,7 @@ bool SourceParser::handleToken(string set_token)
 	//{
 	//currentFunc->newLangElement(lineNumber, Token::COMMA, ",");
 	//}
-	newLangElement(Token::COMMA, TypeType::UNDEFINED, ",");
+	newLangElement(Token::COMMA, Kind::UNDEFINED, ",");
 	expectingToken(Token::FUNC_ARGUMENT_TYPE);
 	}
 	else if(set_token == "override")
@@ -3462,7 +3462,7 @@ bool SourceParser::handleToken(string set_token)
 	//{
 	//currentFunc->newLangElement(lineNumber, Token::OVERRIDE);
 	//}
-	newLangElement(Token::OVERRIDE, TypeType::UNDEFINED, set_token);
+	newLangElement(Token::OVERRIDE, Kind::UNDEFINED, set_token);
 	}
 	else if( set_token == "vector" )//Ooh, it's a vector
 	{
@@ -3471,7 +3471,7 @@ bool SourceParser::handleToken(string set_token)
 	#endif
 	//if(currentReference)
 	//{
-	//currentReference->typeType(TypeType::C_ARRAY);
+	//currentReference->kind(Kind::C_ARRAY);
 	//}
 	cout<<"TODO enable vector FUNC_ARGUMENTs.\n";
 	//returnToExpect( Token::FUNC_ARGUMENT_NAME );
@@ -3559,7 +3559,7 @@ bool SourceParser::handleToken(string set_token)
 	#ifdef DEBUG_RAE
 	//rae::log("Got comma between param types.>", set_token, "< Waiting rest FUNC_ARGUMENT_TYPE.\n");
 	#endif
-	newLangElement(Token::COMMA, TypeType::UNDEFINED, ",");
+	newLangElement(Token::COMMA, Kind::UNDEFINED, ",");
 	expectingToken(Token::FUNC_ARGUMENT_TYPE);
 	}
 	else if( set_token[0] == '[' )//Ooh, it's an array...
@@ -3572,7 +3572,7 @@ bool SourceParser::handleToken(string set_token)
 	expectingToken(Token::ARRAY_VECTOR_STUFF);
 	//cout<<"Got a bracket. TODO something with it. VECTOR\n";
 	//assert(0);
-	//currentReference->typeType(TypeType::C_ARRAY);
+	//currentReference->kind(Kind::C_ARRAY);
 	}
 	}
 	else if( set_token[0] == ']' )//just ignore...
@@ -3591,7 +3591,7 @@ bool SourceParser::handleToken(string set_token)
 	#endif
 	if(currentReference)
 	{
-	//currentReference->typeType(TypeType::C_ARRAY);
+	//currentReference->kind(Kind::C_ARRAY);
 	}
 
 

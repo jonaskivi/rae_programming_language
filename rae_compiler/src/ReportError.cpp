@@ -77,7 +77,7 @@ namespace Rae
 			cout<<set_elem->name();
 			rlutil::setColor(rlutil::WHITE);
 			cout<<"<\n\t"<<set_elem->tokenString();
-			cout<<"\n\t"<<"typetype: "<<set_elem->typeTypeString();
+			cout<<"\n\t"<<"typetype: "<<set_elem->kindString();
 			cout<<"\n\t"<<"type: "<<set_elem->type();
 			cout<<"\n\t"<<"containerType: "<<ContainerType::toString( set_elem->containerType() );
 			cout<<"\n\tline: ";
@@ -116,7 +116,7 @@ namespace Rae
 			cout<<set_elem->name();
 			rlutil::setColor(rlutil::WHITE);
 			cout<<"\n\t"<<set_elem->tokenString();
-			cout<<"\n\t"<<"typetype: "<<set_elem->typeTypeString();
+			cout<<"\n\t"<<"typetype: "<<set_elem->kindString();
 			cout<<"\n\t"<<"type: "<<set_elem->type();
 			cout<<"\n\t"<<"containerType: "<<ContainerType::toString( set_elem->containerType() );
 			cout<<"\n\tline: ";
@@ -171,7 +171,7 @@ namespace Rae
 				cout<<set_elem->name();
 				rlutil::setColor(rlutil::WHITE);
 				cout<<"\n\t"<<set_elem->tokenString();
-				cout<<"\n\t"<<"typetype: "<<set_elem->typeTypeString();
+				cout<<"\n\t"<<"typetype: "<<set_elem->kindString();
 				cout<<"\n\t"<<"type: "<<set_elem->type();
 				cout<<"\n\t"<<"containerType: "<<ContainerType::toString( set_elem->containerType() );
 				cout<<"\n\tline: ";
@@ -213,7 +213,7 @@ namespace Rae
 				cout<<set_elem->name();
 				rlutil::setColor(rlutil::WHITE);
 				cout<<"\n\t"<<set_elem->tokenString();
-				cout<<"\n\t"<<"typetype: "<<set_elem->typeTypeString();
+				cout<<"\n\t"<<"typetype: "<<set_elem->kindString();
 				cout<<"\n\t"<<"type: "<<set_elem->type();
 				cout<<"\n\t"<<"containerType: "<<ContainerType::toString( set_elem->containerType() );
 				cout<<"\n\tline: ";
@@ -259,7 +259,7 @@ namespace Rae
 			cout<<set_elem->name();
 			rlutil::setColor(rlutil::WHITE);
 			cout<<"\n\t"<<set_elem->tokenString();
-			cout<<"\n\t"<<"typetype: "<<set_elem->typeTypeString();
+			cout<<"\n\t"<<"typetype: "<<set_elem->kindString();
 			cout<<"\n\t"<<"type: "<<set_elem->type();
 			cout<<"\n\t"<<"containerType: "<<ContainerType::toString( set_elem->containerType() );
 			cout<<"\n\tline: ";

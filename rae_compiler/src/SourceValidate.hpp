@@ -79,15 +79,15 @@
 		NEWLINE
 		log                      Token::LOG line: 170
 		(                        Token::PARENTHESIS_BEGIN_LOG line: 170
-		HelloWorld hello         Token::USE_REFERENCE typetype: TypeType::VAL line: 170
+		HelloWorld hello         Token::USE_REFERENCE typetype: Kind::VAL line: 170
 		.                        Token::REFERENCE_DOT line: 170
 		count                    Token::FUNC_CALL line: 170
 		(                        Token::PARENTHESIS_BEGIN line: 170
-		HelloWorld hello         Token::USE_REFERENCE typetype: TypeType::VAL line: 170
+		HelloWorld hello         Token::USE_REFERENCE typetype: Kind::VAL line: 170
 		.                        Token::REFERENCE_DOT line: 170
 		int_count                Token::FUNC_CALL line: 170
 		(                        Token::PARENTHESIS_BEGIN line: 170
-		HelloWorld hello         Token::USE_REFERENCE typetype: TypeType::VAL line: 170
+		HelloWorld hello         Token::USE_REFERENCE typetype: Kind::VAL line: 170
 		.                        Token::REFERENCE_DOT line: 170
 		number                   Token::FUNC_CALL line: 170
 		,                        Token::COMMA line: 170
@@ -101,15 +101,15 @@
 		3                        Token::NUMBER line: 170
 		)                        Token::PARENTHESIS_END line: 170
 		,                        Token::COMMA line: 170
-		HelloWorld hello         Token::USE_REFERENCE typetype: TypeType::VAL line: 170
+		HelloWorld hello         Token::USE_REFERENCE typetype: Kind::VAL line: 170
 		.                        Token::REFERENCE_DOT line: 170
 		tester_count             Token::FUNC_CALL line: 170
 		(                        Token::PARENTHESIS_BEGIN line: 170
-		HelloWorld hello         Token::USE_REFERENCE typetype: TypeType::VAL line: 170
+		HelloWorld hello         Token::USE_REFERENCE typetype: Kind::VAL line: 170
 		.                        Token::REFERENCE_DOT line: 170
-		Tester tester            Token::USE_REFERENCE typetype: TypeType::VAL line: 170
+		Tester tester            Token::USE_REFERENCE typetype: Kind::VAL line: 170
 		,                        Token::COMMA line: 170
-		Tester tester_lnk        Token::USE_REFERENCE typetype: TypeType::LINK line: 170
+		Tester tester_lnk        Token::USE_REFERENCE typetype: Kind::LINK line: 170
 		)                        Token::PARENTHESIS_END line: 170
 		)                        Token::PARENTHESIS_END line: 170
 		)                        Token::PARENTHESIS_END_LOG line: 170
@@ -124,15 +124,15 @@
 		NEWLINE
 		log                      Token::LOG line: 170
 		(                        Token::PARENTHESIS_BEGIN_LOG line: 170
-			HelloWorld hello         Token::USE_REFERENCE typetype: TypeType::VAL line: 170
+			HelloWorld hello         Token::USE_REFERENCE typetype: Kind::VAL line: 170
 			.                        Token::REFERENCE_DOT line: 170
 			count                    Token::FUNC_CALL line: 170
 			(                        Token::PARENTHESIS_BEGIN line: 170
-				HelloWorld hello         Token::USE_REFERENCE typetype: TypeType::VAL line: 170
+				HelloWorld hello         Token::USE_REFERENCE typetype: Kind::VAL line: 170
 				.                        Token::REFERENCE_DOT line: 170
 				int_count                Token::FUNC_CALL line: 170
 				(                        Token::PARENTHESIS_BEGIN line: 170
-					HelloWorld hello         Token::USE_REFERENCE typetype: TypeType::VAL line: 170
+					HelloWorld hello         Token::USE_REFERENCE typetype: Kind::VAL line: 170
 					.                        Token::REFERENCE_DOT line: 170
 					number                   Token::FUNC_CALL line: 170
 					,                        Token::COMMA line: 170
@@ -146,15 +146,15 @@
 					3                        Token::NUMBER line: 170
 				)                        Token::PARENTHESIS_END line: 170
 				,                        Token::COMMA line: 170
-				HelloWorld hello         Token::USE_REFERENCE typetype: TypeType::VAL line: 170
+				HelloWorld hello         Token::USE_REFERENCE typetype: Kind::VAL line: 170
 				.                        Token::REFERENCE_DOT line: 170
 				tester_count             Token::FUNC_CALL line: 170
 				(                        Token::PARENTHESIS_BEGIN line: 170
-					HelloWorld hello         Token::USE_REFERENCE typetype: TypeType::VAL line: 170
+					HelloWorld hello         Token::USE_REFERENCE typetype: Kind::VAL line: 170
 					.                        Token::REFERENCE_DOT line: 170
-					Tester tester            Token::USE_REFERENCE typetype: TypeType::VAL line: 170
+					Tester tester            Token::USE_REFERENCE typetype: Kind::VAL line: 170
 					,                        Token::COMMA line: 170
-					Tester tester_lnk        Token::USE_REFERENCE typetype: TypeType::LINK line: 170
+					Tester tester_lnk        Token::USE_REFERENCE typetype: Kind::LINK line: 170
 				)                        Token::PARENTHESIS_END line: 170
 			)                        Token::PARENTHESIS_END line: 170
 		)                        Token::PARENTHESIS_END_LOG line: 170
@@ -330,7 +330,7 @@
 					//Worries.
 				}
 				
-				if( a_param.typeType() != func_call_args[ind]->typeType() )
+				if( a_param.kind() != func_call_args[ind]->kind() )
 				{
 					//So how can we convert VAL, OPT, LINK, REF, PTR, arrays...
 					//most common case should be:
@@ -481,10 +481,10 @@
 					//else cout<<"types DON'T have definitionElements.\n"; //this mostly happens only for built_in_types.
 					//and I'm happy to tell you that we seem to have definitionElements for user defined types!
 
-					/*if( line[k]->definitionElement() && func_params[i]->typeType() != line[k]->definitionElement()->typeType() )
+					/*if( line[k]->definitionElement() && func_params[i]->kind() != line[k]->definitionElement()->kind() )
 					{
-						cout << "Setting typeConvert in: " << line[k]->toSingleLineString() << " to: " << TypeType::toString( func_params[i]->typeType() ) << "\n";
-						line[k]->typeConvert( func_params[i]->typeType() );
+						cout << "Setting typeConvert in: " << line[k]->toSingleLineString() << " to: " << Kind::toString( func_params[i]->kind() ) << "\n";
+						line[k]->typeConvert( func_params[i]->kind() );
 					}*/
 
 					++k;
@@ -660,14 +660,14 @@
 			//assert(0);
 		}
 
-		//if( ret_value->definitionElement() && param.typeType() != ret_value->definitionElement()->typeType() )
-		if( param.typeType() != ret_value->typeType() )
+		//if( ret_value->definitionElement() && param.kind() != ret_value->definitionElement()->kind() )
+		if( param.kind() != ret_value->kind() )
 		{
 			#if defined(DEBUG_RAE_VALIDATE) || defined(DEBUG_DEBUGMODULENAME)
 				if (g_debugModuleName == current_module_name)
-					cout << "Setting typeConvert in: " << line.toSingleLineString() << " to: " << TypeType::toString( param.typeType() ) << "\n";
+					cout << "Setting typeConvert in: " << line.toSingleLineString() << " to: " << Kind::toString( param.kind() ) << "\n";
 			#endif
-			line.typeConvert( ret_value->typeType(), param.typeType() );
+			line.typeConvert( ret_value->kind(), param.kind() );
 		}
 		else
 		{
@@ -675,7 +675,7 @@
 				if (g_debugModuleName == current_module_name)
 				{
 					cout << "TODO validateParameter() Unhandled typeConvert.\n";
-					cout << "types are: ret_value: " << ret_value->toSingleLineString() << " param: " << param.toSingleLineString() << " paramTypeType: " << TypeType::toString( param.typeType() ) << "\n";
+					cout << "types are: ret_value: " << ret_value->toSingleLineString() << " param: " << param.toSingleLineString() << " paramKind: " << Kind::toString( param.kind() ) << "\n";
 				}
 			#endif
 		}
@@ -687,10 +687,10 @@
 		}
 		else if( line.token() == Token::USE_REFERENCE )
 		{
-			if( line.definitionElement() && param.typeType() != line.definitionElement()->typeType() )
+			if( line.definitionElement() && param.kind() != line.definitionElement()->kind() )
 			{
-				cout << "Setting typeConvert in: " << line.toSingleLineString() << " to: " << TypeType::toString( param.typeType() ) << "\n";
-				line.typeConvert( param.typeType() );
+				cout << "Setting typeConvert in: " << line.toSingleLineString() << " to: " << Kind::toString( param.kind() ) << "\n";
+				line.typeConvert( param.kind() );
 			}
 		}
 		*/
@@ -751,19 +751,19 @@
 			case Token::POINT_TO:
 				if( set_elem.previousElement() )
 				{
-					if( set_elem.previousElement()->typeType() == TypeType::VAL
-						|| set_elem.previousElement()->typeType() == TypeType::BUILT_IN_TYPE )
+					if( set_elem.previousElement()->kind() == Kind::VAL
+						|| set_elem.previousElement()->kind() == Kind::BUILT_IN_TYPE )
 					{
 						ReportError::reportError("Using value types (val and built in types) with -> point to operator is not possible.", &set_elem );
 					}
-					else if( set_elem.previousElement()->typeType() == TypeType::OPT
-						|| set_elem.previousElement()->typeType() == TypeType::REF)
+					else if( set_elem.previousElement()->kind() == Kind::OPT
+						|| set_elem.previousElement()->kind() == Kind::REF)
 					{
 						ReportError::reportError("Using ref or opt owning pointers with -> point to operator is not possible.", &set_elem );	
 					}
 					else if( 
-						set_elem.previousElement()->typeType() == TypeType::LINK
-						|| set_elem.previousElement()->typeType() == TypeType::PTR
+						set_elem.previousElement()->kind() == Kind::LINK
+						|| set_elem.previousElement()->kind() == Kind::PTR
 						|| set_elem.previousElement()->token() == Token::BRACKET_END
 					)
 					{
@@ -791,8 +791,8 @@
 						//test for link to temp val, which is an error.
 						if(got_statementRValue->role() == Role::FUNC_RETURN)
 						{
-							if( got_statementRValue->typeType() == TypeType::VAL
-							|| got_statementRValue->typeType() == TypeType::BUILT_IN_TYPE )
+							if( got_statementRValue->kind() == Kind::VAL
+							|| got_statementRValue->kind() == Kind::BUILT_IN_TYPE )
 							{
 								writer.writeString( "RAE_ERROR point to temporary object." );
 								reportError("pointing a link to a temporary object returned by function call is not possible.", &set_elem);
@@ -800,17 +800,17 @@
 						}
 
 						//This is C++ writing that should not be in validate anyway:
-						if( got_statementRValue->typeType() == TypeType::VAL
-							|| got_statementRValue->typeType() == TypeType::BUILT_IN_TYPE )
+						if( got_statementRValue->kind() == Kind::VAL
+							|| got_statementRValue->kind() == Kind::BUILT_IN_TYPE )
 						{
 							writer.writeChar( '&' );//TODO make this better...
 							//.statementRValue()
-							//if( evaluate. == use_ref and writer.nextElement()->evaluateStatementReturnValue()->typeType() == ...;
+							//if( evaluate. == use_ref and writer.nextElement()->evaluateStatementReturnValue()->kind() == ...;
 						}
-						else if( got_statementRValue->typeType() == TypeType::OPT
-							|| got_statementRValue->typeType() == TypeType::REF
-							|| got_statementRValue->typeType() == TypeType::LINK
-							|| got_statementRValue->typeType() == TypeType::PTR
+						else if( got_statementRValue->kind() == Kind::OPT
+							|| got_statementRValue->kind() == Kind::REF
+							|| got_statementRValue->kind() == Kind::LINK
+							|| got_statementRValue->kind() == Kind::PTR
 						)
 						{
 							//ok.

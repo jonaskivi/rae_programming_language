@@ -482,7 +482,7 @@
 				writer.lineNeedsSemicolon(false); // We need commas, but those are inserted before the lines in FUNC and CONSTRUCTOR special handling.
 
 				//case Token::BUILT_IN_TYPE_AUTO_INIT:
-				if(set_elem.typeType() == TypeType::BUILT_IN_TYPE && set_elem.containerType() == ContainerType::UNDEFINED)
+				if(set_elem.kind() == Kind::BUILT_IN_TYPE && set_elem.containerType() == ContainerType::UNDEFINED)
 				{
 					////////JONDE REMOVE writer.writeString( set_elem.useNamespaceString() );
 					writer.writeString(set_elem.name());
@@ -506,7 +506,7 @@
 					}
 				}
 				//case Token::OBJECT_AUTO_INIT:
-				else if(set_elem.typeType() == TypeType::REF)
+				else if(set_elem.kind() == Kind::REF)
 				{
 					//writer.writeString(m_type);
 					//writer.writeString("* ");
@@ -525,7 +525,7 @@
 						writer.writeString("() )");
 					}
 				}
-				else if(set_elem.typeType() == TypeType::OPT)
+				else if(set_elem.kind() == Kind::OPT)
 				{
 					////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
 					writer.writeString(set_elem.name());
@@ -555,7 +555,7 @@
 						}
 					}
 				}
-				else if(set_elem.typeType() == TypeType::VAL)
+				else if(set_elem.kind() == Kind::VAL)
 				{
 					//writer.writeString(set_elem.name());
 
@@ -572,7 +572,7 @@
 						//skipping val auto init.
 					}
 				}
-				else if(set_elem.typeType() == TypeType::LINK)
+				else if(set_elem.kind() == Kind::LINK)
 				{
 					//writer.writeString(set_elem.name());
 
@@ -590,7 +590,7 @@
 					}
 				}
 				//case Token::TEMPLATE_AUTO_INIT:
-				else if(set_elem.typeType() == TypeType::TEMPLATE)
+				else if(set_elem.kind() == Kind::TEMPLATE)
 				{
 					//REMOVE
 					assert(0);
@@ -616,7 +616,7 @@
 					//writer.writeString(">");
 				}
 				//case Token::VECTOR_AUTO_INIT:
-				else if(set_elem.typeType() == TypeType::VECTOR)
+				else if(set_elem.kind() == Kind::VECTOR)
 				{
 					//REMOVE
 					assert(0);
@@ -639,7 +639,7 @@
 				}
 				//case Token::C_ARRAY_AUTO_INIT:
 				
-				/*else if(set_elem.typeType() == TypeType::C_ARRAY)
+				/*else if(set_elem.kind() == Kind::C_ARRAY)
 				{
 					writer.writeString(set_elem.name());
 					writer.writeString(" = new ");
@@ -648,7 +648,7 @@
 				}*/
 				else
 				{
-					ReportError::reportError("writeElement: AUTO_INIT failed because typeType was invalid.", &set_elem);
+					ReportError::reportError("writeElement: AUTO_INIT failed because kind was invalid.", &set_elem);
 				}
 			break;
 			case Token::FREE:
@@ -660,7 +660,7 @@
 					//writer.writeString("* ");
 					
 					//case Token::C_ARRAY_AUTO_FREE:
-					/*if( set_elem.typeType() == TypeType::C_ARRAY)
+					/*if( set_elem.kind() == Kind::C_ARRAY)
 					{
 						writer.writeString("delete[] ");
 						writer.writeString(set_elem.name());
@@ -779,7 +779,7 @@
 				if( writer.previousElement()
 					&& writer.previousElement()->isInClass()
 					&& writer.previousToken() == Token::DEFINE_REFERENCE
-					//&& writer.previousElement()->typeType() == TypeType::BUILT_IN_TYPE
+					//&& writer.previousElement()->kind() == Kind::BUILT_IN_TYPE
 				)
 				{
 					//sneaky. write comment slashes:
@@ -934,16 +934,16 @@
 						writer.writeChar( '(' );
 						//writer.writeChar( ' ' );	
 					}
-					else if(set_elem.previousElement()->typeType() == TypeType::PTR)
+					else if(set_elem.previousElement()->kind() == Kind::PTR)
 					{
 						writer.writeString(" = ");	
 					}
-					else if(set_elem.previousElement()->typeType() == TypeType::OPT)
+					else if(set_elem.previousElement()->kind() == Kind::OPT)
 					{
 						writer.writeString(" -> ERROR can't reassign OPT.");
 						ReportError::reportError("ERROR can't reassign OPT with the POINT_TO operator.", set_elem.previousElement() );
 					}
-					else if(set_elem.previousElement()->typeType() == TypeType::REF)
+					else if(set_elem.previousElement()->kind() == Kind::REF)
 					{
 						writer.writeString(" -> ERROR can't reassign REF.");
 						ReportError::reportError("ERROR can't reassign REF with the POINT_TO operator.", set_elem.previousElement() );
@@ -961,7 +961,7 @@
 				//COUT
 				//ReportError::reportError("WE have a point to.", &set_elem);
 
-				//if( writer.nextToken() == Token::USE_REFERENCE && writer.nextElement()->typeType() == TypeType::VAL )
+				//if( writer.nextToken() == Token::USE_REFERENCE && writer.nextElement()->kind() == Kind::VAL )
 				{
 					LangElement* got_expressionRValue = 0;
 					if( set_elem.nextElement() != 0)
@@ -986,8 +986,8 @@
 							//test for link to temp val, which is an error.
 							if(got_expressionRValue->role() == Role::FUNC_RETURN)
 							{
-								if( got_expressionRValue->typeType() == TypeType::VAL
-								|| got_expressionRValue->typeType() == TypeType::BUILT_IN_TYPE )
+								if( got_expressionRValue->kind() == Kind::VAL
+								|| got_expressionRValue->kind() == Kind::BUILT_IN_TYPE )
 								{
 									writer.writeString( "RAE_ERROR /*point to temporary object.*/" );
 									ReportError::reportError("pointing a link to a temporary object returned by function call is not possible.", &set_elem);
@@ -995,20 +995,20 @@
 							}
 							
 							//This could be "else", but we'll write it anyway, even though the test is done twice in FUNC_CALL case.
-							if( got_expressionRValue->typeType() == TypeType::VAL
-								|| got_expressionRValue->typeType() == TypeType::BUILT_IN_TYPE )
+							if( got_expressionRValue->kind() == Kind::VAL
+								|| got_expressionRValue->kind() == Kind::BUILT_IN_TYPE )
 							{
 								//COUT
 								//ReportError::reportError("SHOULD_WRITE &", &set_elem);
 
 								writer.writeChar( '&' );//TODO make this better...
 								//.expressionRValue()
-								//if( evaluate. == use_ref and writer.nextElement()->evaluateStatementReturnValue()->typeType() == ...;
+								//if( evaluate. == use_ref and writer.nextElement()->evaluateStatementReturnValue()->kind() == ...;
 							}
-							else if( got_expressionRValue->typeType() == TypeType::OPT
-								|| got_expressionRValue->typeType() == TypeType::REF
-								|| got_expressionRValue->typeType() == TypeType::LINK
-								|| got_expressionRValue->typeType() == TypeType::PTR
+							else if( got_expressionRValue->kind() == Kind::OPT
+								|| got_expressionRValue->kind() == Kind::REF
+								|| got_expressionRValue->kind() == Kind::LINK
+								|| got_expressionRValue->kind() == Kind::PTR
 							)
 							{
 								//ok.
@@ -1048,17 +1048,17 @@
 					assert(0); // This should not happen.
 					writer.writeChar( '.' );
 				}
-				else if(writer.previousElement() && writer.previousElement()->typeType() == TypeType::VAL )
+				else if(writer.previousElement() && writer.previousElement()->kind() == Kind::VAL )
 				{
 					writer.writeChar( '.' );
 				}
-				else if(writer.previousElement() && writer.previousElement()->typeType() == TypeType::LINK )
+				else if(writer.previousElement() && writer.previousElement()->kind() == Kind::LINK )
 				{
 					writer.writeString( ".obj->" );
 				}
 				else if( writer.previousElement()
 					&& writer.previousElement()->containerType() == ContainerType::ARRAY
-					&& writer.previousElement()->typeType() != TypeType::VAL)
+					&& writer.previousElement()->kind() != Kind::VAL)
 				{
 					writer.writeChar( '.' ); // we use this strange thing for arrays: (*our_array_ptr).size()
 				}
@@ -1083,7 +1083,7 @@
 						LangElement* type_element = array_ob->arrayContainedTypeElement();
 						if(type_element)
 						{
-							if(type_element->typeType() == TypeType::VAL)
+							if(type_element->kind() == Kind::VAL)
 							{
 								cout << "It's a VAL in an array. Writing dot.\n";
 								writer.writeChar( '.' );
@@ -1121,7 +1121,7 @@
 			case Token::USE_MEMBER:
 			case Token::USE_REFERENCE:
 			{
-				/*if( set_elem.typeType() == TypeType::VECTOR )
+				/*if( set_elem.kind() == Kind::VECTOR )
 				{
 					if( writer.nextToken() == Token::BRACKET_BEGIN )
 					{
@@ -1138,9 +1138,9 @@
 				}*/
 
 				/*JONDE REMOVE:
-				if( set_elem.typeConvert() == TypeType::REF
+				if( set_elem.typeConvert() == Kind::REF
 					&& set_elem.definitionElement()
-					&& set_elem.definitionElement()->typeType() == TypeType::VAL
+					&& set_elem.definitionElement()->kind() == Kind::VAL
 					)
 				{
 					// convert val to ref. (in C++ get the pointer of the value type.)
@@ -1150,16 +1150,16 @@
 
 				bool we_need_array_to_ptr_conversion = false;
 
-				if( (set_elem.type() == "array" && set_elem.typeConvertFrom() == TypeType::VAL && set_elem.typeConvertTo() == TypeType::PTR)
+				if( (set_elem.type() == "array" && set_elem.typeConvertFrom() == Kind::VAL && set_elem.typeConvertTo() == Kind::PTR)
 					)
 				{
 					we_need_array_to_ptr_conversion = true;
 					writer.writeChar('&');
 				}
-				else if( (set_elem.typeConvertFrom() == TypeType::VAL && set_elem.typeConvertTo() == TypeType::REF)
-					|| (set_elem.typeConvertFrom() == TypeType::VAL && set_elem.typeConvertTo() == TypeType::OPT)
-					|| (set_elem.typeConvertFrom() == TypeType::VAL && set_elem.typeConvertTo() == TypeType::PTR)
-					|| (set_elem.typeConvertFrom() == TypeType::BUILT_IN_TYPE && set_elem.typeConvertTo() == TypeType::PTR)
+				else if( (set_elem.typeConvertFrom() == Kind::VAL && set_elem.typeConvertTo() == Kind::REF)
+					|| (set_elem.typeConvertFrom() == Kind::VAL && set_elem.typeConvertTo() == Kind::OPT)
+					|| (set_elem.typeConvertFrom() == Kind::VAL && set_elem.typeConvertTo() == Kind::PTR)
+					|| (set_elem.typeConvertFrom() == Kind::BUILT_IN_TYPE && set_elem.typeConvertTo() == Kind::PTR)
 				)
 				{
 					// convert val to ref. (in C++ get the pointer of the value type.)
@@ -1169,7 +1169,7 @@
 
 				if( set_elem.definitionElement()
 					&& set_elem.definitionElement()->containerType() == ContainerType::ARRAY
-					&& set_elem.definitionElement()->typeType() != TypeType::VAL)
+					&& set_elem.definitionElement()->kind() != Kind::VAL)
 				{
 					//Um, C++ is so weird. We need to dereference a pointer to vector to be able to use operator[]. But I guess it makes sense...
 					//since operator[] is sort of like a function call, and otherwise it would think we're using a dynamic array of vectors...
@@ -1193,8 +1193,8 @@
 					}
 				}
 
-				if( (set_elem.typeConvertFrom() == TypeType::LINK && set_elem.typeConvertTo() == TypeType::REF)
-					|| (set_elem.typeConvertFrom() == TypeType::LINK && set_elem.typeConvertTo() == TypeType::OPT)
+				if( (set_elem.typeConvertFrom() == Kind::LINK && set_elem.typeConvertTo() == Kind::REF)
+					|| (set_elem.typeConvertFrom() == Kind::LINK && set_elem.typeConvertTo() == Kind::OPT)
 				)
 				{
 					// convert link to ref.
@@ -1252,7 +1252,7 @@
 			case Token::BRACKET_BEGIN:
 				//if( set_elem.previousToken() == Token::DEFINE_ARRAY || set_elem.previousToken() == Token::DEFINE_ARRAY_IN_CLASS )
 				
-				//if( set_elem.previousToken() == Token::DEFINE_REFERENCE && set_elem.previousElement()->typeType() == TypeType::C_ARRAY )
+				//if( set_elem.previousToken() == Token::DEFINE_REFERENCE && set_elem.previousElement()->kind() == Kind::C_ARRAY )
 				//{
 					//ignore them after definition.
 				//}
@@ -1273,7 +1273,7 @@
 			case Token::BRACKET_END:
 				//if( set_elem.previousToken() == Token::BRACKET_BEGIN
 					//NO: && (set_elem.previous2ndToken() == Token::DEFINE_ARRAY || set_elem.previous2ndToken() == Token::DEFINE_ARRAY_IN_CLASS)
-				   //&& (set_elem.previous2ndToken() == Token::DEFINE_REFERENCE && set_elem.previous2ndElement()->typeType() == TypeType::C_ARRAY )
+				   //&& (set_elem.previous2ndToken() == Token::DEFINE_REFERENCE && set_elem.previous2ndElement()->kind() == Kind::C_ARRAY )
 					//)
 				//{
 					//ignore them after definition.
@@ -1302,13 +1302,13 @@
 							{
 								//REMOVE: cout<<"interesting. ARRAYSTUFF:4.\n";
 								//REMOVE: cout<<temp_second_type->toString();
-								/*REMOVE: if(temp_second_type->typeType() == TypeType::VAL)
+								/*REMOVE: if(temp_second_type->kind() == Kind::VAL)
 								{
 									writer.writeChar( '.' );
 								}
 								else
 								*/
-								if(temp_second_type->typeType() == TypeType::LINK)
+								if(temp_second_type->kind() == Kind::LINK)
 								{
 									writer.writeString( ".obj" );
 								}
@@ -1324,20 +1324,20 @@
 					writeVisibilityForElement(writer, set_elem);
 				}
 
-				if(set_elem.typeType() == TypeType::LINK)
+				if(set_elem.kind() == Kind::LINK)
 				{
 					writer.writeString("rae::link<");
 				}
 				writer.writeString("std::vector<");
 				iterateWrite(writer, set_elem);
 				writer.writeString(">");
-				if(set_elem.typeType() == TypeType::OPT
-					or set_elem.typeType() == TypeType::REF
-					or set_elem.typeType() == TypeType::PTR)
+				if(set_elem.kind() == Kind::OPT
+					or set_elem.kind() == Kind::REF
+					or set_elem.kind() == Kind::PTR)
 				{
 					writer.writeString("* ");
 				}
-				else if(set_elem.typeType() == TypeType::LINK)
+				else if(set_elem.kind() == Kind::LINK)
 				{
 					writer.writeString("> ");
 				}
@@ -1400,7 +1400,7 @@
 					break;
 				}
 
-				if( set_elem.typeType() == TypeType::VAL )
+				if( set_elem.kind() == Kind::VAL )
 				{
 					if( set_elem.isInClass() )
 					{
@@ -1424,7 +1424,7 @@
 						}
 					}
 				}
-				else if( set_elem.typeType() == TypeType::REF || set_elem.typeType() == TypeType::OPT || set_elem.typeType() == TypeType::PTR )
+				else if( set_elem.kind() == Kind::REF || set_elem.kind() == Kind::OPT || set_elem.kind() == Kind::PTR )
 				{
 					if( set_elem.isInClass() )
 					{
@@ -1444,7 +1444,7 @@
 					}
 					else
 					{	
-						if( set_elem.typeType() == TypeType::REF )
+						if( set_elem.kind() == Kind::REF )
 						{
 							writer.writeString(set_elem.typeInCpp());
 							writer.writeString("* ");
@@ -1491,7 +1491,7 @@
 						}
 					}
 				}
-				else if( set_elem.typeType() == TypeType::LINK )
+				else if( set_elem.kind() == Kind::LINK )
 				{
 					if( set_elem.isInClass() )
 					{
@@ -1538,8 +1538,8 @@
 				}
 				//IF WE EVER NEED TO USE SHARED_PTR AGAIN:
 				/*
-				else if( set_elem.typeType() == TypeType::OPT
-					|| set_elem.typeType() == TypeType::LINK )
+				else if( set_elem.kind() == Kind::OPT
+					|| set_elem.kind() == Kind::LINK )
 				{
 					if( set_elem.isInClass() )
 					{
@@ -1591,7 +1591,7 @@
 					}
 				}
 				*/
-				else if( set_elem.typeType() == TypeType::TEMPLATE )
+				else if( set_elem.kind() == Kind::TEMPLATE )
 				{
 					if( set_elem.isInClass() )
 					{
@@ -1620,7 +1620,7 @@
 				}
 			//break;
 			//case Token::DEFINE_BUILT_IN_TYPE:
-				else if( set_elem.typeType() == TypeType::BUILT_IN_TYPE )
+				else if( set_elem.kind() == Kind::BUILT_IN_TYPE )
 				{
 					#ifdef DEBUG_RAE_HUMAN
 					cout<<"built_in_type.\n";
@@ -1670,7 +1670,7 @@
 				}
 				//break;
 				//case Token::DEFINE_ARRAY_IN_CLASS:
-				/*else if( set_elem.typeType() == TypeType::C_ARRAY )
+				/*else if( set_elem.kind() == Kind::C_ARRAY )
 				{
 					if(set_elem.isInClass())
 					{
@@ -1697,7 +1697,7 @@
 				}*/
 				//break;
 				//case Token::DEFINE_VECTOR_IN_CLASS:
-				else if( set_elem.typeType() == TypeType::VECTOR )
+				else if( set_elem.kind() == Kind::VECTOR )
 				{
 					if( set_elem.isInClass() )
 					{
@@ -2161,23 +2161,23 @@
 										writer.writeChar( '\n' );
 										writer.writeIndents();
 										
-										if( set_elem.typeType() == TypeType::VAL )
+										if( set_elem.kind() == Kind::VAL )
 										{
 											writer.writeString( first_return_elem->typeInCpp() );
 										}
-										else if( set_elem.typeType() == TypeType::REF
-											|| set_elem.typeType() == TypeType::OPT
-											|| set_elem.typeType() == TypeType::LINK )
+										else if( set_elem.kind() == Kind::REF
+											|| set_elem.kind() == Kind::OPT
+											|| set_elem.kind() == Kind::LINK )
 										{
 											writer.writeString(set_elem.typeInCpp());
 											writer.writeString("* ");
 										} 
-										//TODO returning TypeType::TEMPLATE
-										else if( set_elem.typeType() == TypeType::BUILT_IN_TYPE )
+										//TODO returning Kind::TEMPLATE
+										else if( set_elem.kind() == Kind::BUILT_IN_TYPE )
 										{
 											writer.writeString( set_elem.builtInTypeStringCpp() );
 										}
-										//TODO returning TypeType::VECTOR
+										//TODO returning Kind::VECTOR
 										
 										writer.writeChar( ' ' );	
 									}
@@ -2498,17 +2498,17 @@
 									assert(0);
 									
 									//if( set_elem.langElements[i]->isBuiltInType() )
-									if( set_elem.langElements[i]->typeType() == TypeType::BUILT_IN_TYPE )
+									if( set_elem.langElements[i]->kind() == Kind::BUILT_IN_TYPE )
 									{
 										//cout<<"Why NOOOOOOOOOOOOOOOOOOOOOOOOOOOOT\n";
 										writer.writeString( set_elem.langElements[i]->typeInCpp() );
 									}
-									else if( set_elem.langElements[i]->typeType() == TypeType::REF )
+									else if( set_elem.langElements[i]->kind() == Kind::REF )
 									{
 										writer.writeString( set_elem.langElements[i]->typeInCpp() );
 										writer.writeChar('*');	
 									}
-									else if( set_elem.langElements[i]->typeType() == TypeType::VECTOR )
+									else if( set_elem.langElements[i]->kind() == Kind::VECTOR )
 									{
 										writer.writeString( "std::vector<" );
 										//writer.writeString( set_elem.langElements[i]->typeInCpp() );
@@ -2675,7 +2675,7 @@
 			break;
 			case Token::CLASS:
 				//don't write the base template:
-				if( set_elem.typeType() == TypeType::TEMPLATE )
+				if( set_elem.kind() == Kind::TEMPLATE )
 				{
 					//don't write anything.
 					writer.writeString("This would be a template, but we are not writing it.\n");
