@@ -137,7 +137,7 @@
 	void createRaeStdLib(string which_stdlib_class)
 	{
 		stringIndex = 0;
-		isWriteToFile = false;
+		isWriteToFile = true;
 		isFileBased = false;
 
 		//newClass("string");
@@ -155,7 +155,8 @@
 #endif
 
 			stringBasedSourceText =
-				"module rae.std.string\n"
+				"module rae.string\n"
+				"@dont_generate_code # Means that no C++ will be generated for this file\n"
 				"\n"
 				"class string\n"
 				"{\n"
@@ -217,7 +218,8 @@
 #endif
 
 			stringBasedSourceText =
-				"module rae.std.array\n"
+				"module rae.array\n"
+				"@dont_generate_code # Means that no C++ will be generated for this file\n"
 				"\n"
 				"class array\n"
 				"{\n"

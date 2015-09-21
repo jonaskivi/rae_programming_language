@@ -310,8 +310,11 @@ public:
 	//when we need to know some more context about what we were doing before.
 	public: Token::e doReturnToExpectToken()
 	{
-        for(uint i = 0; i < returnToExpectTokenStack.size(); ++i)
-            cout << "expect stack: " << i << " " << Token::toString(returnToExpectTokenStack[i]) << "\n";
+		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_EXPECTING_TOKEN)
+			cout << "doReturnToExpectToken() START.n";
+        	for(uint i = 0; i < returnToExpectTokenStack.size(); ++i)
+            	cout << "expect stack: " << i << " " << Token::toString(returnToExpectTokenStack[i]) << "\n";
+        #endif
         
 		if( returnToExpectTokenStack.empty() )
 		{
@@ -350,9 +353,9 @@ public:
 	// Now the system might work, when using this explicit function
 	public: void pushExpectingToken(Token::e set)
 	{
-		//#ifdef DEBUG_RAE_PARSER
+		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_EXPECTING_TOKEN)
 			cout<<"PUSH expectingToken to: "<<Token::toString(set)<<"\n";
-		//#endif
+		#endif
 		m_expectingToken = set;
 		returnToExpectTokenStack.push_back(set);
 	}
@@ -377,9 +380,9 @@ public:
 	public: Token::e expectingToken(){ return m_expectingToken; }
 	public: void expectingToken(Token::e set)
 	{
-		//#ifdef DEBUG_RAE_PARSER
+		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_EXPECTING_TOKEN)
 			cout<<"set expectingToken to: "<<Token::toString(set)<<"\n";
-		//#endif
+		#endif
 		m_expectingToken = set;
 		//for debug, doesn't work: newLangElement(Token::EMPTY, TypeType::UNDEFINED, "expectingChangedTo: " + Token::toString(m_expectingToken));
 		//returnToExpectTokenStack.push_back(set);
@@ -388,7 +391,9 @@ public:
 
 	public: void setNameForExpectingName(string set)
 	{
-		cout << "Got name: <" <<  set <<"> for EXPECTING_NAME: " << m_expectingNameFor->toSingleLineString() << ". Now checking it.\n";
+		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_EXPECTING_NAME)
+			cout << "Got name: <" <<  set <<"> for EXPECTING_NAME: " << m_expectingNameFor->toSingleLineString() << ". Now checking it.\n";
+		#endif
 
 		setNameAndCheckForPreviousDefinitions( m_expectingNameFor, set );
 		doReturnToExpectToken();
@@ -396,11 +401,13 @@ public:
 	public: LangElement* expectingNameFor(){ return m_expectingNameFor; }
 	public: void expectingNameFor(LangElement* set)
 	{
-		cout << "expectingNameFor: " <<  set->toSingleLineString() << "\n";
-		if(m_expectingRole == Role::FUNC_RETURN)
-		{
-			cout << "expectingNameFor INFO. Now this is a FUNC_RETURN so there might be no name coming.\n";
-		}
+		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_EXPECTING_NAME)
+			cout << "expectingNameFor: " <<  set->toSingleLineString() << "\n";
+			if(m_expectingRole == Role::FUNC_RETURN)
+			{
+				cout << "expectingNameFor INFO. Now this is a FUNC_RETURN so there might be no name coming.\n";
+			}
+		#endif
 		m_expectingNameFor = set;
 		pushExpectingToken(Token::EXPECTING_NAME);
 	}
@@ -575,13 +582,6 @@ public:
 			//lang_elem->previousElement( previousElement() );
 			//previousElement()->nextElement(lang_elem);
 
-			bool funny_debug = false;
-			if (m_previousElement->name() == "set_window")
-			{
-				cout << "DONE here. Set nextElement to: " << lang_elem->toSingleLineString() << "\n";
-				funny_debug = true;
-			}
-
 			if(nextElementWillGetNamespace)
 			{
 				lang_elem->useNamespace(nextElementWillGetNamespace);
@@ -592,11 +592,6 @@ public:
 		
 			m_previousElement = lang_elem;//this is where we set previousElement.
 
-			if (funny_debug)
-			{
-				cout << "DONE here2. previous to: " << m_previousElement->toSingleLineString() << "\n";
-			}
-		
 		//Hmm. Now that I think of it. previousElement and currentParentElement are the same! We'll there might be some differences because of those ifs above...
 
 		}
@@ -714,15 +709,15 @@ public:
 
 			if( scope_elem->token() == Token::NAMESPACE )
 			{
-				//#ifdef DEBUG_RAE_HUMAN
-				cout<<"end of namespace: " << scope_elem->name() << "\n";
-				//#endif
+				#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_NAMESPACE)
+					cout<<"end of namespace: " << scope_elem->name() << "\n";
+				#endif
 				currentNamespace = scope_elem->namespaceElement(); // Can be nullptr, but that is just good.
 			}
 			else if( scope_elem->token() == Token::CLASS )
 			{
-				#ifdef DEBUG_RAE_HUMAN
-				cout<<"end of class.\n\n";
+				#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_CLASS)
+					cout<<"end of class.\n\n";
 				#endif
 
 				//class ends, do stuff:
@@ -748,7 +743,7 @@ public:
 				if( listOfConstructors.empty() == true )
 				{
 					#ifdef DEBUG_RAE_HUMAN
-					cout<<"Creating a constructor.\n";
+						cout<<"Creating a constructor.\n";
 					#endif
 
 					LangElement* a_con = scope_elem->newLangElementToTopOfClass(lineNumber, Token::CONSTRUCTOR, TypeType::UNDEFINED, "init" );
@@ -921,8 +916,10 @@ public:
 
 	void scopeElementStackPush(LangElement* set)
 	{
-		if(set)
-			cout << "scopeElementStackPush: " << set->toSingleLineString() << "\n";
+		#ifdef DEBUG_RAE_PARSER
+			if(set)
+				cout << "scopeElementStackPush: " << set->toSingleLineString() << "\n";
+		#endif
 		scopeElementStack.push_back(set);
 	}
 
@@ -968,12 +965,13 @@ public:
 		}
 		else
 		{
-			//currentParentElement(0);
 			cout<<"error in scopeElementStackPop. no currentModule!!!!!!\n";
 		}
 
-		if(currentParentElement()) 
-			cout << "resetParentElementToCurrentScope: " << currentParentElement()->toSingleLineString() << "\n";
+		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_PARENT_ELEMENT)
+			if(currentParentElement()) 
+				cout << "resetParentElementToCurrentScope: " << currentParentElement()->toSingleLineString() << "\n";
+		#endif
 	}
 
 	void resetParentElementToAboveParent()
@@ -1025,12 +1023,11 @@ public:
 		}
 		else
 		{
-			//#ifdef DEBUG_RAE
-			if(initdata_start_elem)
-				cout<<"End initdata for: " << initdata_start_elem->toSingleLineString() << "\n";
-			else cout << "endInitData for NO INIT_DATA.";
-			//rae::log("End scope for: ",Token::toString( scope_elem->token() ));
-			//#endif
+			#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_INIT_DATA)
+				if(initdata_start_elem)
+					cout<<"End initdata for: " << initdata_start_elem->toSingleLineString() << "\n";
+				else cout << "endInitData for NO INIT_DATA.";
+			#endif
 		}
 
 		/*if( scopeElementStack.empty() == true )
@@ -1283,10 +1280,10 @@ public:
 		
 		lang_elem = newLangElement(Token::IMPORT, TypeType::UNDEFINED, set_name);
 			
-			//#ifdef DEBUG_RAE
+			#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_IMPORT)
 				cout<<"newImport: "<<Token::toString(Token::IMPORT)<<" name:>"<<set_name<<"\n";
 				cout << "currentParentElement: " << currentParentElement()->toSingleLineString() << "\n";
-			//#endif
+			#endif
 
 		currentTempElement = lang_elem;
 
@@ -1305,9 +1302,9 @@ public:
 		currentParentElement(lang_elem);
 			
 			langElements.push_back( lang_elem );
-			#ifdef DEBUG_RAE
+			
+			#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_MODULE)
 				cout<<"BASE Add module langElement: "<<Token::toString(Token::MODULE)<<" name:>"<<set_name<<"\n";
-				//rae::log("BASE Add module langElement: ",Token::toString(Token::MODULE)," name:>",set_name<<"\n");
 			#endif
 
 		//previous2ndElement = previousElement;
@@ -1479,10 +1476,9 @@ public:
 		}
 		return lang_elem;*/
 
-		//#ifdef DEBUG_RAE_HUMAN
+		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_QUOTES)
 			cout<<"newQuote: "<<set_name<<"\n";
-			//rae::log("newQuote: ",set_name,"\n");
-		//#endif
+		#endif
 		
 		return newLangElement(Token::QUOTE, TypeType::UNDEFINED, set_name);		
 	}
@@ -1552,7 +1548,9 @@ public:
 
 	void newLine()
 	{
-		cout << "newline at parent: " << currentParentElement()->toSingleLineString() << "\n";
+		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_NEWLINE)
+			cout << "newline at parent: " << currentParentElement()->toSingleLineString() << "\n";
+		#endif
 
 		unfinishedElement(nullptr);
 		currentReference = nullptr;
@@ -1776,10 +1774,9 @@ REMOVED:
 
 		addToUserDefinedTokens(lang_elem);
 
-		//#ifdef DEBUG_RAE_HUMAN
+		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_REFERENCES)
 			cout<<"newDefineReference: type: "<<set_type<<" name: "<<lang_elem->namespaceString()<<"<\n";
-			//rae::log("newDefineReference: ",set_type," ",set_name,"\n");
-		//#endif
+		#endif
 
 		return lang_elem;
 	}
@@ -1794,9 +1791,8 @@ REMOVED:
 		lang_elem->containerType( set_definition_elem->containerType() );
 		lang_elem->definitionElement(set_definition_elem);
 
-		#ifdef DEBUG_RAE_HUMAN
+		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_REFERENCES)
 			cout<<"newUseReference of definition: "<<set_definition_elem->toString()<<"\n";
-			//rae::log("newUseReference: ",set_elem->toString(),"\n");
 		#endif
 
 		if (set_definition_elem->type() == "vec3")
@@ -1814,9 +1810,8 @@ REMOVED:
 		
 		lang_elem->definitionElement(set_definition_elem);
 
-		#ifdef DEBUG_RAE_HUMAN
+		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_FUNCS)
 			cout<<"newFuncCall of definition: "<<set_definition_elem->toString()<<"\n";
-			//rae::log("newUseReference: ",set_elem->toString(),"\n");
 		#endif
 
 		return lang_elem;	
@@ -1843,9 +1838,8 @@ REMOVED:
 		lang_elem->isUnknownType(true);
 		addToUnknownDefinitions(lang_elem);
 
-		#ifdef DEBUG_RAE_HUMAN
+		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_UNKNOWN)
 			cout<<"newUnknownDefinition: "<<set_token<<"\n";
-			//rae::log("newUnknownUseReference: ",set_token,"\n");
 		#endif
 
 		return lang_elem;
@@ -1858,9 +1852,8 @@ REMOVED:
 		lang_elem->isUnknownType(true);
 		addToUnknownUseReferences(lang_elem);
 
-		#ifdef DEBUG_RAE_HUMAN
+		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_REFERENCES) || defined(DEBUG_RAE_UNKNOWN)
 			cout<<"newUnknownUseReference: "<<set_token<<"\n";
-			//rae::log("newUnknownUseReference: ",set_token,"\n");
 		#endif
 
 		return lang_elem;
@@ -1873,9 +1866,8 @@ REMOVED:
 		lang_elem->isUnknownType(true);
 		addToUnknownUseMembers(lang_elem);
 
-		#ifdef DEBUG_RAE_HUMAN
+		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_REFERENCES) || defined(DEBUG_RAE_UNKNOWN)
 			cout<<"newUnknownUseMember: "<<set_token<<"\n";
-			//rae::log("newUnknownUseReference: ",set_token,"\n");
 		#endif
 
 		return lang_elem;
@@ -1905,7 +1897,7 @@ REMOVED:
 		if( set_elem == 0 )
 			return 0;
 
-		assert(0); //REMOVE THIS FUNC?
+		assert(0); //REMOVE THIS FUNC as useVector is obsolete?
 
 		//LangElement* lang_elem = newLangElement(Token::USE_VECTOR, set_elem->name(), set_elem->type() );
 		LangElement* lang_elem = newLangElement(Token::USE_REFERENCE, TypeType::VECTOR, set_elem->name(), set_elem->type() );
@@ -1922,9 +1914,8 @@ REMOVED:
 
 	LangElement* newNumber(string set_name)
 	{
-		#ifdef DEBUG_RAE_HUMAN
+		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_NUMBERS)
 			cout<<"newNumber: "<<set_name<<"\n";
-			//rae::log("newNumber: ",set_name,"\n");
 		#endif
 		return newLangElement(Token::NUMBER, TypeType::UNDEFINED, set_name);	
 	}
@@ -2076,13 +2067,14 @@ REMOVED:
 	public: LangElement* currentParentElement() { return m_currentParentElement; }
 	public: void currentParentElement(LangElement* set, bool push_to_scope_stack = true)
 	{
-		//#ifdef DEBUG_RAE_PARSER
-		if(set)
-		{
-			cout<<"currentParentElement set to: "<<set->toSingleLineString()<<"\n";
-		}
-		else cout<<"currentParentElement set to null.\n";
-		//#endif
+		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_PARENT_ELEMENT)
+			if(set)
+			{
+				cout<<"currentParentElement set to: "<<set->toSingleLineString()<<"\n";
+			}
+			else cout<<"currentParentElement set to null.\n";
+		#endif
+		
 		m_currentParentElement = set;
 
 		// a scope element will only become a parent if it's an empty scope. Otherwise the parent will be
@@ -2638,8 +2630,10 @@ public:
 				}
 			}*/
 			
-			if (moduleName() == "rae.3d.Engine")
-				cout << " cur: " << (char)currentChar << " word: " << currentWord << " wholeToken: " << wholeToken << "\n";
+			#if defined(DEBUG_DEBUGMODULENAME)
+				if (moduleName() == g_debugModuleName)
+					cout << " cur: " << (char)currentChar << " word: " << currentWord << " wholeToken: " << wholeToken << "\n";
+			#endif
 
 			if( currentChar == '\n')
 			{
@@ -3165,9 +3159,6 @@ public:
 			//got "-".
 			if( handleSlash == "-" )
 			{
-				if(moduleName() == "rae.3d.Engine")
-					cout << " handle_minus. ";
-
 				if(currentChar == '>')
 				{
 					//We got ->
@@ -3185,28 +3176,12 @@ public:
 				}
 				else
 				{
-					if(moduleName() == "rae.3d.Engine")
-						cout << " currentWord is: " << currentWord << "\n";
-
 					wholeToken = currentWord;//"-"
 					isWholeToken = true;
 
 					// Beware of this bug: causes some strange behaviour
                     //currentWord = "" + currentChar;
 					currentWord = string("");
-
-					/*
-					//JONDE REMOVE wholeToken2 = "-";
-					//JONDE REMOVE isWholeToken2 = true;
-
-                    
-                    currentWord = string("");
-                    currentWord += currentChar;
-					currentLine += currentChar;
-
-					if(moduleName() == "rae.3d.Engine")
-						cout << " currentWord2 is: " << currentWord << "\n";
-					*/
 
 					isPleaseRehandleChar = true;
 
@@ -3233,9 +3208,6 @@ public:
 			//The abnormal way to handle minus:
 			if( currentChar == '-' )
 			{
-				if(moduleName() == "rae.3d.Engine")
-					cout << " abnormal_minus. " << currentWord << "\n";
-
 				//Don't do anything. our - will be in the poorly named
 				//handleSlash, which is really pastLetters...
 
@@ -3582,8 +3554,10 @@ public:
 				{
 					if( wholeToken != "" )//ignore empty tokens...
 					{
-						if(!isWhiteSpace(wholeToken))
-							cout << "TOKEN:>" << wholeToken << " line: " << lineNumber.toString() << " mod: " << moduleName() << "<\n";
+						#ifdef DEBUG_RAE_TOKENIZER
+							if(!isWhiteSpace(wholeToken))
+								cout << "TOKEN:>" << wholeToken << " line: " << lineNumber.toString() << " mod: " << moduleName() << "<\n";
+						#endif
 						isWholeToken = false;
 						//cout<<"calling handleToken on wholeToken1\n";
 						if (parserType() == ParserType::RAE)
@@ -3597,8 +3571,10 @@ public:
 				{
 					if( wholeToken2 != "" )//ignore empty tokens...
 					{
-						if(!isWhiteSpace(wholeToken2))
-							cout << "TOKEN2:>" << wholeToken2 << " line: " << lineNumber.toString() << " mod: " << moduleName() << "<\n";
+						#ifdef DEBUG_RAE_TOKENIZER
+							if(!isWhiteSpace(wholeToken2))
+								cout << "TOKEN2:>" << wholeToken2 << " line: " << lineNumber.toString() << " mod: " << moduleName() << "<\n";
+						#endif
 						isWholeToken2 = false;
 						//cout<<"calling handleToken on wholeToken2!!!!\n";
 						if (parserType() == ParserType::RAE)
@@ -4342,12 +4318,14 @@ public:
 	//This should be good...
 	LangElement* searchElementAndCheckIfValidLocal(LangElement* set_elem)
 	{
-		if (g_debugName == set_elem->name())
-		{
-			rlutil::setColor(rlutil::LIGHTBLUE);
-			cout << "searchElementAndCheckIfValidLocal. module: " << moduleName() << " looking for: " << set_elem->name() << " " << set_elem->toSingleLineString() << "\n";
-			rlutil::setColor(rlutil::WHITE);
-		}
+		#ifdef DEBUG_DEBUGNAME
+			if (g_debugName == set_elem->name())
+			{
+				rlutil::setColor(rlutil::LIGHTBLUE);
+				cout << "searchElementAndCheckIfValidLocal. module: " << moduleName() << " looking for: " << set_elem->name() << " " << set_elem->toSingleLineString() << "\n";
+				rlutil::setColor(rlutil::WHITE);
+			}
+		#endif
 
 		#ifdef DEBUG_RAE_PARSER
 		//TEMP:
@@ -4382,12 +4360,14 @@ public:
 				cout<<"Super. ScopeFinder found it.\n";
 				#endif
 
-				if (g_debugName == set_elem->name())
-				{
-					rlutil::setColor(rlutil::GREEN);
-					cout << "searchElementAndCheckIfValidLocal. module: " << moduleName() << " Found: " << set_elem->name() << " in: " << res->toSingleLineString() << "\n";
-					rlutil::setColor(rlutil::WHITE);
-				}
+				#ifdef DEBUG_DEBUGNAME
+					if (g_debugName == set_elem->name())
+					{
+						rlutil::setColor(rlutil::GREEN);
+						cout << "searchElementAndCheckIfValidLocal. module: " << moduleName() << " Found: " << set_elem->name() << " in: " << res->toSingleLineString() << "\n";
+						rlutil::setColor(rlutil::WHITE);
+					}
+				#endif
 				return res;
 			}
 		}
@@ -4413,7 +4393,7 @@ public:
 				if( elem->type() == set_elem->type() )
 				{
 					#ifdef DEBUG_RAE_PARSER
-					cout<<"JJJJJJEEEEEEEESSSS: found: "<<elem->type()<<" : "<<elem->toString()<<"\n";
+						cout<<"JJJJJJEEEEEEEESSSS: found: "<<elem->type()<<" : "<<elem->toString()<<"\n";
 					#endif
 					#ifdef DEBUG_DEBUGNAME
 						if (g_debugName == set_elem->name())
@@ -4426,7 +4406,7 @@ public:
 					else
 					{
 						#ifdef DEBUG_RAE_PARSER
-						cout<<"BUT IT*S NOT VALID!!!!\n";
+							cout<<"BUT IT*S NOT VALID!!!!\n";
 						#endif
 					}
 				}
@@ -4437,7 +4417,7 @@ public:
 					//if(moduleName() == "rae.examples.Tester")
 					//{
 						#ifdef DEBUG_RAE_PARSER
-						cout<<"type it is not: "<<elem->toString()<<"\n";
+							cout<<"type it is not: "<<elem->toString()<<"\n";
 						#endif
 					//}
 				}
@@ -4445,8 +4425,10 @@ public:
 			//We are only interested in definitions.
 			else if( elem->isDefinition() ) //ok so we don't check for: set_elem->isUseReference()
 			{
-				if (g_debugName == set_elem->name() || g_debugName == set_elem->type() || g_debugName == set_elem->typedefNewType() )
-					cout << "searchElementAndCheckIfValidLocal: looking for: " << set_elem->toSingleLineString() << " and checking: " << elem->toSingleLineString() << "\n";
+				#ifdef DEBUG_DEBUGNAME
+					if (g_debugName == set_elem->name() || g_debugName == set_elem->type() || g_debugName == set_elem->typedefNewType() )
+						cout << "searchElementAndCheckIfValidLocal: looking for: " << set_elem->toSingleLineString() << " and checking: " << elem->toSingleLineString() << "\n";
+				#endif
 
 				if( elem->name() == set_elem->name() )
 				{
@@ -4467,12 +4449,14 @@ public:
 					}
 					else
 					{
-						if (g_debugName == set_elem->name())
-						{
-							rlutil::setColor(rlutil::RED);
-							cout << "searchElementAndCheckIfValidLocal: FOUND IT BUT IT IS NOT VALID: " << elem->type() << " : " << elem->toSingleLineString() << "\n";
-							rlutil::setColor(rlutil::WHITE);
-						}
+						#ifdef DEBUG_DEBUGNAME
+							if (g_debugName == set_elem->name())
+							{
+								rlutil::setColor(rlutil::RED);
+								cout << "searchElementAndCheckIfValidLocal: FOUND IT BUT IT IS NOT VALID: " << elem->type() << " : " << elem->toSingleLineString() << "\n";
+								rlutil::setColor(rlutil::WHITE);
+							}
+						#endif
 					}
 				}
 				/*
@@ -5129,8 +5113,7 @@ public:
 		if( found_elem )
 		{
 			#ifdef DEBUG_RAE_HUMAN
-			cout<<"Found user token: "<<found_elem->toString()<<" "<<found_elem->namespaceString()<<"\n";
-			//rae::log("Found user token: ", found_elem->toString(), "\n");
+				cout<<"Found user token: "<<found_elem->toString()<<" "<<found_elem->namespaceString()<<"\n";
 			#endif
 			#ifdef DEBUG_DEBUGNAME
 				if (g_debugName == set_token)
@@ -5145,7 +5128,9 @@ public:
 					default:
 					break;
 					case Token::CPP_TYPEDEF:
-						cout << "Found typedef usage111111!!!\n";
+						#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_CPP_TYPEDEF)
+							cout << "Found typedef usage111111!!!\n";
+						#endif
 					case Token::CLASS:
 
 						if( bracketStack.empty() ) //not in the middle of a template list.
@@ -5155,7 +5140,9 @@ public:
 
 						if(currentReference == nullptr)
 						{
-							cout << "Default val case. Creating a newDefineReference for a class or typedef definition: " << set_token <<"\n";
+							#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_REFERENCES)
+								cout << "Default val case. Creating a newDefineReference for a class or typedef definition: " << set_token <<"\n";
+							#endif
 							//ReportError::reportError("handleUserDefinedToken. currentReference was null, when we found a class. Compiler error. set_token: " + set_token, previousElement() );
 						
 							// This case is just a class name without any preceeding val or opt, so no currentReference has been created.
@@ -5173,7 +5160,9 @@ public:
 						}
 						else
 						{
-							cout << "We have some currentReference dangling. Setting it's class or typedef definition to " << set_token << ": " << currentReference->toSingleLineString() << "\n";
+							#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_REFERENCES)
+								cout << "We have some currentReference dangling. Setting it's class or typedef definition to " << set_token << ": " << currentReference->toSingleLineString() << "\n";
+							#endif
 							// expectingRole can be undefined for now. If it's set it's most likely
 							// just FUNC_RETURN or FUNC_ARGUMENT. But this remark is early days, so
 							// it might change in the future.
@@ -5257,17 +5246,21 @@ public:
 					break;
 					case Token::CPP_PRE_DEFINE:
 					{
-						cout << "Found #define1111 usage!!!" << set_token << "\n";
-						//assert(0);
+						#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_CPP_PREPROCESSOR)
+							cout << "Found #define1111 usage!!!" << set_token << "\n";
+						#endif
+
 						LangElement* our_ref = newLangElement( Token::USE_REFERENCE, TypeType::VAL, set_token, set_token);
 						our_ref->definitionElement(found_elem);
 					}
 					break;
 					case Token::ALIAS:
-						cout << "FOUND use of ALIAS1111. " << set_token << " found_elem: " << found_elem->toSingleLineString();
-						if (found_elem->definitionElement())
-							cout << " definition: " << found_elem->definitionElement()->toSingleLineString() << "\n";
-						else cout << " but no definitionElement for alias.\n";
+						#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_ALIAS)
+							cout << "FOUND use of ALIAS1111. " << set_token << " found_elem: " << found_elem->toSingleLineString();
+							if (found_elem->definitionElement())
+								cout << " definition: " << found_elem->definitionElement()->toSingleLineString() << "\n";
+							else cout << " but no definitionElement for alias.\n";
+						#endif
 
 						//assert(0);
 
@@ -5276,9 +5269,11 @@ public:
 						return handleUserDefinedToken( found_elem->typedefOldType() );
 					break;
 					case Token::NAMESPACE:
-						rlutil::setColor(rlutil::BLUE);
-						cout << "11111111handleUserDefinedToken found a namespace: " << found_elem->name() << " set_token: " << set_token << "\n";
-						rlutil::setColor(rlutil::WHITE);
+						#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_NAMESPACE)
+							rlutil::setColor(rlutil::BLUE);
+							cout << "11111111handleUserDefinedToken found a namespace: " << found_elem->name() << " set_token: " << set_token << "\n";
+							rlutil::setColor(rlutil::WHITE);
+						#endif
 						
 						nextElementWillGetNamespace = found_elem;
 						isWaitingForNamespaceDot = true;
@@ -5348,22 +5343,22 @@ public:
 		else
 		{
 			#ifdef DEBUG_RAE_HUMAN
-			cout<<"Didn't find: "<<set_token<<" creating unknown ref.\n";
+				cout<<"Didn't find: "<<set_token<<" creating unknown ref.\n";
 			#endif
-			//#ifdef DEBUG_DEBUGNAME
-			if( set_token == g_debugName )
-			{
-				rlutil::setColor(rlutil::RED);
-				cout << "handleUserDefinedToken Didn't find: " << set_token << " in line: " << lineNumber.line << " module: " << moduleName() << "\n";
-				rlutil::setColor(rlutil::WHITE);
-			}
-			//#endif
+			#ifdef DEBUG_DEBUGNAME
+				if( set_token == g_debugName )
+				{
+					rlutil::setColor(rlutil::RED);
+					cout << "handleUserDefinedToken Didn't find: " << set_token << " in line: " << lineNumber.line << " module: " << moduleName() << "\n";
+					rlutil::setColor(rlutil::WHITE);
+				}
+			#endif
 			//specifically don't do our_new_element = , because this is already unknown and will be handled later...
 			//Oh well. found_elem would be null anyway...
 			if(currentReference == nullptr)
 			{
 				#ifdef DEBUG_RAE_HUMAN
-				cout<<"newUnknownUseReference2: "<<set_token<<" creating unknown ref.\n";
+					cout<<"newUnknownUseReference2: "<<set_token<<" creating unknown ref.\n";
 				#endif
 				newUnknownUseReference2(set_token);
 			}
@@ -5371,7 +5366,7 @@ public:
 			else if( currentReference->isDefinition() && currentReference->type() == "" && currentReference->name() == "" )
 			{
 				#ifdef DEBUG_RAE_HUMAN
-				cout<<"NOPE...: "<<set_token<<" there was some currentReference so we set it to type of that thing.\n";
+					cout<<"NOPE...: "<<set_token<<" there was some currentReference so we set it to type of that thing.\n";
 				#endif
 				if( bracketStack.empty() ) //not in the middle of a template list.
 				{
@@ -5412,11 +5407,13 @@ public:
 
 	void handleUnknownTokens()
 	{
-		cout << "handleUnknownTokens START.\n";
+		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_UNKNOWN)
+			cout << "handleUnknownTokens START.\n";
 		
-		cout << "unknownDefinitions: " << unknownDefinitions.size() << "\n";
-		cout << "unknownUseReferences: " << unknownUseReferences.size() << "\n";
-		cout << "unknownUseMembers: " << unknownUseMembers.size() << "\n";
+			cout << "unknownDefinitions: " << unknownDefinitions.size() << "\n";
+			cout << "unknownUseReferences: " << unknownUseReferences.size() << "\n";
+			cout << "unknownUseMembers: " << unknownUseMembers.size() << "\n";
+		#endif
 
 		/*if( unknownDefinitions.empty() && unknownUseReferences.empty() && unknownUseMembers.empty() )
 		{
@@ -5429,29 +5426,34 @@ public:
 
 		for( uint i = 0; i < 4; ++i )
 		{
-			rlutil::setColor(rlutil::RED);
-			cout << "handleUnknownTokens time: " << i << "\n";
-			rlutil::setColor(rlutil::WHITE);
+			#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_UNKNOWN)
+				rlutil::setColor(rlutil::RED);
+				cout << "handleUnknownTokens time: " << i << "\n";
+				rlutil::setColor(rlutil::WHITE);
+			#endif
 			
 			handleUnknownTokens( unknownDefinitions );
 			handleCheckForPreviousDefinitionsList();
 			handleUnknownTokens( unknownUseReferences );
 			handleUnknownTokens( unknownUseMembers );
 
-			if( unknownDefinitions.empty() && unknownUseReferences.empty() && unknownUseMembers.empty() )
-			{
-				//if(i > 0)
-				ReportError::reportInfo("Parsed module " + numberToString(i+1) + " times. All unknown references found.", moduleName() );
-				return;
-			}
+			#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_UNKNOWN)
+				if( unknownDefinitions.empty() && unknownUseReferences.empty() && unknownUseMembers.empty() )
+				{
+					//if(i > 0)
+					ReportError::reportInfo("Parsed module " + numberToString(i+1) + " times. All unknown references found.", moduleName() );
+					return;
+				}
+			#endif
 		}
 
 		if( !unknownDefinitions.empty() && !unknownUseReferences.empty() && !unknownUseMembers.empty() )
 		{
 			ReportError::reportError("After parsing the source 4 times, there are still " + numberToString(unknownDefinitions.size() + unknownUseReferences.size() + unknownUseMembers.size()) + " unknown references.", 0, moduleName() );
 		}
-		//TEMP:
-		else cout << "All unknowns handled OK.\n";
+		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_UNKNOWN)
+			else cout << "All unknowns handled OK.\n";
+		#endif
 	}
 
 	void handleCheckForPreviousDefinitionsList()
@@ -5872,17 +5874,21 @@ public:
 						lang_elem->definitionElement(found_elem);
 					break;
 					case Token::ALIAS:
-						cout << "FOUND use of ALIAS2222. " << lang_elem->toSingleLineString() << "\nfound_elem: " << found_elem->toSingleLineString();
-						if (found_elem->definitionElement())
-							cout << "\ndefinition: " << found_elem->definitionElement()->toSingleLineString() << "\n";
-						else cout << "\nbut no definitionElement for alias.\n";
+						#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_ALIAS)
+							cout << "FOUND use of ALIAS2222. " << lang_elem->toSingleLineString() << "\nfound_elem: " << found_elem->toSingleLineString();
+							if (found_elem->definitionElement())
+								cout << "\ndefinition: " << found_elem->definitionElement()->toSingleLineString() << "\n";
+							else cout << "\nbut no definitionElement for alias.\n";
+						#endif
 
 						//assert(0);
 
 						// Convert in place:
 						//if (found_elem->typedefOldType() == found_elem->name())
 						//{
-							cout << "alias222 set name to alias name." << found_elem->typedefOldType() << "\n";
+							#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_ALIAS)
+								cout << "alias222 set name to alias name." << found_elem->typedefOldType() << "\n";
+							#endif
 							lang_elem->name(found_elem->typedefOldType());
 							lang_elem->isUnknownType(true);
 							lang_elem->definitionElement(found_elem->definitionElement());
@@ -5892,13 +5898,19 @@ public:
 							cout << "STRANGER alias222 set type to alias type." << found_elem->name() << "\n";
 							lang_elem->type(found_elem->type());
 						}*/
-						cout << "ALIAS going to step back in time: " << i;
+						#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_ALIAS)
+							cout << "ALIAS going to step back in time: " << i;
+						#endif
 						--i;
-						cout << " -> " << i << "\n";;
+						#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_ALIAS)
+							cout << "alias i: -> " << i << "\n";;
+						#endif
 						continue;
 					break;
 					case Token::NAMESPACE:
-						cout << "22222222handleUnknownTokens found a namespace: " << found_elem->name() << "\n";
+						#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_NAMESPACE)
+							cout << "22222222handleUnknownTokens found a namespace: " << found_elem->name() << "\n";
+						#endif
 						lang_elem->token(Token::USE_NAMESPACE);
 						lang_elem->definitionElement(found_elem);
 						lang_elem->isUnknownType(false);

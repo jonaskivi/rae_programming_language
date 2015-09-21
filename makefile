@@ -1,8 +1,8 @@
-EXECUTABLE := rae_comp
+EXECUTABLE := ./rae_compiler/raec
+EXECUTABLE_NAME := raec
 CXX	:= g++
 CXXFLAGS := -g -std=c++0x
-INCLUDES := -I. -I./rae_compiler/rae_compiler/
-#LIBS     := -L../boost_uusi/usr_local_lib/ -lboost_chrono -lboost_filesystem -lboost_system
+INCLUDES := -I. -I./rae_compiler/src/
 
 ifeq ($(OS),Windows_NT)
     #CCFLAGS += -D WIN32
@@ -16,14 +16,9 @@ else
     UNAME_S := $(shell uname -s)
     ifeq ($(UNAME_S),Linux)
         #CCFLAGS += -D LINUX
-        #INCLUDES += -I../boost_uusi/usr_local_include/
-		#LIBS     := -L../boost_linux32/usr_local_lib/ -L/usr/lib/ -lboost_chrono -lboost_filesystem -lboost_system
-		#LIBS     := -L/usr/lib/ -lboost_chrono -lboost_filesystem -lboost_system
     endif
     ifeq ($(UNAME_S),Darwin)
         #CCFLAGS += -D OSX
-        #INCLUDES += -I../boost_uusi/usr_local_include/
-		#LIBS     := -L../boost_uusi/usr_local_lib/ -lboost_chrono -lboost_filesystem -lboost_system
     endif
     UNAME_P := $(shell uname -p)
     ifeq ($(UNAME_P),x86_64)
@@ -37,11 +32,17 @@ else
     endif
 endif
 
-SRC_DIR := ./rae_compiler/rae_compiler/
+SRC_DIR := ./rae_compiler/src/
 OBJECTS  := rae_compiler.o LangElement.o ReportError.o rae_helpers.o SourceParser.o
 
 install:
-	sudo cp $(EXECUTABLE) /usr/local/bin/$(EXECUTABLE)
+	ifeq ($(OS),Windows_NT)
+		# Windows install is untested:
+		cp $(EXECUTABLE) ~/bin/$(EXECUTABLE_NAME)
+	else
+		# you need to use: sudo make install
+		cp $(EXECUTABLE) /usr/local/bin/$(EXECUTABLE_NAME)
+	endif
 
 all: compile raehello
 
@@ -63,26 +64,11 @@ SourceParser.o: $(SRC_DIR)SourceParser.cpp $(SRC_DIR)RaeStdLib.hpp $(SRC_DIR)Rep
 rae_helpers.o: $(SRC_DIR)rae_helpers.hpp $(SRC_DIR)rae_helpers.cpp
 	$(CXX) $(INCLUDES) $(CXXFLAGS) -c $(SRC_DIR)rae_helpers.cpp -o rae_helpers.o
 
-
-#my_program: $(OBJECTS)
-#	$(CXX) $(inputs) -o $(output) $(LIBS)
-
-#%.o: %.cpp
-#	$(CXX) $(INCLUDES) $(CXXFLAGS) -c $(SRC_DIR)$(input) -o $(output)
-
 clean:
 	rm *.o $(EXECUTABLE)
 
-#opttester:
-#	g++ -I./cpp/ ./cpp/rae/examples/OptTester.cpp -o opt_tester
-#	./opt_tester
-
-#raetester:
-#	g++ -I./cpp/ -I./cpp/rae/examples/RaeTester.cpp ./cpp/rae/examples/Tester.cpp -o rae_tester
-#	./rae_tester
-
 raehello:
-	./$(EXECUTABLE) ./rae/examples/HelloWorld.rae
+	./$(EXECUTABLE) ./tests/HelloWorld.rae
 	$(CXX) $(CXXFLAGS) -I./cpp/ ./cpp/rae/examples/HelloWorld.cpp -o rae_hello
 	./rae_hello
 
@@ -91,17 +77,17 @@ raehellocpp:
 	./rae_hello
 
 debugraehello:
-	gdb --args ./$(EXECUTABLE) ./rae/examples/HelloWorld.rae
+	gdb --args ./$(EXECUTABLE) ./tests/HelloWorld.rae
 	$(CXX) $(CXXFLAGS) -I./cpp/ ./cpp/rae/examples/HelloWorld.cpp -o rae_hello
 	./rae_hello
 
-small: ./rae/examples/small.rae ./cpp/rae/examples/small.hpp ./cpp/rae/examples/small.cpp
-	./$(EXECUTABLE) ./rae/examples/small.rae
+small: ./tests/small.rae ./cpp/rae/examples/small.hpp ./cpp/rae/examples/small.cpp
+	./$(EXECUTABLE) ./tests/small.rae
 	$(CXX) $(CXXFLAGS) -I./cpp/ ./cpp/rae/examples/small.cpp -o small
 	./small
 
 opttester:
-	./$(EXECUTABLE) ./rae/examples/OptTester.rae
+	./$(EXECUTABLE) ./tests/OptTester.rae
 	$(CXX) $(CXXFLAGS) -I./cpp/ ./cpp/rae/examples/OptTester.cpp -o opttester
 	./opttester
 

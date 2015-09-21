@@ -966,13 +966,12 @@
 					LangElement* got_expressionRValue = 0;
 					if( set_elem.nextElement() != 0)
 					{
-						//COUT
-						//ReportError::reportError("WE HAVE NEXT ELEMTN.", &set_elem);
-
-						cout << "POINT_TO1: set_elem: " << set_elem.toSingleLineString() << "\n";
-						cout << "POINT_TO1: set_elem.next: " << set_elem.nextElement()->toSingleLineString() << "\n";
-						cout << "POINT_TO1: set_elem.next.next: " << set_elem.nextElement()->nextElement()->toSingleLineString() << "\n";
-						cout << "POINT_TO1: set_elem.next.next.next: " << set_elem.nextElement()->nextElement()->nextElement()->toSingleLineString() << "\n";
+						#if defined(DEBUG_RAE_WRITER) || defined(DEBUG_RAE_POINT_TO)
+							cout << "POINT_TO1: set_elem: " << set_elem.toSingleLineString() << "\n";
+							cout << "POINT_TO1: set_elem.next: " << set_elem.nextElement()->toSingleLineString() << "\n";
+							cout << "POINT_TO1: set_elem.next.next: " << set_elem.nextElement()->nextElement()->toSingleLineString() << "\n";
+							cout << "POINT_TO1: set_elem.next.next.next: " << set_elem.nextElement()->nextElement()->nextElement()->toSingleLineString() << "\n";
+						#endif
 
 						got_expressionRValue = set_elem.nextElement()->expressionRValue();
 

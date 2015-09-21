@@ -39,16 +39,22 @@ typedef unsigned int uint;
 
 //#include "rae_log.hpp"
 
-#define DEBUG_RAE_DEBUGTREE
+// The Debugtree is the most useful way to debug the parser!
+//#define DEBUG_RAE_DEBUGTREE
+// Debugtree2 is not so useful...
 //#define DEBUG_RAE_DEBUGTREE2
-#define DEBUG_DEBUGNAME
-const std::string g_debugName("NONONONONO");
-const std::string g_debugModuleName("rae.examples.small");
+//#define DEBUG_DEBUGNAME
+//const std::string g_debugName("NONONONONO");
+//#define DEBUG_DEBUGMODULENAME
+//const std::string g_debugModuleName("rae.examples.small");
 
 //#define DEBUG_RAE_VALIDATE
 //#define DEBUG_RAE_HUMAN
 
+// Bigger picture debugs:
 //#define DEBUG_RAE_PARSER
+//#define DEBUG_RAE_TOKENIZER
+//#define DEBUG_RAE_WRITER
 //#define DEBUG_RAE
 //#define DEBUG_RAE2
 //#define DEBUG_RAE_DESTRUCTORS
@@ -56,7 +62,38 @@ const std::string g_debugModuleName("rae.examples.small");
 //#define DEBUG_FILEWRITER
 //#define DEBUG_RAE_INDENTS
 //#define DEBUG_RAE_BRACKET
-#define DEBUG_COMMENTS
+//#define DEBUG_COMMENTS
+
+//#define DEBUG_RAE_NEWLINE
+//#define DEBUG_RAE_CLASS
+//#define DEBUG_RAE_FUNCS
+//#define DEBUG_RAE_REFERENCES
+//#define DEBUG_RAE_NUMBERS
+//#define DEBUG_RAE_INIT_DATA
+//#define DEBUG_RAE_QUOTES
+//#define DEBUG_RAE_UNKNOWN
+//#define DEBUG_RAE_ALIAS
+//#define DEBUG_RAE_IMPORT
+//#define DEBUG_RAE_MODULE
+//#define DEBUG_RAE_NAMESPACE
+//#define DEBUG_RAE_POINT_TO
+
+// Debugs for small stuff:
+//#define DEBUG_PARENT_ELEMENT
+//#define DEBUG_RAE_EXPECTING_TOKEN
+//#define DEBUG_RAE_EXPECTING_NAME
+//#define DEBUG_RAE_EXPECTING_TYPE
+
+// Cpp stuff:
+//#define DEBUG_CPP_PARSER
+//#define DEBUG_CPP_TYPEDEF
+//#define DEBUG_RAE_CPP_PREPROCESSOR
+//#define DEBUG_CPP_NEWLINE
+//#define DEBUG_CPP_INIT_DATA
+//#define DEBUG_CPP_PARENTHESIS
+
+
+
 
 template <typename T>
 	string numberToString ( T number )

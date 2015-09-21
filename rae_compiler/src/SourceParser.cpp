@@ -136,19 +136,25 @@ bool SourceParser::handleTokenRaeCppCommon(string set_token)
 		{
 			if (set_token == ")")
 			{
-				cout << "No name for FUNC_RETURN. Got ). Re-handling it.\n";
+				#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_EXPECTING_NAME)
+					cout << "No name for FUNC_RETURN. Got ). Re-handling it.\n";
+				#endif
 				doReturnToExpectToken();
 				return handleToken(set_token);
 			}
 		}
 
-		cout << "EXPECTING_NAME got name: " << set_token << "\n";
+		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_EXPECTING_NAME)
+			cout << "EXPECTING_NAME got name: " << set_token << "\n";
+		#endif
 		setNameForExpectingName(set_token);
 		return true;
 	}
 	else if (expectingToken() == Token::EXPECTING_TYPE)
 	{
-		cout << "EXPECTING_TYPE got type: " << set_token << "\n";
+		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_EXPECTING_TYPE)
+			cout << "EXPECTING_TYPE got type: " << set_token << "\n";
+		#endif
 		setTypeForExpectingType(set_token);
 		return true;
 	}
@@ -193,11 +199,11 @@ bool SourceParser::handleTokenRaeCppCommon(string set_token)
 				||  lang_elem->isFunc() )
 			{
 				// End func. Header func definition.
-				//#ifdef DEBUG_RAE_HUMAN
-				rlutil::setColor(rlutil::RED);
-					cout<<"end of function. with a semicolon. This code is now broken. We should separate between header definitions and USE_FUNCs. TODO.\n\n";
-				rlutil::setColor(rlutil::WHITE);
-				//#endif
+				#ifdef DEBUG_RAE_PARSER
+					rlutil::setColor(rlutil::RED);
+						cout<<"TODO. end of function. with a semicolon. This code is now broken. We should separate between header definitions and USE_FUNCs. TODO.\n\n";
+					rlutil::setColor(rlutil::WHITE);
+				#endif
 				currentFunc = nullptr;
 				scopeElementStackPop();
 			}
@@ -226,7 +232,9 @@ bool SourceParser::handleTokenRaeCppCommon(string set_token)
 				//newLangElement(Token::REFERENCE_DOT, TypeType::UNDEFINED, "temp_got_namespace_dot");	
 				if(set_token == ".")
 				{
-					cout << "Got namespace dot. isWaitingForNamespaceDot set to false now.\n";
+					#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_NAMESPACE)
+						cout << "Got namespace dot. isWaitingForNamespaceDot set to false now.\n";
+					#endif
 					isWaitingForNamespaceDot = false;
 				}
 				else if(set_token == ":")
@@ -337,9 +345,10 @@ bool SourceParser::handleTokenRaeCppCommon(string set_token)
 		}
 		else if (set_token == "-")
 		{
-			//JONDE DEBUG
-			if (moduleName() == "rae.3d.Engine")
-				cout << "Yey. Creating new MINUS element.\n";
+			#if defined(DEBUG_DEBUGMODULENAME)
+				if (moduleName() == g_debugModuleName)
+					cout << "Yey. Creating new MINUS element.\n";
+			#endif
 
 			if (previousElement() && previousElement()->name() == "-")
 				previousElement()->token(Token::OPERATOR_DECREMENT);
@@ -509,7 +518,9 @@ bool SourceParser::handleTokenCpp(string set_token)
 		}
 	}
 
-	cout << "expectingToken is: " << Token::toString(expectingToken()) << " set_token: " << set_token << "\n";
+	#if defined(DEBUG_CPP_PARSER) || defined(DEBUG_RAE_EXPECTING_TOKEN)
+		cout << "expectingToken is: " << Token::toString(expectingToken()) << " set_token: " << set_token << "\n";
+	#endif
 
 	if (expectingToken() == Token::CPP_UNSIGNED)
 	{
@@ -563,11 +574,15 @@ bool SourceParser::handleTokenCpp(string set_token)
 	}
 	else if (expectingToken() == Token::EXPECTING_CPP_PREPROCESSOR)
 	{
-        cout << "Doing EXPECTING_CPP_PREPROCESSOR: " << set_token << "\n";
+		#if defined(DEBUG_CPP_PARSER) || defined(DEBUG_CPP_PREPROCESSOR)
+        	cout << "Doing EXPECTING_CPP_PREPROCESSOR: " << set_token << "\n";
+        #endif
         
 		if (set_token == "define")
 		{
-			cout << "Got define in the right place.\n";
+			#if defined(DEBUG_CPP_PARSER) || defined(DEBUG_CPP_PREPROCESSOR)
+				cout << "Got define in the right place.\n";
+			#endif
 			pushExpectingToken(Token::EXPECTING_CPP_PRE_DEFINE_VALUE); // A funny hack to put this in line first, and then
 			// wait for the name in between. expectingName will then doReturnToExpectToken() which will then expect this one.
 			LangElement* lang_elem = newLangElement(Token::CPP_PRE_DEFINE, TypeType::UNDEFINED, set_token);
@@ -584,7 +599,9 @@ bool SourceParser::handleTokenCpp(string set_token)
 			cout << "#" << set_token << " is TODO.\n";
 		else if (set_token == "\n")
 		{
-			cout << "It's a newline. Returning.\n";
+			#if defined(DEBUG_CPP_PARSER) || defined(DEBUG_CPP_PREPROCESSOR) || defined(DEBUG_CPP_NEWLINE)
+				cout << "It's a newline. Returning.\n";
+			#endif
 			newLine();
 			doReturnToExpectToken();
 		}
@@ -717,8 +734,10 @@ bool SourceParser::handleTokenCpp(string set_token)
         }
 		else if (currentReference)
 		{
-            cout << "Setting the name for currentRef: " << currentReference->toSingleLineString() << " as " << set_token << "\n";
-            
+			#if defined(DEBUG_CPP_PARSER) || defined(DEBUG_CPP_REFERENCES)
+            	cout << "Setting the name for currentRef: " << currentReference->toSingleLineString() << " as " << set_token << "\n";
+            #endif
+
 			//currentReference->name(set_token);
 			setNameAndCheckForPreviousDefinitions(currentReference, set_token);
             
@@ -743,7 +762,9 @@ bool SourceParser::handleTokenCpp(string set_token)
 	}
 	else if (expectingToken() == Token::INIT_DATA)
 	{
-		cout << "INIT_DATA for C++ is TODO.\n";
+		#if defined(DEBUG_CPP_PARSER) || defined(DEBUG_CPP_INIT_DATA)
+			cout << "INIT_DATA for C++ is TODO.\n";
+		#endif
 		doReturnToExpectToken();
 
 		return handleToken(set_token);
@@ -752,7 +773,9 @@ bool SourceParser::handleTokenCpp(string set_token)
 	{
 		if(currentClass && currentClass->name() == set_token)
 		{
-			cout << "Got the CLASS_NAME as set_token. This is probably a C++ CONSTRUCTOR.\n";
+			#if defined(DEBUG_CPP_PARSER)
+				cout << "Got the CLASS_NAME as set_token. This is probably a C++ CONSTRUCTOR.\n";
+			#endif
 			LangElement* our_ref = newFunc();
 			our_ref->token(Token::CONSTRUCTOR);
 			expectingRole(Role::FUNC_PARAMETER);
@@ -905,11 +928,15 @@ bool SourceParser::handleTokenCpp(string set_token)
 		}
 		else if (set_token == "(")
 		{
-			cout << "Got C++ (\n";
+			#if defined(DEBUG_CPP_PARSER) || defined(DEBUG_CPP_PARENTHESIS)
+				cout << "Got C++ (\n";
+			#endif
 
 			if (previousToken() == Token::DEFINE_REFERENCE)
 			{
-				cout << "Maybe it's a C++ func returning something.\n";
+				#if defined(DEBUG_CPP_PARSER) || defined(DEBUG_CPP_PARENTHESIS) || defined(DEBUG_CPP_FUNC)
+					cout << "Maybe it's a C++ func returning something.\n";
+				#endif
 				// Maybe it's a C++ func returning something.
 				currentReference = nullptr;
 				previousElement()->token(Token::FUNC);
@@ -921,7 +948,9 @@ bool SourceParser::handleTokenCpp(string set_token)
 				
 				expectingRole(Role::FUNC_RETURN);
 				string ret_type = previousElement()->type();
-				cout << "The ret_type for the func is: " << ret_type << "\n";;
+				#if defined(DEBUG_CPP_PARSER) || defined(DEBUG_CPP_PARENTHESIS) || defined(DEBUG_CPP_FUNC)
+					cout << "The ret_type for the func is: " << ret_type << "\n";;
+				#endif
 				previousElement()->type("");
 				newParenthesisBegin(Token::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES, "(");
 				//newDefineReference(ret_type, expectingRole());
@@ -939,12 +968,16 @@ bool SourceParser::handleTokenCpp(string set_token)
 			//assert(0);
 			if( expectingRole() == Role::FUNC_PARAMETER )
 			{
-                cout << "And made it FUNC_PARAMETER PARENTHESIS.\n";
+				#if defined(DEBUG_CPP_PARSER) || defined(DEBUG_CPP_PARENTHESIS) || defined(DEBUG_CPP_FUNC)
+                	cout << "And made it FUNC_PARAMETER PARENTHESIS.\n";
+                #endif
 				newParenthesisBegin(Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES, set_token);
 			}
 			else
 			{
-                cout << "Made it just regular PARENTHESIS_BEGIN.\n";
+				#if defined(DEBUG_CPP_PARSER) || defined(DEBUG_CPP_PARENTHESIS)
+                	cout << "Made it just regular PARENTHESIS_BEGIN.\n";
+                #endif
 				newParenthesisBegin(Token::PARENTHESIS_BEGIN, set_token);
 			}
 
@@ -954,9 +987,9 @@ bool SourceParser::handleTokenCpp(string set_token)
 		{
 			if (expectingRole() == Role::FUNC_PARAMETER)
 			{
-#ifdef DEBUG_RAE_PARSER
-				cout << "Got ending ) for FUNC_PARAMETERs in UNDEFINED. Going back to UNDEFINED.\n";
-#endif
+				#if defined(DEBUG_CPP_PARSER) || defined(DEBUG_CPP_PARENTHESIS)
+					cout << "Got ending ) for FUNC_PARAMETERs in UNDEFINED. Going back to UNDEFINED.\n";
+				#endif
 
 				expectingRole(Role::UNDEFINED);
 				newParenthesisEnd(Token::PARENTHESIS_END_FUNC_PARAM_TYPES, ")");
@@ -1043,7 +1076,9 @@ bool SourceParser::handleTokenCpp(string set_token)
 			//NOPE reversed now.
 			//previousElement()->name(set_token); //JONDE TODO check typedef old type. Does it exist. Validate it does.
 			previousElement()->type(set_token);
-			cout << "Created a typedef for an unknown old type: " << set_token << "\n";
+			#if defined(DEBUG_CPP_PARSER) || defined(DEBUG_CPP_TYPEDEF)
+				cout << "Created a typedef for an unknown old type: " << set_token << "\n";
+			#endif
 			expectingToken(Token::EXPECTING_CPP_TYPEDEF_TYPENAME);
 			return true;
 		}
@@ -1200,7 +1235,9 @@ bool SourceParser::handleToken(string set_token)
 
 	if (expectingToken() == Token::INIT_DATA)
 	{
-		cout << "Waiting for INIT_DATA for " << previousElement()->name() << "\n";
+		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_INIT_DATA)
+			cout << "Waiting for INIT_DATA for " << previousElement()->name() << "\n";
+		#endif
 
 		if (set_token == "=" || set_token == "->") //TODO better checking for point_to only pointing to pointer types like null...
 		{
@@ -1212,9 +1249,9 @@ bool SourceParser::handleToken(string set_token)
 			if (prev_elem)
 			{
 				prev_elem->initData(in_dat);
-//#ifdef DEBUG_RAE_HUMAN
-				cout << "= starting to receive init_data for " << prev_elem->type() << " " << prev_elem->namespaceString() << "\n";
-//#endif
+				#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_INIT_DATA)
+					cout << "= starting to receive init_data for " << prev_elem->type() << " " << prev_elem->namespaceString() << "\n";
+				#endif
 			}
 			else
 			{
@@ -1227,7 +1264,9 @@ bool SourceParser::handleToken(string set_token)
 		}
 		else if (set_token == "\n" || set_token == ";")
 		{
-			cout << "No init_data. Set to default init_data next please.\n";
+			#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_INIT_DATA)
+				cout << "No init_data. Set to default init_data next please.\n";
+			#endif
 			//No initdata. Set to default init_data
 			//currentReference->addDefaultInitData(); //OK. Don't do this. Adding auto-init data is dependant on not having this.
 			if (currentParentElement() && currentParentElement()->token() == Token::INIT_DATA)
@@ -1236,7 +1275,9 @@ bool SourceParser::handleToken(string set_token)
 			}
 			else if (currentReference)
 			{
-				cout << "So, please addDefaultInitData.\n";
+				#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_INIT_DATA)
+					cout << "Next, please addDefaultInitData.\n";
+				#endif
 				currentReference->addDefaultInitData();
 			}
 			doReturnToExpectToken();
@@ -1248,9 +1289,9 @@ bool SourceParser::handleToken(string set_token)
 			//DUPLICATE1 of ::INIT_DATA parenthesis handling.
 			if (expectingRole() == Role::FUNC_RETURN)
 			{
-#ifdef DEBUG_RAE_PARSER
-				cout << "Got ending ) for FUNC_RETURNs (in INIT_DATA). Going back to FUNC_DEFINITION.\n";
-#endif
+				#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_INIT_DATA)
+					cout << "Got ending ) for FUNC_RETURNs (in INIT_DATA). Going back to FUNC_DEFINITION.\n";
+				#endif
 
 				expectingRole(Role::UNDEFINED);//could also be Role::FUNC_DEFINITION, but we don't need that, so.
 				//TODO: check parenthesisStack:
@@ -1259,9 +1300,9 @@ bool SourceParser::handleToken(string set_token)
 			}
 			else if (expectingRole() == Role::FUNC_PARAMETER)
 			{
-#ifdef DEBUG_RAE_PARSER
-				cout << "Got ending ) for FUNC_PARAMETERs in INIT_DATA. Going back to UNDEFINED.\n";
-#endif
+				#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_INIT_DATA)
+					cout << "Got ending ) for FUNC_PARAMETERs in INIT_DATA. Going back to UNDEFINED.\n";
+				#endif
 
 				expectingRole(Role::UNDEFINED);//could also be Role::FUNC_DEFINITION, but we don't need that, so.
 				//TODO: check parenthesisStack:
@@ -1304,7 +1345,9 @@ bool SourceParser::handleToken(string set_token)
 		//we should make a expectingToken() == Token::ACTUAL_INIT_DATA that we wait after we get 
 		//the =. And also to handle //comments /**/ as not being init_data, or can they be initDATA? or passed with it?
 
-		cout << "EXPECTING: ACTUAL_INIT_DATA.\n";
+		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_INIT_DATA)
+			cout << "ACTUAL_INIT_DATA handling.\n";
+		#endif
 
 		if (isWaitingForNamespaceDot)
 		{
@@ -1336,9 +1379,9 @@ bool SourceParser::handleToken(string set_token)
 
 			if (expectingRole() == Role::FUNC_RETURN)
 			{
-#ifdef DEBUG_RAE_PARSER
-				cout << "Got ending ) for FUNC_RETURNs (in INIT_DATA). Going back to FUNC_DEFINITION.\n";
-#endif
+				#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_INIT_DATA)
+					cout << "Got ending ) for FUNC_RETURNs (in INIT_DATA). Going back to FUNC_DEFINITION.\n";
+				#endif
 
 				expectingRole(Role::UNDEFINED);//could also be Role::FUNC_DEFINITION, but we don't need that, so.
 				//TODO: check parenthesisStack:
@@ -1347,9 +1390,9 @@ bool SourceParser::handleToken(string set_token)
 			}
 			else if (expectingRole() == Role::FUNC_PARAMETER)
 			{
-#ifdef DEBUG_RAE_PARSER
-				cout << "Got ending ) for FUNC_PARAMETERs in INIT_DATA. Going back to UNDEFINED.\n";
-#endif
+				#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_INIT_DATA)
+					cout << "Got ending ) for FUNC_PARAMETERs in INIT_DATA. Going back to UNDEFINED.\n";
+				#endif
 
 				expectingRole(Role::UNDEFINED);//could also be Role::FUNC_DEFINITION, but we don't need that, so.
 				//TODO: check parenthesisStack:
@@ -1383,15 +1426,19 @@ bool SourceParser::handleToken(string set_token)
 		{
 			if (currentParentElement() && currentParentElement()->token() == Token::INIT_DATA)
 			{
-				cout << "Shit. Got semicolon in for loop INIT_DATA.\n";
+				#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_INIT_DATA)
+					cout << "TODO. Check this. Got semicolon in for loop INIT_DATA.\n";
+				#endif
 				endInitData();//This is important. This ends our init_data being the currentParentElement (which receives the init_data.)
 			}
 			else
 			{
 				ReportError::reportError("Waiting for INIT_DATA: Got SEMICOLON but there was no INIT_DATA element.", previousElement());
 				//TODO ReportError::additionalInfo("currentParentElement: ", currentParentElement() );
-				cout << "currentParentElement: ";
-				if (currentParentElement()) cout << currentParentElement()->toString() << "\n"; else cout << "nullptr" << "\n";
+				#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_INIT_DATA)
+					cout << "currentParentElement: ";
+					if (currentParentElement()) cout << currentParentElement()->toString() << "\n"; else cout << "nullptr" << "\n";
+				#endif
 
 				if (isReceivingInitData == true)
 					assert(0);
@@ -1418,15 +1465,19 @@ bool SourceParser::handleToken(string set_token)
 
 			if (currentParentElement() && currentParentElement()->token() == Token::INIT_DATA)
 			{
-                cout << "Going to endInitData. Here1.\n";
+				#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_INIT_DATA)
+                	cout << "Going to endInitData. Here1.\n";
+                #endif
 				endInitData();//This is important. This ends our init_data being the currentParentElement (which receives the init_data.)
 			}
 			else
 			{
 				ReportError::reportError("Waiting for INIT_DATA: Got NEWLINE but there was no INIT_DATA element.", previousElement());
 				//TODO ReportError::additionalInfo("currentParentElement: ", currentParentElement() );
-				cout << "currentParentElement: ";
-				if (currentParentElement()) cout << currentParentElement()->toString() << "\n"; else cout << "nullptr" << "\n";
+				#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_INIT_DATA)
+					cout << "currentParentElement: ";
+					if (currentParentElement()) cout << currentParentElement()->toString() << "\n"; else cout << "nullptr" << "\n";
+				#endif
 
 				if (isReceivingInitData == true)
 					assert(0);
@@ -1473,10 +1524,9 @@ bool SourceParser::handleToken(string set_token)
 		}
 		else if (set_token == "new")
 		{
-#ifdef DEBUG_RAE_HUMAN
-			cout << "TODO new() INIT_DATA.\n";
-			//rae::log("TODO new() INIT_DATA.\n");
-#endif
+			#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_INIT_DATA)
+				cout << "TODO new() INIT_DATA.\n";
+			#endif
 			//TODO error on returnToExpectToken FUNC_ARGUMENT_NAME, no new here.
 			//currentReference->initData(set_token);
 			//expectingToken = Token::UNDEFINED; //TEMP
@@ -1484,9 +1534,9 @@ bool SourceParser::handleToken(string set_token)
 		}
 		else if (set_token == "null")
 		{
-#ifdef DEBUG_RAE_HUMAN
-			cout << "ACTUAL_INIT_DATA: Got null initdata.\n";
-#endif
+			#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_INIT_DATA)
+				cout << "ACTUAL_INIT_DATA: Got null initdata.\n";
+			#endif
 
 			if (currentParentElement() && currentParentElement()->token() == Token::INIT_DATA)
 			{
@@ -1504,13 +1554,13 @@ bool SourceParser::handleToken(string set_token)
 		}
 		else
 		{
-			cout << "Why don't we get here!?\n";
-
 			if (currentParentElement() && currentParentElement()->token() == Token::INIT_DATA)
 			{
 				if (handleNumber(set_token))
 				{
-					cout << "INIT_DATA got a number.\n";
+					#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_INIT_DATA)
+						cout << "INIT_DATA got a number.\n";
+					#endif
 					//don't do anything. We've done it already!
 				}
 				else
@@ -1608,21 +1658,22 @@ bool SourceParser::handleToken(string set_token)
 	{
 		if (set_token[0] == '.')
 		{
-			cout << "Got IMPORT_NAME dot.\n";
+			#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_IMPORT)
+				cout << "Got IMPORT_NAME dot.\n";
+			#endif
 			expectingToken(Token::IMPORT_NAME);
 		}
 		else if (set_token == "\n")
 		{
-//#ifdef DEBUG_RAE
-			cout << "Line change. End of IMPORT_NAME.\n";
-			//rae::log("Line change. End of IMPORT_NAME.\n");
-//#endif
+			#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_IMPORT) || defined(DEBUG_RAE_NEWLINE)
+				cout << "Line change. End of IMPORT_NAME.\n";
+			#endif
 			if (currentTempElement)
 			{
 				//currentModuleHeaderFileName = currentTempElement->searchLast(Token::IMPORT_NAME)->name();
-#ifdef DEBUG_RAE
-				//	cout<<"last module name was: "<<currentModuleHeaderFileName;
-#endif
+				#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_IMPORT)
+					cout << "last module name was: " << currentModuleHeaderFileName;
+				#endif
 
 				/*
 				string a_import_whole_name = "";
@@ -1653,14 +1704,13 @@ bool SourceParser::handleToken(string set_token)
 				string a_import_whole_name = currentTempElement->importName("/");//a bit of a hack...
 				//and the func that it is calling replace . with /
 
-//#ifdef DEBUG_RAE_HUMAN
-				cout << "Importing: ";
-				//rae::log("newImport: ");
-				cout << a_import_whole_name;
-				cout << " from module: " << moduleName();
-				cout << "\n";
-				//rae::log("\n");
-//#endif
+				#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_IMPORT)
+					cout << "Importing: ";
+					cout << a_import_whole_name;
+					cout << " from module: " << moduleName();
+					cout << "\n";
+				#endif
+
 				bool it_is_cpp_file = false;
 				if(a_import_whole_name.size() > 4)
 				{
@@ -1692,7 +1742,9 @@ bool SourceParser::handleToken(string set_token)
 		{
 			if (currentTempElement)
 			{
-				cout << "Import DEBUG got: " << set_token << "\n";
+				#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_IMPORT)
+					cout << "Import DEBUG got: " << set_token << "\n";
+				#endif
 				currentTempElement->newLangElement(lineNumber, Token::IMPORT_NAME, TypeType::UNDEFINED, set_token);
 			}
 
@@ -1709,31 +1761,28 @@ bool SourceParser::handleToken(string set_token)
 		}
 		else if (set_token == "\n")
 		{
-//#ifdef DEBUG_RAE
-			cout << "Line change. End of MODULE_NAME.\n";
-			//rae::log("Line change. End of MODULE_NAME.\n");
-//#endif
+			#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_NEWLINE)
+				cout << "Line change. End of MODULE_NAME.\n";
+			#endif
+
 			if (currentModule)
 			{
 				LangElement* last_module_name = currentModule->searchLast(Token::MODULE_DIR);
 				last_module_name->token(Token::MODULE_NAME); // Set the last MODULE_DIR to be the actual MODULE_NAME.
 				currentModuleHeaderFileName = last_module_name->name();
-//#ifdef DEBUG_RAE
-				cout << "last module name was: " << currentModuleHeaderFileName;
-				//rae::log("last module name was: ", currentModuleHeaderFileName);
-//#endif
-
-//#ifdef DEBUG_RAE_HUMAN
-				cout << "\n\nnewModule: ";
-				//rae::log("newModule: ");
-				for (LangElement* elem : currentModule->langElements)
-				{
-					cout << elem->name() << ".";
-					//rae::log(elem->name(), ".");
-				}
-				cout << "\n";
-				//rae::log("\n");
-//#endif
+				
+				#ifdef DEBUG_RAE_PARSER
+					cout << "last module name was: " << currentModuleHeaderFileName;
+				
+					cout << "\n\nnewModule: ";
+				
+					for (LangElement* elem : currentModule->langElements)
+					{
+						cout << elem->name() << ".";
+						//rae::log(elem->name(), ".");
+					}
+					cout << "\n";
+				#endif
 
 				currentModule->name(moduleName());//Hmm. Using a very strange function we put the combined module name also
 				//to the name variable of the current MODULE token.
@@ -2039,15 +2088,16 @@ bool SourceParser::handleToken(string set_token)
 			{
 				if(previousToken() == Token::ALIAS)
 				{
-					if(old_name->type() == set_token)
-					{
-						cout << "ALIAS old_name <" << set_token << "> was type: " << old_name->toSingleLineString() << "\n";
-					}
-					else
-					if(old_name->name() == set_token)
-					{
-						cout << "ALIAS old_name <" << set_token << "> was name: " << old_name->toSingleLineString() << "\n";
-					}
+					#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_ALIAS)
+						if(old_name->type() == set_token)
+						{
+							cout << "ALIAS old_name <" << set_token << "> was type: " << old_name->toSingleLineString() << "\n";
+						}
+						else if(old_name->name() == set_token)
+						{
+							cout << "ALIAS old_name <" << set_token << "> was name: " << old_name->toSingleLineString() << "\n";
+						}
+					#endif
 					previousElement()->type(set_token);
 					previousElement()->definitionElement(old_name);
 				}
@@ -2355,7 +2405,9 @@ bool SourceParser::handleToken(string set_token)
 			{
 				if(currentReference != nullptr)
 				{
-					cout << "We really have some dangling currentReference. Got a (. nameless stuff. Ending currentReference.\n";
+					#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_PARENTHESIS)
+						cout << "We really have some dangling currentReference. Got a (. nameless stuff. Ending currentReference.\n";
+					#endif
 					currentReference = nullptr;
 				}
 			
@@ -2371,9 +2423,9 @@ bool SourceParser::handleToken(string set_token)
 		{
 			if (expectingRole() == Role::FUNC_RETURN)
 			{
-#ifdef DEBUG_RAE_PARSER
-				cout << "Got ending ) for FUNC_RETURNs in UNDEFINED. Going back to FUNC_DEFINITION.\n";
-#endif				
+				#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_PARENTHESIS)
+					cout << "Got ending ) for FUNC_RETURNs in UNDEFINED. Going back to FUNC_DEFINITION.\n";
+				#endif				
 
 				expectingRole(Role::UNDEFINED);//could also be Role::FUNC_DEFINITION, but we don't need that, so.
 				//TODO: check parenthesisStack:
@@ -2383,9 +2435,9 @@ bool SourceParser::handleToken(string set_token)
 			}
 			else if (expectingRole() == Role::FUNC_PARAMETER)
 			{
-#ifdef DEBUG_RAE_PARSER
-				cout << "Got ending ) for FUNC_PARAMETERs in UNDEFINED. Going back to UNDEFINED.\n";
-#endif
+				#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_PARENTHESIS)
+					cout << "Got ending ) for FUNC_PARAMETERs in UNDEFINED. Going back to UNDEFINED.\n";
+				#endif
 
 				expectingRole(Role::UNDEFINED);//could also be Role::FUNC_DEFINITION, but we don't need that, so.
 				//TODO: check parenthesisStack:
@@ -2414,12 +2466,16 @@ bool SourceParser::handleToken(string set_token)
 
 			if (previousElement() && (previousElement()->isUnknownType() || previousElement()->token() == Token::USE_REFERENCE))
 			{
-				cout << "Bracket begin simple.\n";
+				#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_BRACKET)
+					cout << "Bracket begin simple.\n";
+				#endif
 				newBracketBegin(Token::BRACKET_BEGIN, set_token);
 			}
 			else if (previousElement() && previousElement()->token() == Token::DEFINE_REFERENCE)
 			{
-                cout << "Bracket define array begin.\n";
+				#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_BRACKET)
+                	cout << "Bracket define array begin.\n";
+                #endif
 				//convert to array:
 				currentReference = nullptr; // leave currentReference to nullptr. This is important.
 				previousElement()->token(Token::BRACKET_DEFINE_ARRAY_BEGIN);
@@ -2430,27 +2486,33 @@ bool SourceParser::handleToken(string set_token)
 			}
             else if (previousElement() && previousElement()->token() == Token::ASSIGNMENT)
 			{
-                cout << "Bracket initializer list begin!\n";
+				#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_BRACKET)
+                	cout << "Bracket initializer list begin!\n";
+                #endif
                 // Bracket initializer list
                 newBracketBegin(Token::BRACKET_INITIALIZER_LIST_BEGIN, set_token);
             }
             else if (previousElement() && previousElement()->token() == Token::CAST)
 			{
-				cout << "Bracket begin CAST.\n";
+				#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_BRACKET)
+					cout << "Bracket begin CAST.\n";
+				#endif
 				newBracketBegin(Token::BRACKET_CAST_BEGIN, set_token);
 			}
 			else
 			{
-                cout << "Bracket newDefineArray.\n";
-                if(previousElement())
-                    cout << "previousElement: " << previousElement()->toSingleLineString() << "\n";
+				#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_BRACKET)
+                	cout << "Bracket newDefineArray.\n";
+                	if(previousElement())
+                    	cout << "previousElement: " << previousElement()->toSingleLineString() << "\n";
+                #endif
 				newDefineArray();
 			}
 
 
 
 			//expectingContainer( ContainerType::ARRAY );
-			//tanne not a good idea: we need to handle opt, val, bool, int etc. which are all handled in undefined.//expectingToken(Token::ARRAY_VECTOR_STUFF);
+			//not a good idea: we need to handle opt, val, bool, int etc. which are all handled in undefined.//expectingToken(Token::ARRAY_VECTOR_STUFF);
 
 			/*
 			if(previousElement())
@@ -2506,9 +2568,10 @@ bool SourceParser::handleToken(string set_token)
 			}
 			else
 			{*/
-#ifdef DEBUG_RAE_PARSER
-			cout << "normal newBracketEnd.";
-#endif
+			#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_BRACKET)
+				cout << "normal newBracketEnd.";
+			#endif
+
 			LangElement* our_array_definition;
 			if (not bracketStack.empty())
 			{
@@ -2533,7 +2596,7 @@ bool SourceParser::handleToken(string set_token)
 		}
 		else if (set_token == "for")
 		{
-			cout << "RAE_ERROR for is deprecated!\n";
+			ReportError::reportError("RAE_ERROR for is deprecated!\n", previousElement());
 		}
 		/*
 		else if( set_token == "foreach" )
@@ -2546,7 +2609,9 @@ bool SourceParser::handleToken(string set_token)
 		}
 		else if (set_token == "alias")
 		{
-			cout << "Got alias keyword. Going to alias mode.\n";
+			#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_ALIAS)
+				cout << "Got alias keyword. Going to alias mode.\n";
+			#endif
 			LangElement* lang_elem = newLangElement(Token::ALIAS, TypeType::UNDEFINED, set_token);
 			addToUserDefinedTokens(lang_elem);
 			pushExpectingToken(Token::ALIAS);
@@ -3075,7 +3140,9 @@ bool SourceParser::handleToken(string set_token)
 	{
 		if (set_token == "(" || set_token == ",")
 		{
-			cout << "Got ( or a , which can't be a DEFINE_REFERENCE_NAME. This is probably a nameless temporary object. We currently support them only as value types.\n";
+			#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_REFERENCES) || defined(DEBUG_RAE_PARENTHESIS)
+				cout << "Got ( or a , which can't be a DEFINE_REFERENCE_NAME. This is probably a nameless temporary object. We currently support them only as value types.\n";
+			#endif
 			doReturnToExpectToken();
 			return handleToken(set_token); //rehandle set_token.
 		}
@@ -3083,9 +3150,9 @@ bool SourceParser::handleToken(string set_token)
 		{
 			if (expectingRole() == Role::FUNC_RETURN)
 			{
-#ifdef DEBUG_RAE_PARSER
-				cout << "Got ending ) for FUNC_RETURNs in DEFINE_REFERENCE_NAME. Going back to FUNC_DEFINITION.\n";
-#endif
+				#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_REFERENCES) || defined(DEBUG_RAE_PARENTHESIS) || defined(DEBUG_RAE_FUNC)
+					cout << "Got ending ) for FUNC_RETURNs in DEFINE_REFERENCE_NAME. Going back to FUNC_DEFINITION.\n";
+				#endif
 
 				expectingRole(Role::UNDEFINED);//could also be Role::FUNC_DEFINITION, but we don't need that, so.
 				//TODO: check parenthesisStack:
@@ -3103,9 +3170,9 @@ bool SourceParser::handleToken(string set_token)
 		}
 		else if (set_token == "[")
 		{
-#ifdef DEBUG_RAE_PARSER
-			cout << "BRACKET we got a bracket in DEFINE_REFERENCE_NAME!\n";
-#endif
+			#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_REFERENCES) || defined(DEBUG_RAE_BRACKET)
+				cout << "BRACKET we got a bracket in DEFINE_REFERENCE_NAME!\n";
+			#endif
 
 			if (previousElement())
 			{
@@ -3182,21 +3249,22 @@ bool SourceParser::handleToken(string set_token)
 	}
 	else if (expectingToken() == Token::FUNC_DEFINITION)
 	{
-		cout << "here in FUNC_DEFINITION handling.\n";
+		#ifdef DEBUG_RAE_PARSER
+			cout << "FUNC_DEFINITION handling START.\n";
+		#endif
 
 		if (set_token[0] == '\n')
 		{
-#ifdef DEBUG_RAE_HUMAN
-			cout << "Got NEWLINE. Ignore it because func.\n";
-			//rae::log("Got NEWLINE. Ignore it because func.\n");
-#endif
+			#ifdef DEBUG_RAE_HUMAN
+				cout << "Got NEWLINE. Ignore it because func.\n";
+			#endif
 			//expectingToken = Token::FUNC_RETURN_TYPE;
 		}
 		else if (set_token[0] == '(')
 		{
-#ifdef DEBUG_RAE
-			//rae::log("Got func_def (. Waiting return_types.\n");
-#endif
+			#ifdef DEBUG_RAE_PARSER
+				cout << "Got func_def (. Waiting return_types.\n";
+			#endif
 			newParenthesisBegin(Token::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES, "(");
 			expectingRole(Role::FUNC_RETURN);
 
@@ -3218,7 +3286,9 @@ bool SourceParser::handleToken(string set_token)
 			//record func name
 			if (currentFunc)
 			{
-				cout << "Got currentFunc name: " << set_token << "\n";
+				#ifdef DEBUG_RAE_PARSER
+					cout << "Got currentFunc name: " << set_token << "\n";
+				#endif
 
 				currentFunc->name(set_token);
 				//setNameAndCheckForPreviousDefinitions(currentReference, set_token);

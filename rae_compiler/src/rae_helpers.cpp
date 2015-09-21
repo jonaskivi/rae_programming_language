@@ -87,24 +87,24 @@ PathType::e checkPathType(const string& currentFilenamePath)
 		{
 			//it's a directory
 			path_type = PathType::DIRECTORY;
-			cout << currentFilenamePath << " : Is a directory.\n";
+			//cout << currentFilenamePath << " : Is a directory.\n";
 		}
 		else if (s.st_mode & S_IFREG)
 		{
 			//it's a file
 			path_type = PathType::FILE;
-			cout << currentFilenamePath << " : Is a file.\n";
+			//cout << currentFilenamePath << " : Is a file.\n";
 		}
 		else
 		{
 			//something else
-			cout << currentFilenamePath << " : Is something else or does not exist.\n";
+			//cout << currentFilenamePath << " : Is something else or does not exist.\n";
 		}
 	}
 	else
 	{
 		//error
-		cout << currentFilenamePath << " : Does not exist.\n";
+		//cout << currentFilenamePath << " : Does not exist.\n";
 	}
 
 	return path_type;

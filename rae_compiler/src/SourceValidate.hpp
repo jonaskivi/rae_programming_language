@@ -499,9 +499,9 @@
 			{
 				if( k > start_frag && line[k]->token() == Token::COMMA )
 				{
-					#ifdef DEBUG_RAE_VALIDATE
-					if (g_debugModuleName == current_module_name)
-						cout << "Found comma at: " << k << " so fragment is: " << start_frag << " - " << k-1 << "\n";
+					#if defined(DEBUG_RAE_VALIDATE) || defined(DEBUG_DEBUGMODULENAME)
+						if (g_debugModuleName == current_module_name)
+							cout << "Found comma at: " << k << " so fragment is: " << start_frag << " - " << k-1 << "\n";
 					#endif
 					vector<LangElement*> fragment;
 					for(uint j = start_frag; j < k; ++j)
@@ -510,8 +510,15 @@
 					}
 					
 					if( func_params.size() > nroFragments )
+					{
 						validateParameterLine(*func_params[nroFragments], fragment);
-					else cout << "TODO ERROR: too many parameters to a function.\n";
+					}
+					else
+					{
+						#if defined(DEBUG_RAE_VALIDATE)
+							cout << "TODO ERROR: too many parameters to a function.\n";
+						#endif
+					}
 					
 					start_frag = k + 1;
 					++nroFragments;
@@ -519,9 +526,9 @@
 
 				if( k == line.size()-1 && k > start_frag)
 				{
-					#ifdef DEBUG_RAE_VALIDATE
-					if (g_debugModuleName == current_module_name)
-						cout << "Last fragment: " << start_frag << " - " << k << "\n";
+					#if defined(DEBUG_RAE_VALIDATE) || defined(DEBUG_DEBUGMODULENAME)
+						if (g_debugModuleName == current_module_name)
+							cout << "Last fragment: " << start_frag << " - " << k << "\n";
 					#endif
 					vector<LangElement*> fragment;
 					for(uint j = start_frag; j < k; ++j)
@@ -530,8 +537,15 @@
 					}
 					
 					if( func_params.size() > nroFragments )
+					{
 						validateParameterLine(*func_params[nroFragments], fragment);
-					else cout << "TODO ERROR: too many parameters to a function.\n";
+					}
+					else
+					{
+						#if defined(DEBUG_RAE_VALIDATE)
+							cout << "TODO ERROR: too many parameters to a function.\n";
+						#endif
+					}
 					
 					start_frag = k + 1;
 					++nroFragments;
@@ -539,13 +553,13 @@
 			}
 
 			#ifdef DEBUG_RAE_VALIDATE
-			if (g_debugModuleName == current_module_name)
-			{
-				if( func_params.size() > nroFragments )
-					cout << "TODO ERROR: too FEW parameters to a function. Check default args.\n";
-				else if(nroFragments > 0)
-					cout << "Just the right amount of parameters to a function. " << func_params.size() << " and " << nroFragments << "\n";
-			}
+				if (g_debugModuleName == current_module_name)
+				{
+					if( func_params.size() > nroFragments )
+						cout << "TODO ERROR: too FEW parameters to a function. Check default args.\n";
+					else if(nroFragments > 0)
+						cout << "Just the right amount of parameters to a function. " << func_params.size() << " and " << nroFragments << "\n";
+				}
 			#endif
 		}
 
@@ -574,11 +588,11 @@
 		}
 
 		#ifdef DEBUG_RAE_VALIDATE
-		if (g_debugModuleName == current_module_name)
-		{
-			coutIndent(tab_level);
-			cout<<"END validateLine\n";
-		}
+			if (g_debugModuleName == current_module_name)
+			{
+				coutIndent(tab_level);
+				cout<<"END validateLine\n";
+			}
 		#endif
 		
 	}
@@ -595,18 +609,18 @@
 
 		if(hasListOtherParenthesis(line))
 		{
-			#ifdef DEBUG_RAE_VALIDATE
-			if (g_debugModuleName == current_module_name)
-				cout << "SHIIT: there's parenthesis inside this function call.\n";
+			#if defined(DEBUG_RAE_VALIDATE) || defined(DEBUG_DEBUGMODULENAME)
+				if (g_debugModuleName == current_module_name)
+					cout << "PROBLEM: there's parenthesis inside this function call.\n";
 			#endif
 			////assert(0);
 		}
 
 		if(line.size() == 1)
 		{
-			#ifdef DEBUG_RAE_VALIDATE
-			if (g_debugModuleName == current_module_name)
-				cout << "The only thing here is: " << line[0]->toSingleLineString() << "\n";
+			#if defined(DEBUG_RAE_VALIDATE) || defined(DEBUG_DEBUGMODULENAME)
+				if (g_debugModuleName == current_module_name)
+					cout << "The only thing here is: " << line[0]->toSingleLineString() << "\n";
 			#endif
 			validateParameter(param, *line[0]);
 		}
@@ -630,7 +644,7 @@
 
 	void validateParameter(LangElement& param, LangElement& line)
 	{
-		#ifdef DEBUG_RAE_VALIDATE
+		#if defined(DEBUG_RAE_VALIDATE) || defined(DEBUG_DEBUGMODULENAME)
 			string current_module_name = line.parentModuleString();
 			if (g_debugModuleName == current_module_name)
 				cout << "validateParameter START.\n";
@@ -649,20 +663,20 @@
 		//if( ret_value->definitionElement() && param.typeType() != ret_value->definitionElement()->typeType() )
 		if( param.typeType() != ret_value->typeType() )
 		{
-			#ifdef DEBUG_RAE_VALIDATE
-			if (g_debugModuleName == current_module_name)
-				cout << "Setting typeConvert in: " << line.toSingleLineString() << " to: " << TypeType::toString( param.typeType() ) << "\n";
+			#if defined(DEBUG_RAE_VALIDATE) || defined(DEBUG_DEBUGMODULENAME)
+				if (g_debugModuleName == current_module_name)
+					cout << "Setting typeConvert in: " << line.toSingleLineString() << " to: " << TypeType::toString( param.typeType() ) << "\n";
 			#endif
 			line.typeConvert( ret_value->typeType(), param.typeType() );
 		}
 		else
 		{
-			#ifdef DEBUG_RAE_VALIDATE
-			if (g_debugModuleName == current_module_name)
-			{
-				cout << "TODO validateParameter() Unhandled typeConvert.\n";
-				cout << "types are: ret_value: " << ret_value->toSingleLineString() << " param: " << param.toSingleLineString() << " paramTypeType: " << TypeType::toString( param.typeType() ) << "\n";
-			}
+			#if defined(DEBUG_RAE_VALIDATE) || defined(DEBUG_DEBUGMODULENAME)
+				if (g_debugModuleName == current_module_name)
+				{
+					cout << "TODO validateParameter() Unhandled typeConvert.\n";
+					cout << "types are: ret_value: " << ret_value->toSingleLineString() << " param: " << param.toSingleLineString() << " paramTypeType: " << TypeType::toString( param.typeType() ) << "\n";
+				}
 			#endif
 		}
 
@@ -681,9 +695,9 @@
 		}
 		*/
 
-		#ifdef DEBUG_RAE_VALIDATE
-		if (g_debugModuleName == current_module_name)
-			cout << "validateParameter END.\n";
+		#if defined(DEBUG_RAE_VALIDATE) || defined(DEBUG_DEBUGMODULENAME)
+			if (g_debugModuleName == current_module_name)
+				cout << "validateParameter END.\n";
 		#endif
 	}
 

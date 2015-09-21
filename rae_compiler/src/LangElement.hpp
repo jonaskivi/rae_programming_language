@@ -1737,12 +1737,16 @@ public:
 
 	public: LangElement* addDefaultInitData()
 	{
-		cout << "addDefaultInitData START.\n";
+		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_INIT_DATA)
+			cout << "addDefaultInitData START.\n";
+		#endif
 
 		// Currently only adds default data to built in types.
 		if(isBuiltInType() == false || containerType() != ContainerType::UNDEFINED)
 		{
-			cout << "addDefaultInitData: not BUILT_IN_TYPE. Not setting INIT_DATA.\n";
+			#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_INIT_DATA)
+				cout << "addDefaultInitData: not BUILT_IN_TYPE. Not setting INIT_DATA.\n";
+			#endif
 			return nullptr;
 		}
 
@@ -1785,35 +1789,22 @@ public:
 			break;
 
 		}
-		/*REMOVE
-		if( builtInType() == BuiltInType::UNDEFINED )
-		{
-			if( m_type != "" )
-			{
-				//handle SomeClass.ptr = 0
-				init_string = name() + "NOT_HERE";
-			}
-			else
-			{
-				//no type! just return and ignore this strange request.
-				return 0;
-			}
-		}*/
 		
-
 		lang_elem = new LangElement(lineNumber(), Token::INIT_DATA, TypeType::UNDEFINED, "=");
 
 		lang_elem->newLangElement(lineNumber(), Token::NUMBER, TypeType::UNDEFINED, init_string);
 
-		cout << "addDefaultInitData: init_string: " << init_string << "\n";
+		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_INIT_DATA)
+			cout << "addDefaultInitData: init_string: " << init_string << "\n";
 
-		if (isInClass() )
-			cout << "YES isInClass.\n";
-		else cout << "Not in a class.\n";
+			if (isInClass() )
+				cout << "YES isInClass.\n";
+			else cout << "Not in a class.\n";
 
-		if (isInFunc() )
-			cout << "YES in func.\n";
-		else cout << "Not in a func.\n";
+			if (isInFunc() )
+				cout << "YES in func.\n";
+			else cout << "Not in a func.\n";
+		#endif
 
 		//lang_elem = new LangElement(lineNumber(), Token::UNDEFINED, init_string);
 		initData(lang_elem);

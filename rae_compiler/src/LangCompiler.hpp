@@ -254,8 +254,8 @@ public:
 
 	void addSourceFileAsImport(string set_import_name)
 	{
-		#ifdef DEBUG_RAE_PARSER
-		cout<<"Adding import name: "<<set_import_name<<"\n";
+		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_IMPORT)
+			cout<<"Adding import name: "<<set_import_name<<"\n";
 		#endif
 
 		//REMOVE BOOST: boost::filesystem::path set_import_path = findModuleFileInSearchPaths(set_import_name);
@@ -263,9 +263,15 @@ public:
 
 		if(set_import_path != "")
 		{
-			cout << "Found imported module: " << set_import_path << "\n";
+			#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_IMPORT)
+				cout << "Found imported module: " << set_import_path << "\n";
+			#endif
 		}
-		else cout << "Didn't find imported module: " << set_import_name << "\n";
+		else
+		{
+			cout << "Didn't find imported module: " << set_import_name << "\n";
+			assert(0);
+		}
 		
 		// JONDE CHECK Do we need this line:
 		//addSourceFile( set_import_path );
@@ -298,9 +304,9 @@ public:
 
 	void addCppHeaderAsImport(string set_import_name)
 	{
-//#ifdef DEBUG_RAE_PARSER
-		cout<<"Adding C++ import name: "<<set_import_name<<"\n";
-//#endif
+		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_IMPORT)
+			cout<<"Adding C++ import name: "<<set_import_name<<"\n";
+		#endif
 		
 		bool did_we_find_the_file = false;
 		
@@ -329,8 +335,9 @@ public:
 		
 		if(did_we_find_the_file == true)
 		{
-			cout << "Found imported C++ header: " << set_import_path << "\n";
-			//assert(0);
+			#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_IMPORT)
+				cout << "Found imported C++ header: " << set_import_path << "\n";
+			#endif
 		}
 		else
 		{
@@ -340,12 +347,13 @@ public:
 		
 		/////////////WHAT DOES THIS DO???: addSourceFile( set_import_path );
 		
-		cout << "TODO parse C++!\n";
 		SourceParser* a_parser = new SourceParser( set_import_path, /*do_parse:*/false);
 		a_parser->parserType(ParserType::CPP);
 
 		string module_name = replaceCharInString(set_import_name, "/\\", '.'); // replace / or \ with a dot
-		cout << "Adding C++ module name: " << module_name << "\n";
+		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_IMPORT)
+			cout << "Adding C++ module name: " << module_name << "\n";
+		#endif
 		a_parser->newModule(module_name);
 
 		sourceParsers.push_back(a_parser);
@@ -366,9 +374,7 @@ public:
 
 		#if __cplusplus >= 201103L //c++11
 
-			//rae::log("We have sourceFiles: ", sourceFiles.size(), "\n");;
-
-            cout<<"We have C++11, but this code is just bollocks. Rewrite this.\n";
+            cout<<"We have C++11, but this threading code is just bollocks. Rewrite this.\n";
             
 			for(uint i = 0; i < sourceFiles.size(); i++)
 			{
@@ -467,7 +473,9 @@ public:
 	//Write to default path. Which is workingPath + "/cpp/"
 	bool write()
 	{
-		cout << "working path is: " << workingPath << "\n"; // JONDE WTF debug.
+		#if defined(DEBUG_RAE_PARSER)
+			cout << "working path is: " << workingPath << "\n";
+		#endif
 		return write(workingPath + "/cpp/");
 	}
 
@@ -481,6 +489,9 @@ public:
 
 		for(SourceParser* a_parser : sourceParsers)
 		{
+			#if defined(DEBUG_RAE_PARSER)
+				cout<<"Going to write: " << a_parser->moduleName() << "\n";
+			#endif
 			a_parser->write(folder_path_to_write_to);
 		}
 
