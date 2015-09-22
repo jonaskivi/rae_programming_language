@@ -1,5 +1,7 @@
 EXECUTABLE := ./bin/raec
 EXECUTABLE_NAME := raec
+EXECUTABLE_DIR := ./bin/
+MKDIR_CMD := mkdir -p
 CXX	:= g++
 CXXFLAGS := -g -std=c++0x
 INCLUDES := -I. -I./rae_compiler/src/
@@ -45,6 +47,7 @@ install:
 	cp $(EXECUTABLE) $(INSTALL_PATH)$(EXECUTABLE_NAME)
 
 compile: $(OBJECTS)
+	$(MKDIR_CMD) $(EXECUTABLE_DIR)
 	$(CXX) $(OBJECTS) $(LIBS) -o $(EXECUTABLE)
 
 rae_compiler.o: $(SRC_DIR)rae_compiler.cpp $(SRC_DIR)RaeStdLib.hpp $(SRC_DIR)ReportError.hpp $(SRC_DIR)SourceParser.hpp $(SRC_DIR)SourceValidate.hpp $(SRC_DIR)SourceWriter.hpp $(SRC_DIR)Element.hpp $(SRC_DIR)StringFileWriter.hpp $(SRC_DIR)rae_helpers.hpp
