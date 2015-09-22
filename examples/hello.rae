@@ -1,0 +1,63 @@
+module examples.hello
+
+class HelloWorld
+{
+pub:
+	#constructor:
+	func init
+	{
+	}
+	
+	#destructor:
+	func free
+	{
+	}
+	
+	func log_int_array (ref[int] someints) let
+	{
+		# foreach loop
+		loop( int a_num in someints )
+		{
+			log("foreach: ", a_num)
+		}
+
+		# for loop
+		loop( uint i = 0; i < someints.size; ++i )
+		{
+			log("for: ", someints[i])
+		}
+
+		# TODO while loop. Currently you can use loop(;;)
+		# loop(1)
+	}
+
+	func (int result) int_count (let int param1, let int param2) pub
+	{
+		return param1 + param2
+	}
+
+	# properties with the prop keyword are TODO
+	pub func (int) number { return m_number }
+	pub func number (int set) { m_number = set }
+	priv int m_number = 5 # default initializers are copied to constructors.
+
+	func (string) world { return m_world }
+	priv string m_world = "World"
+}
+
+# args won't actually work yet:
+func (int) main ([string] args)
+{
+	string hello_rae = "Hello "
+	log_s(hello_rae)
+
+	# every Rae object has a kind, which can be one of:
+	# val, ref, opt, link or ptr
+	#val is default so this is the same as: val HelloWorld hello
+	HelloWorld hello
+
+	log(hello.world)
+
+	return 0
+}
+

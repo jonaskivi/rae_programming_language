@@ -531,7 +531,7 @@ public:
 		#endif
 	}
 	
-    bool Element::isWhiteSpace();
+    bool isWhiteSpace();
 
 	string toString();
 	string toSingleLineString();

@@ -7,7 +7,7 @@ solution "rae_compiler"
    project "raec"
       kind "ConsoleApp"
       language "C++"
-      targetdir "./"
+      targetdir "../bin" -- set to parent dir so that XCode will not bother with it's own build dirs.
       files { "./src/*.hpp", "./src/*.cpp" }
       includedirs { "src" }
 
@@ -17,10 +17,10 @@ solution "rae_compiler"
       configuration "Debug"
          defines { "DEBUG" }
          flags { "Symbols" }
-         debugdir "./"
+         debugdir "../bin"
 
       configuration "Release"
          defines { "NDEBUG" }
          flags { "Optimize" }
-         debugdir "./"
+         debugdir "../bin"
 
