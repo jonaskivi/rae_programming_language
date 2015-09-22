@@ -20,10 +20,9 @@
 			if( module_elem->token() != Token::MODULE )
 			{
 				#ifdef DEBUG_RAE_HUMAN
-				cout<<"Validate Interesting: we have something in top hierarchy: "<<module_elem->tokenString()<<"\n";
-				//rae::log("Interesting: we have something in top hierarchy: ", module_elem->tokenString(), "\n");
+					cout<<"Validate Interesting: we have something in top hierarchy: "<<module_elem->tokenString()<<"\n";
 				#endif
-				continue; //skip it
+				continue; // skip it
 			}
 
 			validateElement(*module_elem);
