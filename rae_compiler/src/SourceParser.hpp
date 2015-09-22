@@ -16,135 +16,6 @@ class Compiler;
 
 extern Compiler* g_compiler;
 
-/*
-Rae TODO
--? nullable
--ref is more like value. It can not be null, you can not free it. Auto free on scope end.
--easy boost signals.
--some sense into raw arrays. Do we want size? Maybe.
-Then maybe it should be a struct in C++
-*/
-
-
-/*
-template<class T>
-struct _rae_array
-{
-	void allocate(uint set_size)
-	{
-		size = set_size;
-		ptr = new T[size];
-		init();
-	}
-
-	void init()
-	{
-		for(uint i = 0; i < size; i++)
-		{
-			ptr[i] = T();
-		}
-	}
-
-	void free()
-	{
-		delete[] ptr;
-		size = 0;
-	}
-
-	void printOut()
-	{
-		for(uint i = 0; i < size; i++)
-		{
-			std::cout<<"i: "<<i<<" : "<<ptr[i]<<"\n";
-		}
-	}
-
-	T* ptr;
-	uint size;
-};
-
-//using arrays in C++:
-	_rae_array<float> an_array;
-	_rae_array<int> int_array;
-	_rae_array<Tester*> test_array;
-
-
-	an_array.allocate(14);
-	an_array.printOut();
-	an_array.free();
-	an_array.printOut();
-
-	int_array.allocate(5);
-	int_array.printOut();
-	int_array.free();
-	int_array.printOut();
-
-	test_array.allocate(4);
-	for(uint i = 0; i < test_array.size; i++)
-	{
-		std::cout<<"tester: i: "<<i<<" ";
-		test_array.ptr[i]->logMe();
-		std::cout<<"\n";
-	}
-*/
-
-
-/*
-TODO
-currently it seems that for unknown tokens
-we first look for them when they are found.
-Most unknown tokens will not be found at this stage,
-because most likely they have not yet been defined.
-e.g. in a class function (method) when you use a member
-ref and call a function in that other class.
-And only later in your current class you define what that
-member is:
-
-func()someFunc()
-{
-	unknownMember.someOtherFunc
-}
-
-SomeOtherClass unknownMember
-
-//
-
-So it might be wise to just parse everything first, and
-only check for unknown stuff in the end, in handleUnknownTokens??
-
-//
-
-TODO
-for the case above it would also be optimised to:
-Make a new pointer in class Element that points
-to the definition of this object. It could be a class
-or a member definition. But this way we would only need
-to find it once!
-
-E.g. in the definition of unknownMember above
-we would have a pointer to the class SomeOtherClass in addition
-to the (now temporary) string type = "SomeOtherClass" that would only
-be used to store it until it is found. Once it is found we would then
-use the pointer to the definition. But would the definition have to be
-complete? Is it possible that it might still have some unknown tokens?
-Anyway it would be a good system.
-
-Then when searching for unknownMember in someFunc:
-find the definition.
-check if the next token is a dot, and if so, then check if the
-next token is an unknown member or function call!
-And also check the .someOtherFunc function call at the same time,
-as we have just found the definition of unknownMember, which now
-contains the link/pointer to the class definition of SomeOtherClass.
-So check if SomeOtherClass contains a func or member called someOtherFunc.
-That should make it all faster!!! And easier too.
-
-This test is currently made in about line 5085.
-and by using a method called classHasFunctionOrValue()
-
-
-*/
-
 enum class ParserType
 {
 	RAE,
@@ -155,40 +26,15 @@ enum class ParserType
 class SourceParser
 {
 public:
-//constructor:
+
 	SourceParser()
 	{
 		init();
 	}
 	
-	/*
-	SourceParser(int dummy_for_stdlib)
-	{
-		dummy_for_stdlib = 0;//to use the dummy.
-		createRaeStdLib();
-	}
-	*/
-
 	SourceParser(string set_filename, bool do_parse = true)
 	{
-		/*if(set_filename == "rae_std_lib")//magic string...
-		{
-			createRaeStdLib();
-		}
-		else
-		{
-		*/
-
-			//rae::log("creating SourceParser.\n");
-			read(set_filename);
-			/*
-			note: we can't parse yet, because the signals are not yet connected...???
-
-			if( do_parse == true )
-			{
-				parse();
-			}*/
-		//}
+		read(set_filename);
 	}
 
 	~SourceParser()
@@ -197,18 +43,6 @@ public:
 			cout<<"~SourceParser() START: module: "<<moduleName()<<"\n";
 		#endif
 
-		//all Elements should be owned by vector elements
-		//other vectors only have borrowed ones... I hope.
-		/*for(Element* elem : elements)
-		{
-			#ifdef DEBUG_RAE_DESTRUCTORS
-				if(elem)
-					cout<<"~SourceParser() going to delete elem: "<<elem->toString()<<"\n";
-				else cout<<"~SourceParser() already deleted elem.\n";
-			#endif
-			if(elem)
-				delete elem;
-		}*/
 		for(uint i = 0; i < elements.size(); i++)
 		{
 			if(elements[i] && elements[i]->scope() == 0)
@@ -227,7 +61,7 @@ public:
 		}	
 		elements.clear();
 
-		//here's all vectors I can remember. But I guess we wouldn't need to clear them.
+		// here's all vectors I can remember. But I guess we wouldn't need to clear them.
 		unknownDefinitions.clear();
 		unknownUseReferences.clear();
 		unknownUseMembers.clear();
@@ -241,9 +75,9 @@ public:
 	{
 		m_parserType = ParserType::RAE;
 
-		lineNumber.line = 1;//linenumbers start from 1, but we keep it default to 0 to see if it's really been set.
+		lineNumber.line = 1; // linenumbers start from 1, but we keep it default to 0 to see if it's really been set.
 
-		debugWriteLineNumbers = true;//false;
+		debugWriteLineNumbers = true;
 
 		stringIndex = 0;
 		isWriteToFile = true;
@@ -254,18 +88,10 @@ public:
 		isWholeToken2 = false;
 		isEndOfLine = false;
 		isSingleLineComment = false;
-		//m_returnToExpectToken = Token::UNDEFINED;
-		//m_expectingToken = Token::UNDEFINED;
 		expectingToken(Token::UNDEFINED);
-		//m_expectingKind = Kind::UNDEFINED;
-		//m_expectingContainer = ContainerType::UNDEFINED;
 		m_expectingRole = Role::UNDEFINED;
-		expectingChar = 'T';
+
 		foundToken = Token::UNDEFINED;
-
-		//isInsideLogStatement = false;
-
-		/////////JONDE REMOVE injectPointToEndParenthesis = false;
 
 		isPleaseRehandleChar = false;
 
@@ -304,10 +130,10 @@ public:
 
 	bool debugWriteLineNumbers;//= false
 	
-	//Hmm. Currently this system does not work. doReturnToExpectToken just
-	//sets it to Token::UNDEFINED every time... maybe we should just remove this system,
-	//and just use expectingToken(Token::UNDEFINED) every time. And use Role for these situations,
-	//when we need to know some more context about what we were doing before.
+	// Hmm. Currently this system does not work properly. doReturnToExpectToken just
+	// sets it to Token::UNDEFINED every time... maybe we should just remove this system,
+	// and just use expectingToken(Token::UNDEFINED) every time. And use Role for these situations,
+	// when we need to know some more context about what we were doing before.
 	public: Token::e doReturnToExpectToken()
 	{
 		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_EXPECTING_TOKEN)
@@ -347,7 +173,6 @@ public:
 		//
 		//cout<<"Returned to expectToken: "<<Token::toString(m_expectingToken)<<"\n";
 		return m_expectingToken;
-		//return m_returnToExpectToken;
 	}
 
 	// Now the system might work, when using this explicit function
@@ -360,12 +185,6 @@ public:
 		returnToExpectTokenStack.push_back(set);
 	}
 
-	/*
-	public: void addReturnToExpectToken(Token::e set)
-	{
-		returnToExpectTokenStack.push_back(set);
-		//m_returnToExpectToken = set;
-	}*/
 	public: Token::e whatIsReturnToExpectToken()//don't use this... just for if you need it to check what it is.
 	{
 		if( returnToExpectTokenStack.empty() )
@@ -373,9 +192,8 @@ public:
 
 		//else
 		return returnToExpectTokenStack.back();
-		//return m_returnToExpectToken;
 	}
-	//protected: Token::e m_returnToExpectToken;
+
 	protected: vector<Token::e> returnToExpectTokenStack;
 	public: Token::e expectingToken(){ return m_expectingToken; }
 	public: void expectingToken(Token::e set)
@@ -384,10 +202,8 @@ public:
 			cout<<"set expectingToken to: "<<Token::toString(set)<<"\n";
 		#endif
 		m_expectingToken = set;
-		//for debug, doesn't work: newElement(Token::EMPTY, Kind::UNDEFINED, "expectingChangedTo: " + Token::toString(m_expectingToken));
-		//returnToExpectTokenStack.push_back(set);
 	}
-	protected: Token::e m_expectingToken;// = EDLTokenType::TITLE;
+	protected: Token::e m_expectingToken;
 
 	public: void setNameForExpectingName(string set)
 	{
@@ -427,43 +243,16 @@ public:
 		pushExpectingToken(Token::EXPECTING_TYPE);
 	}
 	protected: Element* m_expectingTypeFor;
-	/*
-	//NOT YET USED:
-	public: void setTypeForExpectingType(string set)
-	{
-		if(m_expectinTypeFor)
-			m_expectingTypeFor->type(set);
-		expectingToken(Token::UNDEFINED);
-	}
-	public: Element* expectingTypeFor(){ return m_expectingTypeFor; }
-	public: void expectingTypeFor(Element* set)
-	{
-		m_expectingTypeFor = set;
-		expectingToken(Token::EXPECTING_TYPE);
-	}
-	protected: Element* m_expectingTypeFor;
-	*/
-
-	//secondary expecting
-	/*
-	public: Kind::e expectingKind(){ return m_expectingKind; }
-	public: void expectingKind(Kind::e set){ m_expectingKind = set; }
-	protected: Kind::e m_expectingKind;
-	*/
-/*
-	public: ContainerType::e expectingContainer(){ return m_expectingContainer; }
-	public: void expectingContainer(ContainerType::e set){ m_expectingContainer = set; }
-	protected: ContainerType::e m_expectingContainer;
-*/
+	
 	public: Role::e expectingRole(){ return m_expectingRole; }
 	public: void expectingRole(Role::e set){ m_expectingRole = set; }
 	protected: Role::e m_expectingRole;
 
-	public:
-	int expectingChar;// = 'T';
-	Token::e foundToken;// = EDLTokenType::UNDEFINED;
+public:
+
+	Token::e foundToken;
 	
-	//This is similar to expectingRole and expectingToken TODO make better.
+	// This is similar to expectingRole and expectingToken TODO make better.
 	bool isReceivingInitData;
 
 	bool isSingleLineComment;// = false; //TODO rename to isWaitingForSingleLineComment for concistency.
@@ -474,9 +263,6 @@ public:
 	bool isWaitingForQuoteEnd;
 
 	string currentQuote;
-
-	//a system to help with LOG commas... LOG_SEPARATORs //replaced this with a call to matchParenthesis and some checking in ","
-	//bool isInsideLogStatement;
 
 	/*for handling star comments like this one.*/
 	// and now also #* rae star comments like this one *#
@@ -609,17 +395,6 @@ public:
 
 	void newScopeBegin()
 	{
-		/*if( currentParentElement() )
-		{
-			currentParentElement()->newElement(Token::SCOPE_BEGIN, "{");
-			cout<<"Begin scope for: "<<Token::toString( currentParentElement()->token() );
-		}
-		else
-		{
-			newElement(Token::SCOPE_BEGIN, "{");
-		}
-		*/
-
 		/*
 
 		class <- put to scopeElementsStack, become a currentParentElement
@@ -663,10 +438,6 @@ public:
 			}
 			iter = iter->previousElement();
 		}
-
-		//put the scope or class or func, or init_data object to scope stack.
-		////////JONDE REMOVE scopeElementStackPush( currentParentElement() ); //NOT true anymore: but we put the class or func (or limiting scope) in the stack. Not the actual scope object (unless it is a limiting scope.)
-		
 	}
 
 	void newScopeEnd()
@@ -901,8 +672,7 @@ public:
 			}
 
 			#ifdef DEBUG_RAE
-			cout<<"End scope for: "<<Token::toString( scope_elem->token() );
-			//rae::log("End scope for: ",Token::toString( scope_elem->token() ));
+				cout<<"End scope for: "<<Token::toString( scope_elem->token() );
 			#endif
 		}
 		else
@@ -1029,23 +799,8 @@ public:
 				else cout << "endInitData for NO INIT_DATA.";
 			#endif
 		}
-
-		/*if( scopeElementStack.empty() == true )
-		{
-			//lang_elem = newElement(set_lang_token_type, Kind::UNDEFINED, set_token);
-			ReportError::reportError("unmatched initdata end.", previousElement() );
-			return;
-		}
-		else
-		{
-			scope_elem = scopeElementStack.back();
-		}*/
 		
-		//removed freeOwned from here.
-		//removed checking for NEWLINE_BEFORE_SCOPE_END
-		
-		scopeElementStackPop(); //JONDE Trying this now.
-		//resetParentElementToCurrentScope();
+		scopeElementStackPop();
 		doReturnToExpectToken(); // Note that we set expectingtoken already here.
 	}
 
@@ -1063,7 +818,7 @@ public:
 		return lang_elem;
 	}
 
-	//a small helper, just so we can get the token easily...
+	// a small helper, just so we can get the token easily...
 	Token::e parenthesisStackTokenType()
 	{
 		if( parenthesisStack.empty() )
@@ -1105,10 +860,9 @@ public:
 				stack_elem->pairElement(lang_elem);
 
 				#ifdef DEBUG_RAE
-				/*cout<<"MATCH parenthesis: from: "<<Token::toString(stack_elem->token())
-					<<" to: "<<Token::toString(Token::matchParenthesisEnd(stack_elem->token()))
-					<<" caller: "<<Token::toString(set_lang_token_type)<<"\n");*/
-				//rae::log("match parenthesis...\n");
+					/*cout<<"MATCH parenthesis: from: "<<Token::toString(stack_elem->token())
+						<<" to: "<<Token::toString(Token::matchParenthesisEnd(stack_elem->token()))
+						<<" caller: "<<Token::toString(set_lang_token_type)<<"\n");*/
 				#endif
 
 				/*
@@ -1202,12 +956,11 @@ public:
 
 
 				#ifdef DEBUG_RAE_BRACKET
-				//cout<<"MATCH bracket: from: "<<Token::toString(stack_elem->token())
-			//		<<" to: "<<Token::toString(Token::matchBracketEnd(stack_elem->token()))
-			//		<<" caller: "<<Token::toString(set_lang_token_type)<<"\n";
-				//rae::log("match bracket.\n");
-				ReportError::reportInfo("Match bracket start: ", stack_elem);
-				ReportError::reportInfo("Match bracket end: ", lang_elem);
+					//cout<<"MATCH bracket: from: "<<Token::toString(stack_elem->token())
+					//		<<" to: "<<Token::toString(Token::matchBracketEnd(stack_elem->token()))
+					//		<<" caller: "<<Token::toString(set_lang_token_type)<<"\n";
+					ReportError::reportInfo("Match bracket start: ", stack_elem);
+					ReportError::reportInfo("Match bracket end: ", lang_elem);
 
 				#endif
 
@@ -1252,7 +1005,6 @@ public:
 			elements.push_back( lang_elem );
 			#ifdef DEBUG_RAE
 				cout<<"newImport: "<<Token::toString(Token::IMPORT)<<" name:>"<<set_name<<"\n";
-				//rae::log("newImport: ",Token::toString(Token::IMPORT)," name:>",set_name<<"\n");
 			#endif
 
 			//previous2ndElement = previousElement;
@@ -1384,7 +1136,6 @@ public:
 			
 			#ifdef DEBUG_RAE_HUMAN
 				cout<<"\n\nnewClass: "<<set_name<<"\n";
-				//rae::log("newClass: ",set_name,"\n");
 			#endif
 		}
 		else //no class, so we just make a global class... Um... this shouldn't happen. We have to have a module.
@@ -1413,7 +1164,6 @@ public:
 		
 		#ifdef DEBUG_RAE_HUMAN
 			cout<<"\n\nnewClass: "<<set_name<<"\n";
-			//rae::log("newClass: ",set_name,"\n");
 		#endif
 		
 		return lang_elem;
@@ -1487,7 +1237,6 @@ public:
 	{
 		#ifdef DEBUG_COMMENTS
 			cout<<"newPlusComment: "<<set_name<<"\n";
-			//rae::log("newPlusComment: ",set_name,"\n");
 		#endif
 
 		return newElement(Token::PLUS_COMMENT, Kind::UNDEFINED, set_name);		
@@ -1497,7 +1246,6 @@ public:
 	{
 		#ifdef DEBUG_COMMENTS
 			cout<<"newStarComment: "<<set_name<<"\n";
-			//rae::log("newStarComment: ",set_name,"\n");
 		#endif
 
 		return newElement(Token::STAR_COMMENT, Kind::UNDEFINED, set_name);		
@@ -1522,7 +1270,6 @@ public:
 	
 		#ifdef DEBUG_COMMENTS
 			cout<<"newComment: "<<set_name<<"\n";
-			//rae::log("newComment: ",set_name,"\n");
 		#endif
 
 		if( isReceivingInitData == true )
@@ -1534,15 +1281,8 @@ public:
 		return newElement(Token::COMMENT, Kind::UNDEFINED, set_name);
 	}
 
-	//JONDE REMOVE bool injectPointToEndParenthesis;
-
 	Element* newPointToElement()
 	{
-		/*if (previousElement() && previousElement()->kind() != Kind::PTR)
-		{
-			injectPointToEndParenthesis = true;
-			cout << "We're using POINT_TO and the previousElement is: " << previousElement()->toSingleLineString() << "\nSo we injectPointToEndParenthesis here man.\n";
-		}*/
 		return newElement(Token::POINT_TO, Kind::UNDEFINED, "->");
 	}
 
@@ -1555,38 +1295,6 @@ public:
 		unfinishedElement(nullptr);
 		currentReference = nullptr;
 
-		/*if(injectPointToEndParenthesis == true)
-		{
-			injectPointToEndParenthesis = false;
-			newElement(Token::POINT_TO_END_PARENTHESIS, Kind::UNDEFINED, ")");
-		}*/
-
-		/*if( currentParentElement() )
-		{
-			currentParentElement()->newElement(Token::NEWLINE, "\n");
-			//cout<<"Begin scope for: "<<Token::toString( currentParentElement()->token() );
-		}
-		else
-		{
-			cout<<"newLine() AGAIN added to the BASE level.\n");
-			newElement(Token::NEWLINE, "\n");
-		}*/
-		
-		// This used to be like this, that on a MODULE level newlines were not recorded. Why was that?
-		// Maybe we'll find out soon enough.
-		//if(currentParentElement() && currentParentElement()->token() != Token::MODULE )
-		/* Well, I just removed this let's see what it does:
-		if( currentParentElement() )
-		{
-			newElement(Token::NEWLINE, Kind::UNDEFINED, "\n");
-		}
-		else if( previousToken() == Token::COMMENT )
-		{
-			//if it's a comment, then do the newline anyway...
-			newElement(Token::NEWLINE, Kind::UNDEFINED, "\n");	
-		}
-		*/
-
 		newElement(Token::NEWLINE, Kind::UNDEFINED, "\n");
 
 	}
@@ -1594,20 +1302,14 @@ public:
 
 	Element* newDefineBuiltInType(BuiltInType::e set_built_in_type, Role::e set_role, string set_type, string set_name = "")
 	{
-		//Element* lang_elem = newElement(Token::DEFINE_BUILT_IN_TYPE, set_name, set_type);
 		Element* lang_elem = newElement(Token::DEFINE_REFERENCE, Kind::BUILT_IN_TYPE, set_name, set_type);
 		lang_elem->builtInType(set_built_in_type);
 		lang_elem->role(set_role);
-		//lang_elem->kind(Kind::BUILT_IN_TYPE);
 		
 		currentReference = lang_elem;
 
 		if( lang_elem->parentToken() == Token::CLASS )
 		{
-			//we are inside a class definition, not a func:
-			//lang_elem->token( Token::matchBuiltIntTypesToInClass(set_lang_token_type) );
-			/////lang_elem->token( Token::DEFINE_BUILT_IN_TYPE_IN_CLASS );
-
 			listOfBuiltInTypesInit.push_back(lang_elem);			
 		}
 
@@ -1616,28 +1318,20 @@ public:
 		return lang_elem;
 	}
 
-//using newUseReference for the time being.
-
+	// using newUseReference for the time being.
 	Element* newUseBuiltInType(Element* set_elem)
 	{
 		if( set_elem == 0 )
 			return 0;
 
-		//cout<<"newUseReference(set_elem) "<<set_elem->toString()<<"\n");
-		
-		//Element* lang_elem = newElement(Token::USE_BUILT_IN_TYPE, set_elem->name(), set_elem->type() );
 		Element* lang_elem = newElement(Token::USE_REFERENCE, Kind::BUILT_IN_TYPE, set_elem->name(), set_elem->type() );
 		
 		#ifdef DEBUG_RAE_HUMAN
 			cout<<"newUseBuiltInType: "<<set_elem->toString()<<"\n";
-			//rae::log("newUseReference: ",set_elem->toString(),"\n");
 		#endif
 
 		return lang_elem;
 	}
-
-
-	Element* newDefineVector(string set_template_second_type, string set_name = "");
 
 	Element* newDefineFuncReturn(string set_type, string set_name = "")
 	{
@@ -1668,7 +1362,6 @@ public:
 
 		#ifdef DEBUG_RAE_HUMAN
 			cout<<"newDefineFuncReturn: type: "<<set_type<<" name: "<<lang_elem->namespaceString()<<"<\n";
-			//rae::log("newDefineFuncReturn: ",set_type," ",set_name,"\n");
 		#endif
 
 		return lang_elem;
@@ -1708,7 +1401,6 @@ REMOVED:
 
 		#ifdef DEBUG_RAE_HUMAN
 			cout<<"newDefineFuncArgument: type: "<<set_type<<" name: "<<lang_elem->namespaceString()<<"<\n";
-			//rae::log("newDefineFuncArgument: ",set_type," ",set_name,"\n");
 		#endif
 
 		return lang_elem;
@@ -1825,7 +1517,6 @@ REMOVED:
 
 		#ifdef DEBUG_RAE_HUMAN
 			cout<<"newUnknown: "<<set_token<<"\n";
-			//rae::log("newUnknown: ",set_token,"\n");
 		#endif
 
 		return lang_elem;
@@ -1872,45 +1563,6 @@ REMOVED:
 
 		return lang_elem;
 	}
-/*
-	Element* newUseArray(Element* set_elem)
-	{
-		if( set_elem == 0 )
-			return 0;
-		//Element* lang_elem = newElement(Token::USE_ARRAY, set_elem->name(), set_elem->type() );
-		Element* lang_elem = newElement(Token::USE_REFERENCE, Kind::C_ARRAY, set_elem->name(), set_elem->type() );
-		//lang_elem->kind(Kind::C_ARRAY);
-
-		lang_elem->definitionElement(set_elem);
-		
-		ReportError::reportError("Don't use C_ARRAYs with this syntax at the moment.");
-
-		#ifdef DEBUG_RAE_HUMAN
-			cout<<"DON'T use at the moment. newUseArray: "<<set_elem->toString()<<"\n";
-			//rae::log("newUseArray: ",set_elem->toString(),"\n");
-		#endif
-		return lang_elem;
-	}
-*/
-	Element* newUseVector(Element* set_elem)
-	{
-		if( set_elem == 0 )
-			return 0;
-
-		assert(0); //REMOVE THIS FUNC as useVector is obsolete?
-
-		//Element* lang_elem = newElement(Token::USE_VECTOR, set_elem->name(), set_elem->type() );
-		Element* lang_elem = newElement(Token::USE_REFERENCE, Kind::VECTOR, set_elem->name(), set_elem->type() );
-		//lang_elem->kind(Kind::VECTOR);
-		
-		lang_elem->definitionElement(set_elem);
-
-		#ifdef DEBUG_RAE_HUMAN
-			cout<<"newUseVector: "<<set_elem->toString()<<"\n";
-			//rae::log("newUseVector: ",set_elem->toString(),"\n");
-		#endif
-		return lang_elem;
-	}
 
 	Element* newNumber(string set_name)
 	{
@@ -1919,9 +1571,6 @@ REMOVED:
 		#endif
 		return newElement(Token::NUMBER, Kind::UNDEFINED, set_name);	
 	}
-
-	
-	//boost::signals2::signal<void (string)> newImportSignal;
 
 	vector<Element*> listOfImports;//a list of imports used in this module.
 
@@ -2118,8 +1767,7 @@ public:
 	bool isFileBased;
 
 	FILE* currentFile;
-	string currentFilename;//
-	//REMOVE BOOST: boost::filesystem::path currentFilenamePath;//this is the whole filename and the path...
+	string currentFilename;
 	std::string currentFilenamePath;
 
 	string moduleName(string separator_char_str = ".")
@@ -2156,7 +1804,7 @@ public:
 		return a_module_name;
 	}
 
-	//compares them as strings: "rae.examples.Tester"
+	// compares modules as strings: "rae.examples.Tester"
 	bool isModuleOnListOfImports(string set_module)
 	{
 		#ifdef DEBUG_RAE_PARSER
@@ -2218,20 +1866,11 @@ public:
 		fileParsedOk = false;
 	
 		currentFilename = a_filename;
-		
-		//boost::filesystem::path p( currentFilename );
 		currentFilenamePath = currentFilename;
-
-		//rae::log("SourceParser::read END", a_filename, " dat.\n" );
-
-		//rae::log("SourceParser::read END", currentFilename, "dat.\n" );
-		//rae::log("SourceParser::read END", currentFilenamePath.string(), "Ag.\n" );
-
 	}
 	
 	void parse()
 	{
-		//rae::log("SourceParser::parse START.", currentFilenamePath.string(), "\n" );
 		cout<<"\n";
 		rlutil::setColor(rlutil::BROWN);
 		cout<<"Parsing: ";
@@ -2240,8 +1879,6 @@ public:
 
 		if(currentFilenamePath == "")
 			return;
-
-		//rae::log("SourceParser::parse we are actually going to parse.\n");
 
 		//bool file_is_ok = false;
 		
@@ -2276,44 +1913,17 @@ public:
 		if(isWriteToFile == false)
 			return;
 
-		/*
-		//if( fileParsedOk == false )
-		if( sourceFiles.empty() )
-		{
-			//cout<<
-			ReportError::reportError("write() None of the source files were parsed correctly. Can't write anything.");
-			return;
-		}
-		
-		//else
-
-		for(boost::filesystem::path set_path : sourceFiles)
-		{
-			writeCppFile(set_path);
-		}
-		*/
-	
-		/*
-		for( Element* elem : elements )
-		{
-			cout<<elem->name()<<"\n");
-		}
-		*/
-
 		for( Element* module_elem : elements )
 		{
 			if( module_elem->token() != Token::MODULE )
 			{
 				#ifdef DEBUG_RAE_HUMAN
-				cout<<"Interesting: we have something in top hierarchy: "<<module_elem->tokenString()<<"\n";
-				//rae::log("Interesting: we have something in top hierarchy: ", module_elem->tokenString(), "\n");
+					cout<<"Interesting: we have something in top hierarchy: "<<module_elem->tokenString()<<"\n";
 				#endif
 				continue; //skip it
 			}
 
-
 			string module_filename;
-
 			string module_name; 
 
 			for( Element* elem : module_elem->elements )
@@ -2345,13 +1955,11 @@ public:
 			#endif
 
 			module_filename = folder_path_to_write_to + module_name;// + ".rae");
-			
-			//boost::filesystem::path outputHeaderPath = module_filename;
+
 			string outputHeaderPath = module_filename;
 			//outputHeaderPath.replace_extension(".hpp");
 			outputHeaderPath = replaceExtension(outputHeaderPath, ".hpp");
-		
-			//REMOVE_BOOST: boost::filesystem::path outputFilePath = module_filename;
+
 			string outputFilePath = module_filename;
 			outputFilePath = replaceExtension(outputFilePath, ".cpp");
 
@@ -2365,42 +1973,8 @@ public:
 			//cout<<"outputFilePath: "<<outputFilePath.string()<<"\n";
 			//#endif
 
-			//rae::log("\n\nWriting C++:\n\n");
-			//rae::log("module_filename: ", module_filename.string(), "\n");
-			//rae::log("outputHeaderPath: ", outputHeaderPath.string(), "\n");
-			//rae::log("outputFilePath: ", outputFilePath.string(), "\n");
-			
 			createPathIfNotExist(parentPath(outputHeaderPath));
 			createPathIfNotExist(parentPath(outputFilePath));
-
-			/*REMOVE BOOST if(boost::filesystem::exists(outputHeaderPath.parent_path()) == false)
-			{
-				if(boost::filesystem::create_directories( outputHeaderPath.parent_path() ) )
-				{
-					cout<<"Created folder: "<<outputHeaderPath.parent_path()<<"\n";
-					//rae::log("Created folder: ", outputHeaderPath.parent_path(), "\n");
-				}
-				else
-				{
-					cout<<"Failed to create folder: "<<outputHeaderPath.parent_path()<<"\n";
-					//rae::log("Failed to create folder: ", outputHeaderPath.parent_path(), "\n");
-				}
-			}
-
-			if(boost::filesystem::exists(outputFilePath.parent_path()) == false)
-			{
-				if(boost::filesystem::create_directories( outputFilePath.parent_path() ) )
-				{
-					cout<<"Created folder: "<<outputFilePath.parent_path()<<"\n";
-					//rae::log("Created folder: ", outputFilePath.parent_path(), "\n");
-				}
-				else
-				{
-					cout<<"Failed to create folder: "<<outputFilePath.parent_path()<<"\n";
-					//rae::log("Failed to create folder: ", outputFilePath.parent_path(), "\n");
-				}
-			}
-			*/
 
 			StringFileWriter writer;
 			writer.create( outputHeaderPath, /*isHeader*/true );
@@ -2438,56 +2012,33 @@ public:
 			//debugtree:
 
 			#ifdef DEBUG_RAE_DEBUGTREE
-			//REMOVE BOOST boost::filesystem::path debugFilePath = module_filename;
-			string debugFilePath = module_filename;
-			debugFilePath = replaceExtension(debugFilePath, ".debugtree");
+				string debugFilePath = module_filename;
+				debugFilePath = replaceExtension(debugFilePath, ".debugtree");
 
-			createPathIfNotExist(parentPath(debugFilePath));
+				createPathIfNotExist(parentPath(debugFilePath));
 
-			//REMOVE BOOST: if(boost::filesystem::exists(debugFilePath.parent_path()) == false)
-			/*if( checkPathType(parentPath(debugFilePath)) == PathType::DOES_NOT_EXIST )
-			{
-				//if(boost::filesystem::create_directories( debugFilePath.parent_path() ) )
-					//cout << "Created folder: " << parentPath(debugFilePath) << "\n";
-				//else
-				cout << "Failed to create folder: " << parentPath(debugFilePath) << "\n";
-			}*/
+				StringFileWriter writer3;
+				writer3.create( debugFilePath, /*isHeader doesn't matter here*/false );
 
-			StringFileWriter writer3;
-			writer3.create( debugFilePath, /*isHeader doesn't matter here*/false );
-
-			writer3.writeString("// this file is automatically created from Rae programming language module:\n//");
-			writer3.writeString( module_filename );
-			writer3.writeString("\n");
-			writeDebugTree(writer3, *module_elem);
-			//writeDebugTree(&writer3, module_elem);
-			writer3.close();
-            
+				writer3.writeString("// this file is automatically created from Rae programming language module:\n//");
+				writer3.writeString( module_filename );
+				writer3.writeString("\n");
+				writeDebugTree(writer3, *module_elem);
+				writer3.close();
             #endif
             #ifdef DEBUG_RAE_DEBUGTREE2
+				debugFilePath = replaceExtension(debugFilePath, ".debugtree2");
 
-			debugFilePath = replaceExtension(debugFilePath, ".debugtree2");
+				createPathIfNotExist(parentPath(debugFilePath));
 
-			createPathIfNotExist(parentPath(debugFilePath));
+				StringFileWriter writer4;
+				writer4.create( debugFilePath, /*isHeader doesn't matter here*/false );
 
-			//REMOVE BOOST: if(boost::filesystem::exists(debugFilePath.parent_path()) == false)
-			/*if (checkPathType(parentPath(debugFilePath)) == PathType::DOES_NOT_EXIST)
-			{
-				//if(boost::filesystem::create_directories( debugFilePath.parent_path() ) )
-					//cout << "Created folder: " << parentPath(debugFilePath) << "\n";
-				//else
-					cout << "Failed to create folder: " << parentPath(debugFilePath) << "\n";
-			}*/
-
-			StringFileWriter writer4;
-			writer4.create( debugFilePath, /*isHeader doesn't matter here*/false );
-
-			writer4.writeString("// this file is automatically created from Rae programming language module:\n//");
-			writer4.writeString( module_filename );
-			writer4.writeString("\n");
-			writeDebugTree2(writer4, *module_elem);	
-			writer4.close();
-
+				writer4.writeString("// this file is automatically created from Rae programming language module:\n//");
+				writer4.writeString( module_filename );
+				writer4.writeString("\n");
+				writeDebugTree2(writer4, *module_elem);	
+				writer4.close();
 			#endif
 			//end debugtree
 			
@@ -2495,9 +2046,7 @@ public:
 			
 			//cout<<"\n\nheader: "<<outputHeaderPath<<"\n";
 			//cout<<"file: "<<outputFilePath<<"\n";
-			//rae::log("\n\nheader: ", outputHeaderPath, "\n");
-			//rae::log("file: ", outputFilePath, "\n");
-
+			
 			if( ReportError::countWarnings() > 0)
 			{
 				cout<<"\nNumber of ";
@@ -3301,8 +2850,7 @@ public:
 				if( handleSlash == "/" )
 				{
 					cout<<"HandleSlash /+\n";
-					//rae::log("HandleSlash /+\n");
-					//Extended+ comment.
+					// Extended+ comment.
 					wholeToken = "/+";
 					isWholeToken = true;
 					currentWord = "";
@@ -3851,7 +3399,6 @@ public:
 
 			#ifdef DEBUG_RAE_HUMAN
 				cout<<"newNumber: "<<set_token<<"\n";
-				//rae::log("newNumber: ", set_token, "\n");
 			#endif
 
 			return true;
@@ -3908,10 +3455,8 @@ public:
 		#ifdef DEBUG_RAE_PARSER
 		cout<<"unknown_tokens.size before remove: "<<unknown_tokens.size()<<"\n";
 		#endif
-		//remove unknown tokens that are now known:
-		//boost::remove_if( unknownDefinitions, bind(&Element::token, _1) != Token::UNKNOWN_DEFINITION );
-		//boost::remove_if( unknownDefinitions, bind(&Element::isUnknownType, _1) != true );
-
+		
+		// remove unknown tokens that are now known:
 		unknown_tokens.erase(std::remove_if(unknown_tokens.begin(),
                          unknown_tokens.end(),
 						 isKnownType ),
@@ -3927,10 +3472,8 @@ public:
 		#ifdef DEBUG_RAE_PARSER
 		cout<<"unknownDefinitions.size before remove: "<<unknownDefinitions.size()<<"\n";
 		#endif
-		//remove unknown tokens that are now known:
-		//boost::remove_if( unknownDefinitions, bind(&Element::token, _1) != Token::UNKNOWN_DEFINITION );
-		//boost::remove_if( unknownDefinitions, bind(&Element::isUnknownType, _1) != true );
-
+		
+		// remove unknown tokens that are now known:
 		unknownDefinitions.erase(std::remove_if(unknownDefinitions.begin(),
                          unknownDefinitions.end(),
 						 isKnownType ),
@@ -3946,10 +3489,8 @@ public:
 		#ifdef DEBUG_RAE_PARSER
 		cout<<"unknownUseReferences.size before remove: "<<unknownUseReferences.size()<<"\n";
 		#endif
-		//remove unknown tokens that are now known:
-		//boost::remove_if( unknownUseReferences, bind(&Element::token, _1) != Token::UNKNOWN_USE_REFERENCE );
-		//boost::remove_if( unknownUseReferences, bind(&Element::isUnknownType, _1) != true );
-
+		
+		// remove unknown tokens that are now known:
 		unknownUseReferences.erase(std::remove_if(unknownUseReferences.begin(),
                          unknownUseReferences.end(),
                          isKnownType),
@@ -3965,10 +3506,8 @@ public:
 		#ifdef DEBUG_RAE_PARSER
 		cout<<"unknownUseMembers.size before remove: "<<unknownUseMembers.size()<<"\n";
 		#endif
-		//remove unknown tokens that are now known:
-		//boost::remove_if( unknownUseMembers, bind(&Element::token, _1) != Token::UNKNOWN_USE_MEMBER );
-		//boost::remove_if( unknownUseMembers, bind(&Element::isUnknownType, _1) != true );
-
+		
+		// remove unknown tokens that are now known:
 		unknownUseMembers.erase(std::remove_if(unknownUseMembers.begin(),
                          unknownUseMembers.end(),
 						 isKnownType ),
@@ -4315,7 +3854,7 @@ public:
 		return 0;
 	}
 
-	//This should be good...
+	// This should be good... a bit messy though.
 	Element* searchElementAndCheckIfValidLocal(Element* set_elem)
 	{
 		#ifdef DEBUG_DEBUGNAME
@@ -4335,29 +3874,13 @@ public:
 		//}
 		#endif
 
-		//It seems were first searching in the current func... is that good??
-		/*
-		if(currentFunc)
-		{
-			Element* found_elem = currentFunc->searchName( set_elem->name() );
-			if(found_elem && checkIfTokenIsValidInCurrentContext(set_elem, found_elem) )
-			{
-				return found_elem;
-			}
-		}
-		*/
-
-		//WHAAAT was I thinking: if( scopeElementStack.empty() == false )//we don't have to check for null here: && scopeElementStack.back() )
-		//that was the completely wrong scope.
-		//By now, we're already at the end of the source file...
-		
 		if( set_elem->scope() )
 		{
 			Element* res = searchElementDefinitionFromParentScopes(set_elem, set_elem->parent() );//scopeElementStack.back() );
 			if(res)
 			{
 				#ifdef DEBUG_RAE_PARSER
-				cout<<"Super. ScopeFinder found it.\n";
+				cout<<"searchElementAndCheckIfValidLocal. ScopeFinder found it.\n";
 				#endif
 
 				#ifdef DEBUG_DEBUGNAME
@@ -4377,12 +3900,6 @@ public:
 		//Then search in current module.
 		for(Element* elem : userDefinedTokens)
 		{
-			//if( elem->token() == Token::DEFINE_REFERENCE || elem->token() == Token::DEFINE_REFERENCE_IN_CLASS )
-			//if( set_elem->token() == Token::UNKNOWN_DEFINITION && elem->token() == Token::CLASS )
-			//if( (set_elem->token() == Token::DEFINE_REFERENCE || set_elem->token() == Token::DEFINE_ARRAY)
-				//&& set_elem->isUnknownType() == true //how is this needed? Who says we can't check on stuff that we already now?
-			//	&& elem->token() == Token::CLASS )
-			
 			if(set_elem == elem)
 			{
 				continue;
@@ -4393,11 +3910,11 @@ public:
 				if( elem->type() == set_elem->type() )
 				{
 					#ifdef DEBUG_RAE_PARSER
-						cout<<"JJJJJJEEEEEEEESSSS: found: "<<elem->type()<<" : "<<elem->toString()<<"\n";
+						cout<<"searchElementAndCheckIfValidLocal: found1: "<<elem->type()<<" : "<<elem->toString()<<"\n";
 					#endif
 					#ifdef DEBUG_DEBUGNAME
 						if (g_debugName == set_elem->name())
-							cout << "searchElementAndCheckIfValidLocal: found: " << elem->type() << " : " << elem->toSingleLineString() << "\n";
+							cout << "searchElementAndCheckIfValidLocal: found2: " << elem->type() << " : " << elem->toSingleLineString() << "\n";
 					#endif
 					if( checkIfTokenIsValidInCurrentContext(set_elem, elem) )
 					{
@@ -4406,7 +3923,7 @@ public:
 					else
 					{
 						#ifdef DEBUG_RAE_PARSER
-							cout<<"BUT IT*S NOT VALID!!!!\n";
+							cout<<"BUT IT'S NOT VALID!\n";
 						#endif
 					}
 				}
@@ -4422,7 +3939,7 @@ public:
 					//}
 				}
 			}
-			//We are only interested in definitions.
+			// We are only interested in definitions.
 			else if( elem->isDefinition() ) //ok so we don't check for: set_elem->isUseReference()
 			{
 				#ifdef DEBUG_DEBUGNAME
@@ -4433,13 +3950,13 @@ public:
 				if( elem->name() == set_elem->name() )
 				{
 					#ifdef DEBUG_RAE_PARSER
-					cout<<"HORDUM: found definition: "<<elem->name()<<" : "<<elem->toString()<<"\n";
+					cout << "searchElementAndCheckIfValidLocal: found definition: " << elem->name() << " : " << elem->toString() << "\n";
 					#endif
 					#ifdef DEBUG_DEBUGNAME
 						if (g_debugName == set_elem->name())
 						{
 							rlutil::setColor(rlutil::RED);
-							cout << "searchElementAndCheckIfValidLocal: found2: " << elem->type() << " : " << elem->toSingleLineString() << "\n";
+							cout << "searchElementAndCheckIfValidLocal: found3: " << elem->type() << " : " << elem->toSingleLineString() << "\n";
 							rlutil::setColor(rlutil::WHITE);
 						}
 					#endif
@@ -4459,23 +3976,6 @@ public:
 						#endif
 					}
 				}
-				/*
-				if( set_elem->typedefNewType() == elem->name() ) // Typedef...
-				{
-					cout << "Yammy. It's a typedef definition: " << elem->toSingleLineString() << "\n";
-					return elem;
-				}
-				*/
-				else if( elem->token() == Token::CPP_TYPEDEF && set_elem->name() == elem->typedefNewType() ) // Typedef...
-				{
-					assert(0);
-					rlutil::setColor(rlutil::RED);
-					//JONDE REMOVE this will not happen now that we've reversed typedef name and type positions.
-					cout << "Yammy. It's a typedef definition2: " << elem->toSingleLineString() << "\n";
-					rlutil::setColor(rlutil::WHITE);
-					return elem;
-				}
-				
 			}
 			//TEMP
 			else
@@ -4498,55 +3998,7 @@ public:
 
 	Element* searchElementAndCheckIfValid(Element* set_elem);
 
-/*
-	bool checkIfNewDefinedNameIsValid(Token::e set_token_type, string set_token)
-	{
-		//Hmm.. let's build a temp object and stuff...
-
-		Token::e use_type_to_use = Token::UNDEFINED;
-
-		//OK. this should be a func called something like: matchUseTypeToDefineType(Token::e set_type):
-		if( set_token_type == Token::DEFINE_BUILT_IN_TYPE
-			|| set_token_type == Token::DEFINE_BUILT_IN_TYPE_IN_CLASS
-			|| set_token_type == Token::DEFINE_REFERENCE
-			|| set_token_type == Token::DEFINE_REFERENCE_IN_CLASS
-		)
-		{
-			use_type_to_use = Token::USE_REFERENCE;
-		}
-		else if( set_token_type == Token::DEFINE_VECTOR
-			|| set_token_type == Token::DEFINE_VECTOR_IN_CLASS
-		)
-		{
-			use_type_to_use = Token::USE_VECTOR;
-		}
-		else if( set_token_type == Token::DEFINE_ARRAY
-			|| set_token_type == Token::DEFINE_ARRAY_IN_CLASS
-		)
-		{
-			use_type_to_use = Token::USE_ARRAY;
-		}
-
-		Element* temp_elem = new Element(lineNumber, use_type_to_use, set_token, set_token );
-		temp_elem->isUnknownType(true);
-		temp_elem->parent( currentParentElement() );
-		temp_elem->previousElement( previousElement() );
-
-		Element* res = searchElementAndCheckIfValid(temp_elem);
-
-		delete temp_elem;
-
-		if(res)
-		{
-			return false; //if we got an object, then the name is NOT valid.
-		}
-		//else
-		return true; //there's no other object with the same name...
-	}
-*/
-	//REMOVE BOOST: boost::signals2::signal<Element* (SourceParser*, Element*)> searchElementInOtherModulesSignal;
-
-	//A general search that will use other smaller searches to check everywhere.
+	// A general search that will use other smaller searches to check everywhere.
 	Element* searchToken(string set_token)
 	{
 		/*if(currentFunc)
@@ -4652,7 +4104,7 @@ public:
 				{
 					//It's ok.
 					#ifdef DEBUG_RAE_PARSER
-					cout<<"HAROP2: it's ok. it's valid. someclass.somefunc\n";
+					cout<<"checkIfTokenIsValidInCurrentContext: it's ok. it's valid. someclass.somefunc\n";
 					#endif
 					#ifdef DEBUG_DEBUGNAME
 						if (current_context_use->name() == g_debugName)
@@ -4665,7 +4117,7 @@ public:
 				else
 				{
 					#ifdef DEBUG_RAE_PARSER
-					cout<<"HAROP3: not ok. no such symbol in class.\n";
+					cout<<"checkIfTokenIsValidInCurrentContext: not ok. no such symbol in class.\n";
 					#endif
 					return false;//now we know that the class didn't have that symbol. or it isn't yet defined.
 				}
@@ -4675,15 +4127,15 @@ public:
 				//This is the array case, but we could use this for the case up there too. This is more recent anyway...
 				//But I guess the case up there is a bit simpler so we might just leave it there too.
 
-				Element* prev_ref = current_context_use->searchClosestPreviousUseReferenceOrUseVector();
+				Element* prev_ref = current_context_use->searchClosestPreviousUseReference();
 				if(prev_ref)
 				{
-					//useVector[i].logMe
-					//////////if( prev_ref->kind() == Kind::VECTOR || prev_ref->kind() == Kind::TEMPLATE )
+					//////////if( prev_ref->kind() == Kind::TEMPLATE )
 					if( prev_ref->type() == "array" )
 					{
 						if( prev_ref->definitionElement() )
 						{
+                            // TODO fix comments:
 							//useVectors definitionElement would be
 							//vector!(Tester) useVector
 							//and its templateSecondType is Tester, if it is found already at this point in parsing.
@@ -4715,7 +4167,7 @@ public:
 							else
 							{
 								#ifdef DEBUG_RAE_PARSER
-									cout<<"Vector call HAROP6: no templateSecondType in definitionElement, in useVector.\n";
+									cout<<"checkIfTokenIsValidInCurrentContext: no templateSecondType in definitionElement, in useVector.\n";
 									cout<<"definitionElement was: "<<prev_ref->definitionElement()->toString()<<"\n";
 									cout<<"prev_ref was: "<<prev_ref->toString()<<"\n";
 								#endif
@@ -4725,7 +4177,7 @@ public:
 						else
 						{
 							#ifdef DEBUG_RAE_PARSER
-								cout<<"Vector call HAROP7: no definitionElement in useVector.\n";
+								cout<<"checkIfTokenIsValidInCurrentContext: no definitionElement in useVector.\n";
 								cout<<"prev_ref was: "<<prev_ref->toString()<<"\n";
 							#endif
 							return false;
@@ -4754,14 +4206,14 @@ public:
 						{
 							//It's ok.
 							#ifdef DEBUG_RAE_PARSER
-							cout<<"VECTOR reference thing: it's ok. it's valid. somevector[i].somefunc\n";
+							cout<<"checkIfTokenIsValidInCurrentContext: VECTOR reference thing: it's ok. it's valid. somevector[i].somefunc\n";
 							#endif
 							return true;
 						}
 						else
 						{
 							#ifdef DEBUG_RAE_PARSER
-							cout<<"Vector call HAROP6: not ok. no such symbol in class.\n";
+							cout<<"checkIfTokenIsValidInCurrentContext: Vector call: not ok. no such symbol in class.\n";
 							#endif
 							return false;//now we know that the class didn't have that symbol. or it isn't yet defined.
 						}
@@ -4880,39 +4332,37 @@ public:
 					else
 					{
 						#ifdef DEBUG_DEBUGNAME
-						if(current_context_use->name() == g_debugName)
-						{
-							cout<<"NOT valid because this case is Unhandled2.\n";
-							cout<<"context_use: "<<current_context_use->toString()<<"\nfound_stuff: "<<found_definition->toString();
-							if(current_context_use->parentFunc() )
+							if(current_context_use->name() == g_debugName)
 							{
-								cout<<"current_context_use->parentFunc: "<<current_context_use->parentFunc()->toString()<<"\n";
-							}
-							else cout<<"current_context_use has no parentFunc.";
+								cout<<"NOT valid because this case is Unhandled2.\n";
+								cout<<"context_use: "<<current_context_use->toString()<<"\nfound_stuff: "<<found_definition->toString();
+								if(current_context_use->parentFunc() )
+								{
+									cout<<"current_context_use->parentFunc: "<<current_context_use->parentFunc()->toString()<<"\n";
+								}
+								else cout<<"current_context_use has no parentFunc.";
 
-							if( found_definition->parentFunc() )
-							{
-								cout<<"found_definition->parentFunc: "<<found_definition->parentFunc()->toString()<<"\n";
+								if( found_definition->parentFunc() )
+								{
+									cout<<"found_definition->parentFunc: "<<found_definition->parentFunc()->toString()<<"\n";
+								}
+								else cout<<"found_definition has no parentFunc.";
+								
+								cout<<"\nand their scopes:\ncontext_use: "<<current_context_use->scope()->toString()<<"\nfound_stuff: "<<found_definition->scope()->toString();
+								
 							}
-							else cout<<"found_definition has no parentFunc.";
-							
-							cout<<"\nand their scopes:\ncontext_use: "<<current_context_use->scope()->toString()<<"\nfound_stuff: "<<found_definition->scope()->toString();
-							
-						}
-						//rae::log("checkIfValid. An unhandled case. Check this thing...\n");
 						#endif
 					}
 				}
 				else
 				{
 					#ifdef DEBUG_DEBUGNAME
-					if(current_context_use->name() == g_debugName)
-					{
-						cout<<"NOT valid because this case is Unhandled1.\n";
-						cout<<"context_use: "<<current_context_use->toString()<<"\nfound_stuff: "<<found_definition->toString();
-						cout<<"\nand their scopes:\ncontext_use: "<<current_context_use->scope()->toString()<<"\nfound_stuff: "<<found_definition->scope()->toString();
-					}
-					//rae::log("checkIfValid. An unhandled case. Check this thing...\n");
+						if(current_context_use->name() == g_debugName)
+						{
+							cout<<"NOT valid because this case is Unhandled1.\n";
+							cout<<"context_use: "<<current_context_use->toString()<<"\nfound_stuff: "<<found_definition->toString();
+							cout<<"\nand their scopes:\ncontext_use: "<<current_context_use->scope()->toString()<<"\nfound_stuff: "<<found_definition->scope()->toString();
+						}
 					#endif
 				}
 
@@ -4958,7 +4408,6 @@ public:
 						cout<<"context_use: "<<current_context_use->toString()<<"\nfound_stuff: "<<found_definition->toString();
 						cout<<"\nand their parents:\ncontext_use: "<<current_context_use->parent()->toString()<<"\nfound_stuff: "<<found_definition->parent()->toString();
 					}
-					//rae::log("checkIfValid. An unhandled case. Check this thing...\n");
 				}
 				*/
 			}
@@ -4976,10 +4425,10 @@ public:
 			else if( current_context_use->scope() == 0 )
 			{
 				#ifdef DEBUG_DEBUGNAME
-				if(current_context_use->name() == g_debugName)
-				{
-					cout<<"NOT valid in current use is global and def in class or func.\n";
-				}
+					if(current_context_use->name() == g_debugName)
+					{
+						cout<<"NOT valid in current use is global and def in class or func.\n";
+					}
 				#endif
 				//the current use is global, but the definition is inside some class or func...
 				return false;
@@ -4989,11 +4438,10 @@ public:
 			else
 			{
 				#ifdef DEBUG_DEBUGNAME
-				if(current_context_use->name() == g_debugName)
-				{
-					cout<<"NOT valid because this case is Unhandled2.\n";
-				}
-				//rae::log("checkIfValid. An unhandled case. Check this thing...\n");
+					if(current_context_use->name() == g_debugName)
+					{
+						cout<<"NOT valid because this case is Unhandled2.\n";
+					}
 				#endif
 			}
 		}
@@ -5034,14 +4482,11 @@ public:
 
 	void handleUserDefinedToken(string set_token)
 	{
-		////rae::log("Looking for: ", set_token, "\n");
-
 		if( handleNumber(set_token) )
 			return;
 
 		#ifdef DEBUG_RAE_HUMAN
 			cout<<"trying to handle: "<<set_token<<" in line: "<<lineNumber.line<<"\n";
-			//rae::log("trying to handle: ", set_token, "\n");
 		#endif
 		#ifdef DEBUG_DEBUGNAME
 			if( set_token == g_debugName )
@@ -5065,7 +4510,6 @@ public:
 			{
 				#ifdef DEBUG_RAE_HUMAN
 					cout<<"because previousElement was unknown and there was a REFERENCE_DOT we set this to UNKNOWN_USE_MEMBER: "<<set_token<<"\n";
-					//rae::log("because previousElement was unknown we set this to unknown too: ", set_token, "\n");
 				#endif
 				newUnknownUseMember(set_token);
 				return;
@@ -5084,7 +4528,6 @@ public:
 
 				#ifdef DEBUG_RAE_HUMAN
 					cout<<"because previousElement was unknown we set this to UNKNOWN_DEFINITION: "<<set_token<<"\n";
-					//rae::log("because previousElement was unknown we set this to unknown too: ", set_token, "\n");
 				#endif
 				//newUnknownUseMember(set_token);
 				//Hahaaa, we don't even have to create it!
@@ -5099,7 +4542,6 @@ public:
 				
 				#ifdef DEBUG_RAE_HUMAN
 					cout<<"Fixed UNKNOWN_DEFINITION is now: "<<previousElement()->toString()<<"\n";
-					//rae::log("because previousElement was unknown we set this to unknown too: ", set_token, "\n");
 				#endif
 
 				//!!!!
@@ -5549,8 +4991,7 @@ public:
 		Element* found_elem;
 
 		#ifdef DEBUG_RAE_HUMAN
-		cout<<"\n\n"<<moduleName()<<" handleUnknownDefinitions() START.\n";
-		//rae::log("handleUnknownTokens() START.\n");
+			cout<<"\n\n"<<moduleName()<<" handleUnknownDefinitions() START.\n";
 		#endif
 
 		//for( Element* lang_elem : unknown_tokens )
@@ -5584,10 +5025,8 @@ public:
 			if( found_elem )
 			{
 				#ifdef DEBUG_RAE_HUMAN
-				cout<<"Found unknown DEFINITION original class or type: "<<found_elem->toString()<<" "<<found_elem->namespaceString()<<"\n";
-				cout<<"and the definition element is: "<<lang_elem->toString()<<"\n";
-				//rae::log("Found unknown user token: ", found_elem->toString(), "\n");
-				//rae::log("and the lang elem was: ", lang_elem->toString(), "\n");
+					cout<<"Found unknown DEFINITION original class or type: "<<found_elem->toString()<<" "<<found_elem->namespaceString()<<"\n";
+					cout<<"and the definition element is: "<<lang_elem->toString()<<"\n";
 				#endif
 				#ifdef DEBUG_DEBUGNAME
 					if (g_debugName == lang_elem->name())
@@ -5918,8 +5357,7 @@ public:
 				}
 
 				#ifdef DEBUG_RAE_HUMAN
-				cout<<"fixed lang elem is: "<<lang_elem->toString()<<"\n";
-				//rae::log("fixed lang elem is: ", lang_elem->toString(), "\n");
+					cout<<"fixed lang elem is: "<<lang_elem->toString()<<"\n";
 				#endif
 			}
 			else
@@ -5938,9 +5376,8 @@ public:
 				}
 
 				#ifdef DEBUG_RAE_HUMAN
-				cout<<"Didn't find: "<<lang_elem->toString()<<" it remains unknown DEFINITION.\n";
+					cout<<"Didn't find: "<<lang_elem->toString()<<" it remains unknown DEFINITION.\n";
 				#endif
-				//rae::log("Didn't find: ", lang_elem->toString(), " it remains unknown ref.\n");
 				//newUnknownUseReference(set_token);
 			}	
 		}

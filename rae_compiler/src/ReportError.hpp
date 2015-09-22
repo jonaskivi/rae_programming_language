@@ -26,7 +26,6 @@ public:
 	/*static void reportWarning(string set, LineNumber lineNumber)
 	{
 		cout<<"Warning: "<<set<<" / line: "<<lineNumber.line<<" / Module: "<<moduleName()<<"\n";
-		//rae::log("Warning: ", lineNumber.line, " ", set, "\n");
 		m_countWarnings++;
 	}
 
@@ -36,7 +35,6 @@ public:
 		cout<<"RAE_ERROR: ";
 		rlutil::setColor(rlutil::WHITE);
 		cout<<set<<" / line: "<<lineNumber.line<<" / Module: "<<moduleName()<<"\n";
-		//rae::log("RAE_ERROR: ", lineNumber.line, " ", set, "\n");
 		m_countErrors++;
 	}
 	*/

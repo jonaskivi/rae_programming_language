@@ -28,45 +28,6 @@
 		writer.currentIndentMinus();
 	}
 
-/* //JONDE REMOVE this:
-	void writeDebugTree( StringFileWriter* writer, Element* set_elem )
-	{
-		static int stack_level = 0;
-		stack_level++;
-
-		static int call_count = 0;
-		call_count++;
-
-		cout << "stack_level: " << stack_level << " call_count: " << call_count << "\n";
-
-		//wtf... JONDE
-		if (set_elem->name() == "name:ISempty 3")
-			assert(0);
-
-		writer->writeIndents();
-		writer->writeString( set_elem->toSingleLineString() );
-
-		writer->writeChar('\n');
-		if (set_elem->initData())
-		{
-			writer->currentIndentPlus();
-			writeDebugTree( writer, set_elem->initData());
-			writer->currentIndentMinus();			
-		}
-		
-		writer->currentIndentPlus();
-
-		for(uint i = 0; i < set_elem->elements.size(); i++)
-		{
-			writeDebugTree( writer, set_elem->elements[i]);
-		}
-
-		writer->currentIndentMinus();
-
-		stack_level--;
-	}
-	*/
-
 	void writeDebugTree2( StringFileWriter& writer, Element& set_elem )
 	{
 		writer.writeIndents();
@@ -112,11 +73,6 @@
 
 	void writeElement( StringFileWriter& writer, Element& set_elem )
 	{
-        //wtf... JONDE
-		if (set_elem.name() == "name:ISempty 3")
-			assert(0);
-        
-        
 		//int count_elem = 0;
 
 		if(set_elem.parseError() == ParseError::SYNTAX_ERROR)
@@ -193,47 +149,6 @@
 			case Token::NEWLINE:
 
 			{
-				/*
-				if( writer.lineNeedsSemicolon() == true
-					&& writer.previousToken() != Token::SEMICOLON
-					&& writer.previousToken() != Token::NEWLINE
-					&& writer.previousToken() != Token::NEWLINE_BEFORE_SCOPE_END
-					&& writer.previousToken() != Token::CONSTRUCTOR
-					&& writer.previousToken() != Token::DESTRUCTOR
-					&& writer.previousToken() != Token::FUNC
-					&& writer.previousToken() != Token::MAIN
-					//&& writer.previousToken() != Token::SCOPE_BEGIN
-					//&& writer.previousToken() != Token::SCOPE_END
-					//&& writer.previousToken() != Token::FUNC
-					//&& writer.previousToken() != Token::DEFINE_FUNC_ARGUMENT
-					//&& writer.previousToken() != Token::DEFINE_FUNC_RETURN //not actually needed...
-					//&& writer.previousToken() != Token::CLASS
-					//&& writer.previousToken() != Token::COMMENT
-					////&& writer.previousToken() != Token::STAR_COMMENT
-					//&& writer.previousToken() != Token::VISIBILITY_DEFAULT
-				)
-				{
-					//REMOVE assert(writer.previousElement() != nullptr);
-					//cout<<"NEWLINE previousElement: "<<writer.previousElement()->toSingleLineString();
-					//cout<<"\nlineNeedsSemicolon: "<<writer.lineNeedsSemicolon()<<"\n";
-
-					//if( parentToken() == Token::CLASS || parentToken() == Token::ENUM )
-					//{
-						//rae::log("NEWLINESTRANGE. This thing has parent CLASS and not func.", "\n");
-						//rae::log("previousToken: ", Token::toString(writer.previousToken());
-						//rae::log(" nextToken: ", Token::toString(writer.nextToken()), "\n");
-					//}
-
-					writer.writeChar(';');
-
-					if(debugWriteLineNumbers == true)
-					{
-						writer.writeString(" // line: " + numberToString( set_elem.lineNumber().line) );
-					}
-				}
-				writer.lineNeedsSemicolon(true);
-				*/
-
 				writer.writeLineEnding();
 
 				if( writer.writeSemicolon() )
@@ -298,36 +213,6 @@
 			}
 			break;
 			case Token::NEWLINE_BEFORE_SCOPE_END:
-
-				/*
-				if( writer.lineNeedsSemicolon() == true
-					&& writer.previousToken() != Token::SEMICOLON
-					&& writer.previousToken() != Token::NEWLINE
-					&& writer.previousToken() != Token::NEWLINE_BEFORE_SCOPE_END
-					&& writer.previousToken() != Token::CONSTRUCTOR
-					&& writer.previousToken() != Token::DESTRUCTOR
-					&& writer.previousToken() != Token::FUNC
-					&& writer.previousToken() != Token::MAIN
-					//&& writer.previousToken() != Token::SCOPE_BEGIN
-					//&& writer.previousToken() != Token::SCOPE_END
-					//&& writer.previousToken() != Token::FUNC
-					//&& writer.previousToken() != Token::DEFINE_FUNC_ARGUMENT
-					//&& writer.previousToken() != Token::DEFINE_FUNC_RETURN //not actually needed...
-					//&& writer.previousToken() != Token::CLASS
-					//&& writer.previousToken() != Token::COMMENT
-					////&& writer.previousToken() != Token::STAR_COMMENT
-					//&& writer.previousToken() != Token::VISIBILITY_DEFAULT
-				)
-				{
-					//REMOVE assert(writer.previousElement() != nullptr);
-					//cout<<"NEWLINE previousElement: "<<writer.previousElement()->toSingleLineString();
-					//cout<<"\nlineNeedsSemicolon: "<<writer.lineNeedsSemicolon()<<"\n";
-
-					writer.writeChar(';');
-				}
-				writer.lineNeedsSemicolon(true);
-				*/
-
 				writer.writeLineEnding();
 
 				writer.writeSemicolon();
@@ -348,19 +233,19 @@
 				}
 			break;
 			case Token::PRAGMA_CPP:
-				//figure out if we are inside func. then output to cpp file. otherwise to header.
+				// figure out if we are inside func. then output to cpp file. otherwise to header.
 				if( set_elem.parentFunc() == nullptr )
 				{
-					if( writer.isHeader() == true )//hpp
+					if( writer.isHeader() == true ) // hpp
 					{
 						writer.writeString("//");
 						writer.writeString(set_elem.name());
 						writer.writeChar('\n');
 					}					
 				}
-				else //inside func:
+				else // inside func:
 				{
-					if( writer.isHeader() == false )//cpp
+					if( writer.isHeader() == false ) // cpp
 					{
 						writer.writeString("//");
 						writer.writeString(set_elem.name());
@@ -369,7 +254,7 @@
 				}
 			break;
 			case Token::PRAGMA_CPP_HDR:
-				if( writer.isHeader() == true )//hpp
+				if( writer.isHeader() == true ) // hpp
 				{
 					writer.writeString("//");
 					writer.writeString(set_elem.name());
@@ -377,7 +262,7 @@
 				}
 			break;
 			case Token::PRAGMA_CPP_SRC:
-				if( writer.isHeader() == false )//cpp
+				if( writer.isHeader() == false ) // cpp
 				{
 					writer.writeString("//");
 					writer.writeString(set_elem.name());
@@ -385,7 +270,7 @@
 				}
 			break;
 			case Token::PRAGMA_CPP_END:
-				//TODO pragma end header source separation. now its both.
+				// TODO pragma end header source separation. now its both.
 			case Token::PRAGMA_ASM:
 			case Token::PRAGMA_ASM_END:
 			case Token::PRAGMA_ECMA:
@@ -395,13 +280,13 @@
 				writer.writeChar('\n');
 			break;
 			case Token::PASSTHROUGH_HDR:
-				if( writer.isHeader() == true )//hpp
+				if( writer.isHeader() == true ) // hpp
 				{
 					writer.writeString(set_elem.name());
 				}
 			break;
 			case Token::PASSTHROUGH_SRC:
-				if( writer.isHeader() == false )//cpp
+				if( writer.isHeader() == false ) // cpp
 				{
 					writer.writeString(set_elem.name());
 				}
@@ -484,7 +369,6 @@
 				//case Token::BUILT_IN_TYPE_AUTO_INIT:
 				if(set_elem.kind() == Kind::BUILT_IN_TYPE && set_elem.containerType() == ContainerType::UNDEFINED)
 				{
-					////////JONDE REMOVE writer.writeString( set_elem.useNamespaceString() );
 					writer.writeString(set_elem.name());
 					//TEMP:
 					//writer.writeString(" = 0");
@@ -510,7 +394,6 @@
 				{
 					//writer.writeString(m_type);
 					//writer.writeString("* ");
-					////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
 					writer.writeString(set_elem.name());
 					writer.writeString("( new ");
 					if(set_elem.containerType() == ContainerType::ARRAY)
@@ -527,7 +410,6 @@
 				}
 				else if(set_elem.kind() == Kind::OPT)
 				{
-					////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
 					writer.writeString(set_elem.name());
 
 					if( set_elem.initData() )
@@ -597,8 +479,7 @@
 
 					//writer.writeString(m_type);
 					//writer.writeString("* ");
-				
-					////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
+
 					writer.writeString(set_elem.name());
 					writer.writeString(" = new ");
 					writer.writeString( set_elem.templateTypeCombination() );
@@ -615,37 +496,6 @@
 					//}
 					//writer.writeString(">");
 				}
-				//case Token::VECTOR_AUTO_INIT:
-				else if(set_elem.kind() == Kind::VECTOR)
-				{
-					//REMOVE
-					assert(0);
-
-					//writer.writeString(m_type);
-					//writer.writeString("* ");
-				
-					//pointer to vector version:
-					////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
-					writer.writeString(set_elem.name());
-					writer.writeString(" = new std::vector<");
-					writer.writeString( set_elem.templateSecondTypeStringInCpp() );
-					if( set_elem.templateSecondType() && set_elem.templateSecondType()->isBuiltInType() == false )
-					{
-						//if it is a builtin type, we store it as a value inside the vector.
-						//if it is a user defined class, we store it as a pointer (or a ref in Rae.)
-						writer.writeChar('*');
-					}
-					writer.writeString(">");
-				}
-				//case Token::C_ARRAY_AUTO_INIT:
-				
-				/*else if(set_elem.kind() == Kind::C_ARRAY)
-				{
-					writer.writeString(set_elem.name());
-					writer.writeString(" = new ");
-					writer.writeString(set_elem.typeInCpp());
-					writer.writeString("[10]");
-				}*/
 				else
 				{
 					ReportError::reportError("writeElement: AUTO_INIT failed because kind was invalid.", &set_elem);
@@ -653,94 +503,16 @@
 			break;
 			case Token::FREE:
 			case Token::AUTO_FREE:
-			//case Token::OBJECT_AUTO_FREE:
-			//case Token::TEMPLATE_AUTO_FREE:
-			//case Token::VECTOR_AUTO_FREE://TODO do we need to clear the vector before delete?
-					//writer.writeString(m_type);
-					//writer.writeString("* ");
-					
-					//case Token::C_ARRAY_AUTO_FREE:
-					/*if( set_elem.kind() == Kind::C_ARRAY)
-					{
-						writer.writeString("delete[] ");
-						writer.writeString(set_elem.name());
-					}
-					else
-					{*/
-						//ReportError::reportError("TODO FREE and AUTO_FREE is deprecated currently.", &set_elem);
-						//These two lines are the ones to use: but we've disabled them for now because we mostly use values and links.
-						writer.lineNeedsSemicolon(false);
-						writer.writeString("if(");
-						////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
-						writer.writeString(set_elem.name());
-						writer.writeString(" != nullptr ) { ");
-						writer.writeString("delete ");
-						////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
-						writer.writeString(set_elem.name());
-						writer.writeString("; ");
-						////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
-						writer.writeString(set_elem.name());
-						writer.writeString(" = nullptr; }");
-					//}
-
+				writer.lineNeedsSemicolon(false);
+				writer.writeString("if(");
+				writer.writeString(set_elem.name());
+				writer.writeString(" != nullptr ) { ");
+				writer.writeString("delete ");
+				writer.writeString(set_elem.name());
+				writer.writeString("; ");
+				writer.writeString(set_elem.name());
+				writer.writeString(" = nullptr; }");
 			break;
-			/*
-			case Token::BOOL:
-				writer.writeString( "bool " );
-				writer.writeString(m_name);
-			break;
-			case Token::BYTE:
-				writer.writeString( "int8_t " );
-				writer.writeString(m_name);
-			break;
-			case Token::UBYTE:
-				writer.writeString( "uint8_t " );
-				writer.writeString(m_name);
-			break;
-			case Token::CHAR:
-				writer.writeString( "char " );
-				writer.writeString(m_name);
-			break;
-			case Token::WCHAR:
-				writer.writeString( "wchar " );//TODO check if it works and is int32_t (or 16 bits better...)
-				writer.writeString(m_name);
-			break;
-			case Token::DCHAR:
-				writer.writeString( "int32_t " );
-				writer.writeString(m_name);
-			break;
-			case Token::INT:
-				writer.writeString( "int32_t " );
-				writer.writeString(m_name);
-			break;
-			case Token::UINT:
-				writer.writeString( "uint32_t " );
-				writer.writeString(m_name);
-			break;
-			case Token::LONG:
-				writer.writeString( "int64_t " );
-				writer.writeString(m_name);
-			break;
-			case Token::ULONG:
-				writer.writeString( "uint64_t " );
-				writer.writeString(m_name);
-			break;
-			case Token::FLOAT:
-				writer.writeString( "float " );
-				writer.writeString(m_name);
-			break;
-			case Token::DOUBLE:
-				writer.writeString( "double " );
-				writer.writeString(m_name);
-			break;
-			//case Token::REAL:
-			//	writer.writeString( "real " );
-			//break;
-			case Token::INT_IN_CLASS:
-				writer.writeString( "int32_t " );
-				writer.writeString(m_name);
-			break;
-			*/
 			case Token::COMMA:
 				writer.writeChar( ',' );
 				writer.writeChar( ' ' );
@@ -769,13 +541,6 @@
 				iterateWrite(writer, set_elem);
 			break;
 			case Token::ASSIGNMENT:
-				/*
-				if( writer.previousToken() == Token::DEFINE_BUILT_IN_TYPE_IN_CLASS )
-				{
-					//sneaky. write comment slashes:
-					writer.writeString("; //");
-				}
-				*/
 				if( writer.previousElement()
 					&& writer.previousElement()->isInClass()
 					&& writer.previousToken() == Token::DEFINE_REFERENCE
@@ -1068,14 +833,6 @@
 				{
 					// Using an array: some_array[5].something
 					// A difficult case: some_array[Rae::GetSomeThing.whatIsIt(123 + 321)].something
-					/*JONDE REMOVE Element* bracketPair = writer.previousElement()->pairElement();
-					if(bracketPair)
-					{
-						cout << "bracketPair: " << bracketPair->toSingleLineString() << "\n";
-					}
-					else cout << "OH NOEW. There's no bracketPair.\n";
-					*/
-
 					Element* array_ob = writer.previousElement()->previousElement();
 					if(array_ob)
 					{
@@ -1102,18 +859,12 @@
 					}
 					else
 					{
-						cout << "OH NOEW. There's no array_ob. We'll just write a dot.\n";
+						cout << "OH NO. There's no array_ob. We'll just write a dot.\n";
 						writer.writeChar( '.' );
 					}
 				}
 				else
 				{
-					if( writer.previousElement() && writer.previousElement()->name() == "tester_stuff" )
-					{
-						//debug:
-						ReportError::reportError("JEPU. tester_stuff: ", writer.previousElement() );
-					}
-
 					writer.writeChar( '-' );//we're using pointer dereferencing -> for now...
 					writer.writeChar( '>' );
 				}
@@ -1121,33 +872,6 @@
 			case Token::USE_MEMBER:
 			case Token::USE_REFERENCE:
 			{
-				/*if( set_elem.kind() == Kind::VECTOR )
-				{
-					if( writer.nextToken() == Token::BRACKET_BEGIN )
-					{
-						//Um, C++ is so weird. We need to dereference a pointer to vector to be able to use operator[]. But I guess it makes sense...
-						//since operator[] is sort of like a function call, and otherwise it would think we're using a dynamic array of vectors...
-						writer.writeString("(*");
-						writer.writeString( set_elem.name() );
-						writer.writeChar(')');
-					}
-					else
-					{
-						writer.writeString( set_elem.name() );
-					}
-				}*/
-
-				/*JONDE REMOVE:
-				if( set_elem.typeConvert() == Kind::REF
-					&& set_elem.definitionElement()
-					&& set_elem.definitionElement()->kind() == Kind::VAL
-					)
-				{
-					// convert val to ref. (in C++ get the pointer of the value type.)
-					writer.writeChar('&');
-				}
-				*/
-
 				bool we_need_array_to_ptr_conversion = false;
 
 				if( (set_elem.type() == "array" && set_elem.typeConvertFrom() == Kind::VAL && set_elem.typeConvertTo() == Kind::PTR)
@@ -1174,7 +898,6 @@
 					//Um, C++ is so weird. We need to dereference a pointer to vector to be able to use operator[]. But I guess it makes sense...
 					//since operator[] is sort of like a function call, and otherwise it would think we're using a dynamic array of vectors...
 					writer.writeString("(*");
-					////////JONDE REMOVE writer.writeString( set_elem.useNamespaceString() );
 					writer.writeString( set_elem.name() );
 					writer.writeChar(')');
 				}
@@ -1188,7 +911,6 @@
 					}
 					else
 					{
-						////////JONDE REMOVE writer.writeString( set_elem.useNamespaceString() );
 						writer.writeString( set_elem.name() );
 					}
 				}
@@ -1289,7 +1011,7 @@
 				if( set_elem.nextElement() && set_elem.nextElement()->token() != Token::POINT_TO ) // There are other cases where we want LINK instead of LINK.obj
 				{
 					//REMOVE: cout<<"interesting. ARRAYSTUFF:.\n";
-					Element* prev_ref = set_elem.searchClosestPreviousUseReferenceOrUseVector();
+					Element* prev_ref = set_elem.searchClosestPreviousUseReference();
 					if(prev_ref)
 					{
 						//REMOVE: cout<<"interesting. ARRAYSTUFF:2.\n";
@@ -1342,7 +1064,6 @@
 					writer.writeString("> ");
 				}
 				else writer.writeChar(' '); //VAL
-				////////JONDE REMOVE writer.writeString( set_elem.useNamespaceString() );
 				writer.writeString( set_elem.name() );
 			break;
 			case Token::BRACKET_DEFINE_STATIC_ARRAY_BEGIN:
@@ -1354,7 +1075,6 @@
 				writer.writeString("std::array<");
 				iterateWrite(writer, set_elem);
 				writer.writeString("> ");
-				////////JONDE REMOVE writer.writeString( set_elem.useNamespaceString() );
 				writer.writeString( set_elem.name() );
 			break;
 
@@ -1438,7 +1158,6 @@
 						writer.writeString("* ");
 						if(set_elem.role() != Role::FUNC_RETURN )
 						{
-							////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
 							writer.writeString(set_elem.name());
 						}
 					}
@@ -1450,7 +1169,6 @@
 							writer.writeString("* ");
 							if(set_elem.role() != Role::FUNC_RETURN)
 							{
-								////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
 								writer.writeString(set_elem.name());
 							}
 							else if(set_elem.role() != Role::FUNC_RETURN && set_elem.role() != Role::FUNC_PARAMETER)
@@ -1468,7 +1186,6 @@
 								writer.writeString("* ");
 								if(set_elem.role() != Role::FUNC_RETURN)
 								{
-									////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
 									writer.writeString(set_elem.name());		
 								}
 							}
@@ -1478,7 +1195,6 @@
 								writer.writeString("* ");
 								if(set_elem.role() != Role::FUNC_RETURN)
 								{
-									////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
 									writer.writeString(set_elem.name());
 								}
 								else if(set_elem.role() != Role::FUNC_RETURN && set_elem.role() != Role::FUNC_PARAMETER)
@@ -1506,7 +1222,6 @@
 						writer.writeString("> ");
 						if(set_elem.role() != Role::FUNC_RETURN )
 						{
-							////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
 							writer.writeString(set_elem.name());
 						}
 					}
@@ -1519,7 +1234,6 @@
 							writer.writeString("> ");
 							if(set_elem.role() != Role::FUNC_RETURN)
 							{
-								////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
 								writer.writeString(set_elem.name());		
 							}
 						}
@@ -1530,7 +1244,6 @@
 							writer.writeString("> ");
 							if(set_elem.role() != Role::FUNC_RETURN)
 							{
-								////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
 								writer.writeString(set_elem.name());
 							}
 						}
@@ -1604,14 +1317,12 @@
 						//pointer to vector version:
 						writer.writeString( set_elem.templateTypeCombination() );
 						writer.writeString("* ");
-						////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
 						writer.writeString(set_elem.name());						
 					}
 					else //notInClass
 					{
 						writer.writeString(set_elem.templateTypeCombination());
 						writer.writeString("* ");
-						////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
 						writer.writeString(set_elem.name());
 						writer.writeString(" = new ");
 						writer.writeString(set_elem.templateTypeCombination());
@@ -1635,7 +1346,6 @@
 						writeVisibilityForElement(writer, set_elem);
 						writer.writeString( set_elem.builtInTypeStringCpp() );
 						writer.writeChar(' ');
-						////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
 						writer.writeString(set_elem.name());
 					}
 					else // inFunc probably... or global...
@@ -1645,7 +1355,6 @@
 						
 						if(set_elem.role() != Role::FUNC_RETURN)
 						{
-							////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
 							writer.writeString(set_elem.name());
 						}
 						
@@ -1668,137 +1377,11 @@
 						}
 					}
 				}
-				//break;
-				//case Token::DEFINE_ARRAY_IN_CLASS:
-				/*else if( set_elem.kind() == Kind::C_ARRAY )
-				{
-					if(set_elem.isInClass())
-					{
-						writeVisibilityForElement(writer, set_elem);
-
-						//if( parentToken() == Token::CLASS )
-						//{
-						writer.writeString(set_elem.typeInCpp());
-						writer.writeString("* ");
-						writer.writeString(set_elem.name());
-						//}
-					}	
-				//break;
-				//case Token::DEFINE_ARRAY:
-					else
-					{
-						writer.writeString(set_elem.typeInCpp());
-						writer.writeString("* ");
-						writer.writeString(set_elem.name());
-						writer.writeString(" = new ");
-						writer.writeString(set_elem.typeInCpp());
-						writer.writeString("[10]");
-					}
-				}*/
-				//break;
-				//case Token::DEFINE_VECTOR_IN_CLASS:
-				else if( set_elem.kind() == Kind::VECTOR )
-				{
-					if( set_elem.isInClass() )
-					{
-						#ifdef DEBUG_RAE_HUMAN
-						cout<<"writing vector.\n";
-						#endif
-
-						writeVisibilityForElement(writer, set_elem);
-
-						//pointer to vector version:
-						writer.writeString("std::vector<");
-						writer.writeString( set_elem.templateSecondTypeStringInCpp() );
-						if( set_elem.templateSecondType() && set_elem.templateSecondType()->isBuiltInType() == false )
-						{
-							//if it is a builtin type, we store it as a value inside the vector.
-							//if it is a user defined class, we store it as a pointer (or a ref in Rae.)
-							writer.writeChar('*');
-						}
-						writer.writeString(">* ");
-						////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
-						writer.writeString(set_elem.name());
-						
-						/*
-						//value vector version:
-						writer.writeString("std::vector<");
-						writer.writeString( type() );
-						if( isBuiltInType() == false )
-						{
-							//if it is a builtin type, we store it as a value inside the vector.
-							//if it is a user defined class, we store it as a pointer (or a ref in Rae.)
-							writer.writeChar('*');
-						}
-						writer.writeString("> ");
-						writer.writeString(m_name);
-						*/
-					}
-				//break;
-				//case Token::DEFINE_VECTOR:
-					else //notInClass
-					{
-						//pointer to vector version:
-						writer.writeString("std::vector<");
-						//writer.writeString( set_elem.typeInCpp() );
-						//if( set_elem.isBuiltInType() == false )
-						writer.writeString( set_elem.templateSecondTypeStringInCpp() );
-						if( set_elem.templateSecondType() && set_elem.templateSecondType()->isBuiltInType() == false )
-						{
-							//if it is a builtin type, we store it as a value inside the vector.
-							//if it is a user defined class, we store it as a pointer (or a ref in Rae.)
-							writer.writeChar('*');
-						}
-						writer.writeString(">* ");
-						////////JONDE REMOVE writer.writeString(set_elem.useNamespaceString());
-						writer.writeString(set_elem.name());
-						writer.writeString(" = new std::vector<");
-						writer.writeString( set_elem.templateSecondTypeStringInCpp() );
-						if( set_elem.templateSecondType() && set_elem.templateSecondType()->isBuiltInType() == false )
-						{
-							//if it is a builtin type, we store it as a value inside the vector.
-							//if it is a user defined class, we store it as a pointer (or a ref in Rae.)
-							writer.writeChar('*');
-						}
-						writer.writeString(">");
-						
-
-						//value vector version:
-						/*
-						writer.writeString("std::vector<");
-						writer.writeString( type() );
-						if( isBuiltInType() == false )
-						{
-							//if it is a builtin type, we store it as a value inside the vector.
-							//if it is a user defined class, we store it as a pointer (or a ref in Rae.)
-							writer.writeChar('*');
-						}
-						writer.writeString("> ");
-						writer.writeString(m_name);
-						*/
-					}
-				}
 			break;
 			case Token::TEMPLATE_SECOND_TYPE:
 				//ignore. already written above.
 			break;
 			
-			/*
-			case Token::USE_VECTOR:
-				if( writer.nextToken() == Token::BRACKET_BEGIN )
-				{
-					//Um, C++ is so weird. We need to dereference a pointer to vector to be able to use operator[]. But I guess it makes sense...
-					//since operator[] is sort of like a function call, and otherwise it would think we're using a dynamic array of vectors...
-					writer.writeString("(*");
-					writer.writeString( set_elem.name() );
-					writer.writeChar(')');
-				}
-				else
-				{
-					writer.writeString( set_elem.name() );
-				}
-			break;
-			*/
 			case Token::IN_TOKEN:
 				writer.writeChar(' ');
 				writer.writeChar(':');
@@ -1913,10 +1496,7 @@
 					//Need to fix C++ to have public visibility by default:
 					writer.currentDefaultVisibility("public");
 					writer.nextNeedsDefaultVisibility(true);
-
-					//rae::log("writing }; SCOPE_END for class or enum.");
 				}
-				//REMOVE else if( set_elem.parentToken() == Token::FUNC || set_elem.parentToken() == Token::CONSTRUCTOR || set_elem.parentToken() == Token::DESTRUCTOR )
 				else if( set_elem.parent() && set_elem.parent()->isFunc() )
 				{
 					////writer.writeChar( '\n' );//one line break after func
@@ -2125,7 +1705,6 @@
 						}
 						else //no DEFINE_FUNC_RETURN to be found. it is void.
 						{
-							////rae::log("No DEFINE_FUNC_RETURN: it was: ", myelem->toString();
 							writer.writeString( "void " );
 							//writer.writeChar( ' ' );
 						}
@@ -2143,8 +1722,7 @@
 								{
 									if( first_return_elem->token() == Token::PARENTHESIS_END_FUNC_RETURN_TYPES )
 									{
-										//Nothing between parentheses. Mark void return type.
-										////rae::log("No DEFINE_FUNC_RETURN: it was: ", myelem->toString();
+										// Nothing between parentheses. Mark void return type.
 										writer.writeString( "void " );
 										//writer.writeChar( ' ' );		
 									}
@@ -2627,11 +2205,9 @@
 									debug:
 									if( token() == Token::CONSTRUCTOR )
 									{
-										//rae::log("const: elem: ", i, " is ", set_elem.elements[i]->toString(), "\n");
-
 										if( set_elem.elements[i]->parentToken() == Token::CLASS || set_elem.elements[i]->parentToken() == Token::ENUM )
 										{
-											//rae::log("STRANGE. This thing has set_elem.parent CLASS and not func.", "\n");
+											cout << "STRANGE. This thing has set_elem.parent CLASS and not func.\n";
 										}
 									}
 									*/

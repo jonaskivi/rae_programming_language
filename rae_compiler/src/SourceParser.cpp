@@ -5,53 +5,6 @@
 namespace Rae
 {
 
-Element* SourceParser::newDefineVector(string set_template_second_type, string set_name)
-{
-	#ifdef DEBUG_RAE_HUMAN
-	cout<<"newDefineVector() : set_template_second_type: "<<set_template_second_type<<" set_name: "<<set_name<<" line: "<<lineNumber.line<<"\n";
-	#endif
-
-	//Element* lang_elem = newElement(Token::DEFINE_VECTOR, set_name, set_type);
-	Element* lang_elem = newElement(Token::DEFINE_REFERENCE, Kind::VECTOR, set_name, "vector");
-	//lang_elem->kind(Kind::VECTOR);
-	currentTemplate = lang_elem;//Oh, remove this.
-	currentReference = lang_elem;
-
-	//Hmm. This is a bit silly and slow, but we'll try to find the vector from our stdlib modules:
-	//Element* stdlib_vector_element = *searchElementInOtherModulesSignal(this, lang_elem);
-	Element* stdlib_vector_element = g_compiler->searchElementInOtherModules(this, lang_elem);
-	if(stdlib_vector_element)
-	{
-		#ifdef DEBUG_RAE_HUMAN
-		cout<<"Hurray! Found stdlib_vector_element.\n";
-		#endif
-		lang_elem->definitionElement(stdlib_vector_element);
-	}
-	#ifdef DEBUG_RAE_HUMAN
-	else
-	{
-		cout<<"Buhuuh. No stdlib_vector_element found.\n";
-	}
-	#endif
-
-	if( lang_elem->parentToken() == Token::CLASS )
-	{
-		//we are inside a class definition, not a func:
-		///////lang_elem->token(Token::DEFINE_VECTOR_IN_CLASS);
-
-		listOfAutoInitObjects.push_back(lang_elem);
-	}
-
-	addToUserDefinedTokens(lang_elem);
-
-	#ifdef DEBUG_RAE_HUMAN
-		cout<<"newDefineVector: "<<lang_elem->toString()<<"\n";
-		//rae::log("newDefineVector: ",set_name,"\n");
-	#endif
-
-	return lang_elem;
-}
-
 Element* SourceParser::searchElementAndCheckIfValid(Element* set_elem)
 {
 	Element* result = searchElementAndCheckIfValidLocal(set_elem);
@@ -93,7 +46,6 @@ bool SourceParser::handleTokenRaeCppCommon(string set_token)
 	}
 	else if (set_token == "//")
 	{
-		//expectingToken = Token::COMMENT_LINE_END;
 		isSingleLineComment = true;
 		currentLine = "";
 		//cout<<"Waiting for comment line to end.\n";
@@ -109,12 +61,9 @@ bool SourceParser::handleTokenRaeCppCommon(string set_token)
 			if (isNumericChar(set_token[0]))
 			{
 				previousElement()->name(previousElement()->name() + set_token);
-				//expectingToken = Token::UNDEFINED;
-				//doReturnToExpectToken();
 			}
 			else
 			{
-				//cout<<"RAE_ERROR: "<<lineNumber.line<<" float number messed up, after dot.";
 				ReportError::reportError(" float number messed up, after dot.", previousElement());
 			}
 
@@ -417,10 +366,9 @@ bool SourceParser::handleTokenRaeCppCommon(string set_token)
 		}
 		else if (set_token == "return")
 		{
-#ifdef DEBUG_RAE
-			cout << "Got return.\n";
-			//rae::log("Got return.\n");
-#endif
+			#ifdef DEBUG_RAE
+				cout << "Got return.\n";
+			#endif
 			//expectingToken = Token::PARENTHESIS_BEGIN_RETURN;
 			newElement(Token::RETURN, Kind::UNDEFINED, set_token);
 			return true;
@@ -428,7 +376,6 @@ bool SourceParser::handleTokenRaeCppCommon(string set_token)
 		else if (set_token == "new")
 		{
 			cout << "TODO Got new. Waiting new_class.\n";
-			//rae::log("TODO Got new. Waiting new_class.\n");
 			//expectingToken = Token::FUNC_DEFINITION;
 			//newFunc();
 			return true;
@@ -440,7 +387,6 @@ bool SourceParser::handleTokenRaeCppCommon(string set_token)
 		}
 		else if (set_token == "class" || set_token == "struct") // Do we really want to support struct too? Probably not!
 		{
-			////rae::log("found WORD class:>", set_token, "<\n");
 			expectingToken(Token::CLASS_NAME);
 			return true;
 		}
@@ -635,17 +581,13 @@ bool SourceParser::handleTokenCpp(string set_token)
 	{
 		if (set_token[0] == '\n')
 		{
-#ifdef DEBUG_RAE_HUMAN
-			cout << "Got NEWLINE. Ignore it because func.\n";
-			//rae::log("Got NEWLINE. Ignore it because func.\n");
-#endif
+			#ifdef DEBUG_RAE_HUMAN
+				cout << "Got NEWLINE. Ignore it because func.\n";
+			#endif
 			//expectingToken = Token::FUNC_RETURN_TYPE;
 		}
 		else if (set_token[0] == '(')
 		{
-#ifdef DEBUG_RAE
-			//rae::log("Got func_def (. Waiting return_types.\n");
-#endif
 			newParenthesisBegin(Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES, "(");
 			expectingRole(Role::FUNC_PARAMETER);
 			expectingToken(Token::UNDEFINED);
@@ -794,20 +736,6 @@ bool SourceParser::handleTokenCpp(string set_token)
 			assert(0);
 			return true;
 		}
-		/*JONDE DOEsn't work because it's already handled in common.
-		else if (set_token == ";") // This is a stupid hack ATM. only support headers in C++ side for now.
-		{
-			cout << "C++ semicolon handling.\n";
-			newElement(Token::SEMICOLON, Kind::UNDEFINED, set_token);
-			currentReference = nullptr;
-			Element* scope_elem = scopeElementStack.back();
-			if( scope_elem->isFunc() )
-				currentFunc = nullptr;
-			scopeElementStackPop();
-
-			return true;
-		}
-		*/
 		else if( set_token == "void" )
 		{
 			if (previousToken() == Token::CPP_TYPEDEF)
@@ -876,8 +804,6 @@ bool SourceParser::handleTokenCpp(string set_token)
 			)
 		{
 			// Note !! We don't yet support parsing "long long" for C++, TODO it could be parsed a bit similar to unsigned and signed...
-
-			//JONDE REMOVE cout << "Got " << set_token << "\n";
 
 			bool is_let = false; // in C++ it's const, but we'll call it let here.
 
@@ -1071,10 +997,6 @@ bool SourceParser::handleTokenCpp(string set_token)
 		}
 		else if (previousToken() == Token::CPP_TYPEDEF)
 		{
-			// The new type will be in type() and the
-			// old type in name() (and/or builtInType())
-			//NOPE reversed now.
-			//previousElement()->name(set_token); //JONDE TODO check typedef old type. Does it exist. Validate it does.
 			previousElement()->type(set_token);
 			#if defined(DEBUG_CPP_PARSER) || defined(DEBUG_CPP_TYPEDEF)
 				cout << "Created a typedef for an unknown old type: " << set_token << "\n";
@@ -1091,7 +1013,6 @@ bool SourceParser::handleTokenCpp(string set_token)
 		}
 	}
 
-	/////
     ReportError::reportError("C++ parser couldn't handle token: " + set_token, previousElement() );
 
 	// Could not handle the token.
@@ -1457,8 +1378,7 @@ bool SourceParser::handleToken(string set_token)
 			//and error if we're returnToExpectToken FUNC_ARGUMENT_NAME
 
 			#ifdef DEBUG_RAE_HUMAN
-			cout<<"newDefineBuiltInType: "<<currentReference->type()<<" "<<currentReference->namespaceString()<<"\n";
-			//rae::log("newDefineBuiltInType: ", currentReference->type(), " ", currentReference->name(), "\n");
+				cout<<"newDefineBuiltInType: "<<currentReference->type()<<" "<<currentReference->namespaceString()<<"\n";
 			#endif
 			}*/
 			//expectingToken = Token::UNDEFINED;
@@ -1597,8 +1517,7 @@ bool SourceParser::handleToken(string set_token)
 			currentReference->initData(in_dat);
 
 			#ifdef DEBUG_RAE_HUMAN
-			cout<<"initData: "<<set_token<<" is new initData for: "<<currentReference->type()<<" "<<currentReference->namespaceString()<<"\n";
-			//rae::log("newDefineBuiltInType: ", currentReference->type(), " ", currentReference->name(), "\n");
+				cout<<"initData: "<<set_token<<" is new initData for: "<<currentReference->type()<<" "<<currentReference->namespaceString()<<"\n";
 			#endif
 			}
 			*/
@@ -1779,7 +1698,6 @@ bool SourceParser::handleToken(string set_token)
 					for (Element* elem : currentModule->elements)
 					{
 						cout << elem->name() << ".";
-						//rae::log(elem->name(), ".");
 					}
 					cout << "\n";
 				#endif
@@ -1824,10 +1742,8 @@ bool SourceParser::handleToken(string set_token)
 		else
 		{
 			//cout<<"RAE_ERROR: ";
-			//rae::log("RAE_ERROR: ");
 			//lineNumber.printOut();
 			//cout<<" calling log(). No parenthesis after log.";
-			//rae::log(" calling log(). No parenthesis after log.");
 
 			ReportError::reportError("calling log(). No parenthesis after log.", previousElement());
 		}
@@ -1890,106 +1806,6 @@ bool SourceParser::handleToken(string set_token)
 	doReturnToExpectToken();
 	}
 	}*/
-	else if (expectingToken() == Token::ARRAY_VECTOR_STUFF)
-	{
-		//Probably REMOVE all of this...
-		assert(0);
-		if (set_token == "[")
-		{
-			//Shouldn't happen.
-			ReportError::reportError("Duplicate [. Compiler TODO.", previousElement());
-			//expectingToken(Token::VECTOR_STUFF);
-		}
-		else if (set_token == "]")
-		{
-			if (previousElement())
-			{
-				if (previousElement()->token() == Token::DEFINE_REFERENCE)
-				{
-#ifdef DEBUG_RAE_PARSER
-					cout << "making the previous DEFINE_REFERENCE_IN_CLASS an array.\n";
-#endif
-
-
-
-					//previousElement()->kind(Kind::VECTOR);
-					//previousElement()->createTemplateSecondType( previousElement()->type() );
-					//previousElement()->type("vector");
-					//expectingToken(Token::VECTOR_NAME);
-				}
-				else
-				{
-					ReportError::reportError("An ending array bracket ] in a strange place. The element before is not a type. It is: " + previousElement()->toString(), previousElement());
-				}
-			}
-
-		}
-		else if (set_token == ",")
-		{
-			assert(0);
-			// A comma usually means a static array.
-			//if(previousPreviousToken() == Token::BRACKET_DEFINE_ARRAY_BEGIN || previousPreviousToken() == Token::BRACKET_BEGIN)
-			//{
-			//A static array. TODO.
-			ReportError::reportError("Got comma after something and a [. Maybe a static array. TODO.", previousElement());
-			//}
-		}
-		else if (isNumericChar(set_token[0]))
-		{
-			//An array subscript.
-		}
-		else
-		{
-
-		}
-	}
-	else if (expectingToken() == Token::VECTOR_STUFF)
-	{
-		if (set_token == "!")
-		{
-			expectingToken(Token::VECTOR_STUFF);
-		}
-		else if (set_token == "(")
-		{
-			expectingToken(Token::VECTOR_STUFF);
-		}
-		else if (set_token == ")")
-		{
-			expectingToken(Token::VECTOR_NAME);
-		}
-		else
-		{
-			//if(currentTemplate)
-			//{
-			//	currentTemplate->type(set_token);
-			//}
-			if (currentReference)
-			{
-#ifdef DEBUG_RAE_HUMAN
-				cout << "set vector second type. to: " << set_token << " for: " << currentReference->toString() << "\n";
-#endif
-				//currentReference->type(set_token);
-				currentReference->createTemplateSecondType(set_token);
-			}
-			expectingToken(Token::VECTOR_STUFF);
-		}
-	}
-	else if (expectingToken() == Token::VECTOR_NAME)
-	{
-		//if(currentTemplate)
-		//{
-		//	currentTemplate->name(set_token);
-		//}
-		if (currentReference)
-		{
-#ifdef DEBUG_RAE_HUMAN
-			cout << "set vector name. to: " << set_token << " for: " << currentReference->toString() << "\n";
-#endif
-			currentReference->name(set_token);
-		}
-		//expectingToken = Token::UNDEFINED;
-		doReturnToExpectToken();
-	}
 	else if (expectingToken() == Token::CLASS_TEMPLATE_SECOND_TYPE)
 	{
 		//if( set_token == "!" )//No, we won't get this on templates... We already got it.
@@ -2158,10 +1974,9 @@ bool SourceParser::handleToken(string set_token)
 		
 		if (set_token == "func")
 		{
-#ifdef DEBUG_RAE
-			cout << "Got func. Waiting func_definition.\n";
-			//rae::log("Got func. Waiting func_definition.\n");
-#endif
+			#ifdef DEBUG_RAE
+				cout << "Got func. Waiting func_definition.\n";
+			#endif
 			expectingToken(Token::FUNC_DEFINITION);
 			newFunc();
 		}
@@ -2283,105 +2098,6 @@ bool SourceParser::handleToken(string set_token)
 			}
 
 			our_ref->isLet(is_let);
-
-			/*
-			if( !bracketStack.empty() )
-			{
-			if(previous2ndElement() && previous2ndElement()->token() == Token::BRACKET_BEGIN)
-			{
-			previous2ndElement()->token(Token::BRACKET_DEFINE_ARRAY_BEGIN);
-
-			our_ref->containerType( ContainerType::ARRAY );
-			}
-			}*/
-			//if(previous2ndElement() && previous2ndElement()->token() == Token::BRACKET_BEGIN)
-			//if( currentParentElement() && currentParentElement()->token() == Token::BRACKET_BEGIN )
-			//{
-			//previous2ndElement()->token(Token::BRACKET_DEFINE_ARRAY_BEGIN);
-			//currentParentElement()->token(Token::BRACKET_DEFINE_ARRAY_BEGIN);
-			//our_ref->containerType( ContainerType::ARRAY );
-			//}
-		}
-		/*
-		else if( set_token == "bool" )
-		{
-		expectingToken(Token::DEFINE_BUILT_IN_TYPE_NAME);
-		newDefineBuiltInType(BuiltInType::BOOL, expectingRole(), set_token);
-		}
-		else if( set_token == "byte" )
-		{
-		expectingToken(Token::DEFINE_BUILT_IN_TYPE_NAME);
-		newDefineBuiltInType(BuiltInType::BYTE, expectingRole(), set_token);
-		}
-		else if( set_token == "ubyte" )
-		{
-		expectingToken(Token::DEFINE_BUILT_IN_TYPE_NAME);
-		newDefineBuiltInType(BuiltInType::UBYTE, expectingRole(), set_token);
-		}
-		else if( set_token == "char" )
-		{
-		expectingToken(Token::DEFINE_BUILT_IN_TYPE_NAME);
-		newDefineBuiltInType(BuiltInType::CHAR, expectingRole(), set_token);
-		}
-		else if( set_token == "wchar" )
-		{
-		expectingToken(Token::DEFINE_BUILT_IN_TYPE_NAME);
-		newDefineBuiltInType(BuiltInType::WCHAR, expectingRole(), set_token);
-		}
-		else if( set_token == "dchar" )
-		{
-		expectingToken(Token::DEFINE_BUILT_IN_TYPE_NAME);
-		newDefineBuiltInType(BuiltInType::DCHAR, expectingRole(), set_token);
-		}
-		else if( set_token == "int" )
-		{
-		expectingToken(Token::DEFINE_BUILT_IN_TYPE_NAME);
-		newDefineBuiltInType(BuiltInType::INT, expectingRole(), set_token);
-		}
-		else if( set_token == "uint" )
-		{
-		expectingToken(Token::DEFINE_BUILT_IN_TYPE_NAME);
-		newDefineBuiltInType(BuiltInType::UINT, expectingRole(), set_token);
-		}
-		else if( set_token == "long" )
-		{
-		expectingToken(Token::DEFINE_BUILT_IN_TYPE_NAME);
-		newDefineBuiltInType(BuiltInType::LONG, expectingRole(), set_token);
-		}
-		else if( set_token == "ulong" )
-		{
-		expectingToken(Token::DEFINE_BUILT_IN_TYPE_NAME);
-		newDefineBuiltInType(BuiltInType::ULONG, expectingRole(), set_token);
-		}
-		else if( set_token == "float" )
-		{
-		expectingToken(Token::DEFINE_BUILT_IN_TYPE_NAME);
-		newDefineBuiltInType(BuiltInType::FLOAT, expectingRole(), set_token);
-		}
-		else if( set_token == "double" )
-		{
-		expectingToken(Token::DEFINE_BUILT_IN_TYPE_NAME);
-		newDefineBuiltInType(BuiltInType::DOUBLE, expectingRole(), set_token);
-		}
-		*/
-		/*else if( set_token == "real" )
-		{
-		expectingToken = Token::DEFINE_BUILT_IN_TYPE_NAME;
-		newDefineBuiltInType(BuiltInType::REAL, set_token);
-		}*/
-		/*
-		else if( set_token == "string" )
-		{
-		expectingToken(Token::DEFINE_BUILT_IN_TYPE_NAME);
-		newDefineBuiltInType(BuiltInType::STRING, expectingRole(), set_token);
-		}
-		*/
-		else if (set_token == "vector")
-		{
-			assert(0); // No more vectors. JONDE REMOVE this stuff.
-			expectingToken(Token::VECTOR_STUFF);
-			newDefineVector("unknown", "unknown");
-			return true;
 		}
 		else if (set_token == "(")
 		{
@@ -2459,9 +2175,9 @@ bool SourceParser::handleToken(string set_token)
 		}
 		else if (set_token == "[")
 		{
-			//cout<<"BRACKET we got a bracket in the normal place and it is strange!\n";
+			//cout << "BRACKET we got a bracket in the normal place and it is strange!\n";
 
-			//cout<<"Wise people say, this should never get called. SourceParser line 4398.\n";
+			//cout << "Wise people say, this should never get called. SourceParser line 4398.\n";
 			//assert(0);
 
 			if (previousElement() && (previousElement()->isUnknownType() || previousElement()->token() == Token::USE_REFERENCE))
@@ -2508,66 +2224,9 @@ bool SourceParser::handleToken(string set_token)
                 #endif
 				newDefineArray();
 			}
-
-
-
-			//expectingContainer( ContainerType::ARRAY );
-			//not a good idea: we need to handle opt, val, bool, int etc. which are all handled in undefined.//expectingToken(Token::ARRAY_VECTOR_STUFF);
-
-			/*
-			if(previousElement())
-			{
-			if( previousElement()->token() == Token::DEFINE_REFERENCE )
-			{*/
-			/*
-			!!!!!!!!!!!!!!!!!!!OK
-			This never gets called. Look in expecting NAME thing...
-			*/
-
-
-			/*
-			#ifdef DEBUG_RAE_PARSER
-			cout<<"bracket, make previous definition a DEFINE_VECTOR.\n";
-			#endif*/
-			/*
-			//SomeClass[] someVector
-			//----here->------------
-			//OLD behaviour turned it into a C_ARRAY, but now it's the preferred way to use vectors.
-			previousElement()->kind(Kind::C_ARRAY);
-			expectingToken(Token::DEFINE_C_ARRAY_NAME);
-			*/
-			//cout<<"A bracket but we didn't have a DEFINE_REFERENCE? Maybe it is an error.\n";
-			/*not up to date, as it won't be called...
-			previousElement()->kind(Kind::VECTOR);
-			previousElement()->createTemplateSecondType( previousElement()->type() );
-			previousElement()->type("vector");
-			expectingToken(Token::VECTOR_NAME);
-			*/
-			/*}
-			else
-			{
-			#ifdef DEBUG_RAE_PARSER
-			cout<<"normal newBracketBegin.";
-			#endif
-			//newBracketBegin(Token::BRACKET_BEGIN, set_token);
-			}
-			}
-			else ReportError::reportError("a bracket, but no previousElement. This is a compiler error. We'll need to fix it.", previousElement());
-			*/
 		}
 		else if (set_token == "]")
 		{
-			/*if( previousElement() && previousElement()->token() == Token::BRACKET_BEGIN )
-			{
-			//previousElement()->token(Token::BRACKET_DEFINE_ARRAY_BEGIN);
-			newBracketEnd(Token::BRACKET_END, set_token);
-			}
-			else if( previousElement() && previousElement()->token() == Token::DEFINE_ARRAY )
-			{
-
-			}
-			else
-			{*/
 			#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_BRACKET)
 				cout << "normal newBracketEnd.";
 			#endif
@@ -2583,7 +2242,6 @@ bool SourceParser::handleToken(string set_token)
 			{
 				expectingNameFor(our_array_definition);
 			}
-			//}
 		}
 		else if (set_token == "->")
 		{
@@ -2596,13 +2254,12 @@ bool SourceParser::handleToken(string set_token)
 		}
 		else if (set_token == "for")
 		{
-			ReportError::reportError("RAE_ERROR for is deprecated!\n", previousElement());
+			ReportError::reportError("RAE_ERROR Keyword for is deprecated!\n", previousElement());
 		}
-		/*
 		else if( set_token == "foreach" )
 		{
-		newElement(Token::FOR_EACH, Kind::UNDEFINED, set_token);
-		}*/
+			ReportError::reportError("RAE_ERROR Keyword foreach is deprecated!\n", previousElement());
+		}
 		else if (set_token == "in")
 		{
 			newElement(Token::IN_TOKEN, Kind::UNDEFINED, set_token);
@@ -2620,14 +2277,12 @@ bool SourceParser::handleToken(string set_token)
 		}
 		else if (set_token == "log_s")
 		{
-			//isInsideLogStatement = true;
 			newElement(Token::LOG_S, Kind::UNDEFINED, set_token);
 			expectingToken(Token::PARENTHESIS_BEGIN_LOG_S);
 
 		}
 		else if (set_token == "log")
 		{
-			//isInsideLogStatement = true;
 			newElement(Token::LOG, Kind::UNDEFINED, set_token);
 			expectingToken(Token::PARENTHESIS_BEGIN_LOG);
 		}
@@ -2639,49 +2294,6 @@ bool SourceParser::handleToken(string set_token)
 		{
 			newElement(Token::IS, Kind::UNDEFINED, set_token);
 		}
-		/*
-		//These don't work anymore as : is now it's own token. We must wait for it...
-		else if( set_token == "public:" )
-		{
-		newElement(Token::VISIBILITY_DEFAULT, set_token);
-		}
-		else if( set_token == "protected:" )
-		{
-		newElement(Token::VISIBILITY_DEFAULT, set_token);
-		}
-		else if( set_token == "library:" )
-		{
-		newElement(Token::VISIBILITY_DEFAULT, set_token);
-		}
-		else if( set_token == "private:" )//what's the real use of private, anyway?
-		{
-		newElement(Token::VISIBILITY_DEFAULT, set_token);
-		}
-		*/
-		/*//TODO errors for these old LONG visibility keywords:
-		else if( set_token == "public" )
-		{
-		newElement(Token::VISIBILITY, Kind::UNDEFINED, set_token );
-		}
-		else if( set_token == "protected" )
-		{
-		newElement(Token::VISIBILITY, Kind::UNDEFINED, set_token);
-		}
-		else if( set_token == "library" )
-		{
-		//TODO
-		newElement(Token::VISIBILITY, Kind::UNDEFINED, set_token);
-		}
-		else if( set_token == "hidden" )
-		{
-		//TODO
-		newElement(Token::VISIBILITY, Kind::UNDEFINED, set_token);
-		}
-		else if( set_token == "private" )//what's the real use of private, anyway?
-		{
-		newElement(Token::VISIBILITY, Kind::UNDEFINED, set_token);
-		}
-		*/
 		else if (set_token == "let")
 		{
 			newElement(Token::LET, Kind::UNDEFINED, set_token);
@@ -2711,9 +2323,6 @@ bool SourceParser::handleToken(string set_token)
 				{
 					//change it.
 					previousElement()->token(Token::VISIBILITY_DEFAULT);
-					////Now we don't add, as we already added before.
-					//add :
-					//previousElement()->name( previousElement->name() + ":" );
 				}
 			}
 
@@ -2725,32 +2334,12 @@ bool SourceParser::handleToken(string set_token)
 				assert(0);
 			}
 		}
-		/*
-		else if( set_token == "!" )
-		{
-		cout<<"Got template!\n";
-
-		if( previousElement() )
-		{
-		cout<<"Got previousElement:"<< previousElement()->toString()<<"\n";
-		//TODO maybe we really need to check this:
-		//if( previousElement()->token() == Token::DEFINE_REFERENCE )
-		//{
-
-		//change the typetype.
-		previousElement()->kind(Kind::TEMPLATE);
-		//}
-		}
-		expectingToken(Token::TEMPLATE_STUFF);
-		}
-		*/
 		else if (set_token == "free")
 		{
-			//Duplicate free. We'll have to sort this out later. TODO.
+			// Duplicate free. We'll have to sort this out later. TODO.
 
 			assert(0);
 			//cout<<"TODO Got free. Waiting free_class.\n";
-			////rae::log("TODO Got free. Waiting free_class.\n");
 			expectingToken(Token::FREE_NAME);
 			//newFunc();
 			if (previousElement())
@@ -2776,7 +2365,6 @@ bool SourceParser::handleToken(string set_token)
 		else if (set_token == "delete")
 		{
 			cout << "TODO Got delete. there's no delete keyword in Rae. Use free instead.\n";
-			//rae::log("TODO Got delete. Waiting delete_class.\n");
 			//expectingToken = Token::FUNC_DEFINITION;
 			//newFunc();
 		}
@@ -2786,7 +2374,6 @@ bool SourceParser::handleToken(string set_token)
 		}
 		else if (set_token == "module")
 		{
-			////rae::log("found WORD module:>", set_token, "<\n");
 			newModule(set_token);
 		}
 		else if (set_token == "project")
@@ -2872,160 +2459,17 @@ bool SourceParser::handleToken(string set_token)
 		{
 			ReportError::reportError("@javascript is reserved, but use @ecma instead, but it is not yet implemented.", currentLineNumber(), namespaceString());
 		}
-		//Ok, stop the press! It's not a reserved word. We really have to do something with this info:
-		//Maybe we'll first check if it's some user defined type.
+		// Ok, stop the press! It's not a reserved word. We really have to do something with this info:
+		// Maybe we'll first check if it's some user defined type.
 		else
 		{
 			handleUserDefinedToken(set_token);
 		}
-
-		/*
-		if( set_token == "\n" )
-		{
-		newLine();
-		}
-		else if( set_token == ";" )
-		{
-		newElement(Token::SEMICOLON, set_token);
-		}
-		else if( set_token == "{" )
-		{
-		newScopeBegin();
-		}
-		else if( set_token == "}" )
-		{
-		newScopeEnd();
-		}
-		else if( set_token == "." )
-		{
-		newElement(Token::REFERENCE_DOT, set_token);
-		}
-		else if( set_token == "func" )
-		{
-		#ifdef DEBUG_RAE
-		//rae::log("Got func. Waiting func_definition.\n");
-		#endif
-		expectingToken = Token::FUNC_DEFINITION;
-		newFunc();
-		}
-		else if( set_token == "int" )
-		{
-		newElement(Token::INT, set_token);
-		}
-		else if( set_token == "(" )
-		{
-		newParenthesisBegin(Token::PARENTHESIS_BEGIN, set_token);
-		}
-		else if( set_token == ")" )
-		{
-		newParenthesisEnd(Token::PARENTHESIS_END, set_token);
-		}
-		else if( set_token == "+" )
-		{
-		newElement(Token::PLUS, set_token);
-		}
-		else if( set_token == "-" )
-		{
-		newElement(Token::MINUS, set_token);
-		}
-		else if( set_token == "=" )
-		{
-		newElement(Token::ASSIGNMENT, set_token);
-		}
-		else if( set_token == "/" )
-		{
-		newElement(Token::DIVIDE, set_token);
-		}
-		else if( set_token == "if" )
-		{
-		newElement(Token::IF, set_token);
-		}
-		else if( set_token == "log_s" )
-		{
-		newElement(Token::LOG_S, set_token);
-		expectingToken = Token::PARENTHESIS_BEGIN_LOG_S;
-		}
-		else if( set_token == "log" )
-		{
-		newElement(Token::LOG, set_token);
-		expectingToken = Token::PARENTHESIS_BEGIN_LOG;
-		}
-		else if( set_token == "public:" )
-		{
-		newElement(Token::VISIBILITY_DEFAULT, set_token);
-		}
-		else if( set_token == "protected:" )
-		{
-		newElement(Token::VISIBILITY_DEFAULT, set_token);
-		}
-		else if( set_token == "library:" )
-		{
-		newElement(Token::VISIBILITY_DEFAULT, set_token);
-		}
-		else if( set_token == "private:" )//what's the real use of private, anyway?
-		{
-		newElement(Token::VISIBILITY_DEFAULT, set_token);
-		}
-		else if( set_token == "public" )
-		{
-		newElement(Token::VISIBILITY, set_token);
-		}
-		else if( set_token == "protected" )
-		{
-		newElement(Token::VISIBILITY, set_token);
-		}
-		else if( set_token == "library" )
-		{
-		newElement(Token::VISIBILITY, set_token);
-		}
-		else if( set_token == "private" )//what's the real use of private, anyway?
-		{
-		newElement(Token::VISIBILITY, set_token);
-		}
-		else if( set_token == "return" )
-		{
-		#ifdef DEBUG_RAE
-		//rae::log("Got return.\n");
-		#endif
-		//expectingToken = Token::PARENTHESIS_BEGIN_RETURN;
-		newElement(Token::RETURN, set_token);
-		}
-		else if( set_token == "new" )
-		{
-		//rae::log("TODO Got new. Waiting new_class.\n");
-		//expectingToken = Token::FUNC_DEFINITION;
-		//newFunc();
-		}
-		else if( set_token == "delete" )
-		{
-		//rae::log("TODO Got delete. Waiting delete_class.\n");
-		//expectingToken = Token::FUNC_DEFINITION;
-		//newFunc();
-		}
-		else if( set_token == "class" )
-		{
-		////rae::log("found WORD class:>", set_token, "<\n");
-		expectingToken = Token::CLASS_NAME;
-		}
-		else if( set_token == "module" )
-		{
-		////rae::log("found WORD module:>", set_token, "<\n");
-		newModule(set_token);
-		}
-		//Ok, stop the press! It's not a reserved word. We really have to do something with this info:
-		//Maybe we'll first check if it's some user defined type.
-		else
-		{
-		handleUserDefinedToken(set_token);
-		}
-		*/
-
 	}
 	else if (expectingToken() == Token::FREE_NAME)
 	{
-		//TODO check if name is a valid name...
+		// TODO check if name is a valid name...
 		newElement(Token::FREE, Kind::UNDEFINED, set_token);
-		//expectingToken = Token::UNDEFINED;
 		doReturnToExpectToken();
 	}
 	else if (expectingToken() == Token::DEFINE_BUILT_IN_TYPE_NAME)
@@ -3034,9 +2478,9 @@ bool SourceParser::handleToken(string set_token)
 		{
 			if (expectingRole() == Role::FUNC_RETURN)
 			{
-#ifdef DEBUG_RAE_PARSER
-				cout << "Got ending ) for FUNC_RETURNs in DEFINE_BUILT_IN_TYPE_NAME. Going back to FUNC_DEFINITION.\n";
-#endif
+				#ifdef DEBUG_RAE_PARSER
+					cout << "Got ending ) for FUNC_RETURNs in DEFINE_BUILT_IN_TYPE_NAME. Going back to FUNC_DEFINITION.\n";
+				#endif
 
 				expectingRole(Role::UNDEFINED);//could also be Role::FUNC_DEFINITION, but we don't need that, so.
 				//TODO: check parenthesisStack:
@@ -3178,7 +2622,8 @@ bool SourceParser::handleToken(string set_token)
 			{
 				if (previousElement()->token() == Token::DEFINE_REFERENCE)
 				{
-					expectingToken(Token::ARRAY_VECTOR_STUFF);
+					assert(0); // TODO or not relevant. We used to have the Vector handling here.
+					// But it should be replaced by array system.
 				}
 				else
 				{
@@ -3258,7 +2703,6 @@ bool SourceParser::handleToken(string set_token)
 			#ifdef DEBUG_RAE_HUMAN
 				cout << "Got NEWLINE. Ignore it because func.\n";
 			#endif
-			//expectingToken = Token::FUNC_RETURN_TYPE;
 		}
 		else if (set_token[0] == '(')
 		{
@@ -3267,11 +2711,7 @@ bool SourceParser::handleToken(string set_token)
 			#endif
 			newParenthesisBegin(Token::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES, "(");
 			expectingRole(Role::FUNC_RETURN);
-
-			//doReturnToExpectToken();//How about this change?
 			expectingToken(Token::UNDEFINED);
-
-			//expectingToken(Token::FUNC_RETURN_TYPE);
 		}
 		else if (set_token[0] == ')')
 		{
@@ -3280,10 +2720,10 @@ bool SourceParser::handleToken(string set_token)
 		}
 		else
 		{
-#ifdef DEBUG_RAE
-			cout << "Maybe got func name: " << set_token << "\n";
-#endif
-			//record func name
+			#ifdef DEBUG_RAE
+				cout << "Maybe got func name: " << set_token << "\n";
+			#endif
+			// record func name
 			if (currentFunc)
 			{
 				#ifdef DEBUG_RAE_PARSER
@@ -3293,39 +2733,27 @@ bool SourceParser::handleToken(string set_token)
 				currentFunc->name(set_token);
 				//setNameAndCheckForPreviousDefinitions(currentReference, set_token);
 
-				/*if( set_token == "this" )
-				{
-				currentFunc->token( Token::CONSTRUCTOR );
-				}
-				else if( set_token == "~this" )
-				{
-				currentFunc->token( Token::DESTRUCTOR );
-				}*/
-
-				//if a funcs name is init, then it is a constructor.
-				//Used to be new: if( set_token == "new" )
+				// if a funcs name is init, then it is a constructor.
 				if (set_token == "init")
 				{
-#ifdef DEBUG_RAE
-					//rae::log("Got new. It's a CONSTRUCTOR.\n");
-#endif
+					#ifdef DEBUG_RAE
+						cout << "Got init. It's a CONSTRUCTOR.\n";
+					#endif
 					currentFunc->token(Token::CONSTRUCTOR);
 					listOfConstructors.push_back(currentFunc);
 				}
 				else if (set_token == "free")
 				{
-#ifdef DEBUG_RAE
-					//rae::log("Got free. It's a DESTRUCTOR.\n");
-#endif
+					#ifdef DEBUG_RAE
+						cout << "Got free. It's a DESTRUCTOR.\n";
+					#endif
 					currentFunc->token(Token::DESTRUCTOR);
 					listOfDestructors.push_back(currentFunc);
 				}
 				else if (set_token == "delete")
 				{
-					//#ifdef DEBUG_RAE
 					ReportError::reportError("\"delete\" keyword is not used in the Rae programming language. Please use \"free\" instead.", previousElement());
-					//rae::log("delete is deprecated. please use free instead.\n");
-					//#endif
+
 					currentFunc->token(Token::DESTRUCTOR);
 					listOfDestructors.push_back(currentFunc);
 				}
@@ -3339,295 +2767,10 @@ bool SourceParser::handleToken(string set_token)
 			}
 			else
 				cout << "No currentFunc. Returning back to UNDEFINED and Role::FUNC_PARAMETER. set_token was: " << set_token <<"\n";
-			//expectingToken(Token::FUNC_ARGUMENT_TYPE);
 			expectingRole(Role::FUNC_PARAMETER);
-
-			//doReturnToExpectToken();//How about this change?
 			expectingToken(Token::UNDEFINED);
 		}
 	}
-	/*
-	else if( expectingToken() == Token::FUNC_RETURN_TYPE )
-	{
-	if( set_token[0] == ')' )
-	{
-	#ifdef DEBUG_RAE
-	//rae::log("Got end func return types.>", set_token, "< Waiting rest of definition.\n");
-	#endif
-	//TODO: check parenthesisStack:
-	newParenthesisEnd(Token::PARENTHESIS_END_FUNC_RETURN_TYPES, ")");
-	expectingToken(Token::FUNC_DEFINITION);
-	}
-	else if( set_token[0] == ',' )//a comma separates the list of return types...
-	{
-	#ifdef DEBUG_RAE
-	//rae::log("Got comma between return types.>", set_token, "< Waiting rest func_return_type.\n");
-	#endif
-	expectingToken(Token::FUNC_RETURN_TYPE);
-	}
-	else
-	{
-	#ifdef DEBUG_RAE
-	//rae::log("Got func_return_type. Could be:>", set_token, "<.\n");
-	#endif
-	if(currentFunc)
-	{
-	newDefineFuncReturn(set_token);
-	}
-	expectingToken(Token::FUNC_RETURN_NAME);
-	//record return type1, 2 , 3 etc.
-	}
-	}
-	else if( expectingToken() == Token::FUNC_RETURN_NAME )
-	{
-	if( set_token[0] == ')' )
-	{
-	#ifdef DEBUG_RAE
-	//rae::log("Got end func returns.>", set_token, "< Waiting rest of definition.\n");
-	#endif
-	//TODO: check parenthesisStack:
-	newParenthesisEnd(Token::PARENTHESIS_END_FUNC_RETURN_TYPES, ")");
-	expectingToken(Token::FUNC_DEFINITION);
-	}
-	else
-	{
-	#ifdef DEBUG_RAE
-	//rae::log("Got func_return_name. Could be:>", set_token, "<.\n");
-	#endif
-	if(currentReference)
-	{
-	///////////////checkForPreviousDefinitions(set_token);
-	//currentFunc->addNameToCurrentElement(set_token);
-	currentReference->name(set_token);
-	currentReference->isUnknownType(true);//rename to isUnknown? because the name is unknown here.
-	addToCheckForPreviousDefinitionsList(currentReference);
-	}
-	expectingToken(Token::FUNC_RETURN_TYPE);
-	//record return type1, 2 , 3 etc.
-	}
-	}
-	else if( expectingToken() == Token::FUNC_ARGUMENT_TYPE )
-	{
-	if( set_token[0] == '(' )
-	{
-	#ifdef DEBUG_RAE
-	//rae::log("Got param start (: >", set_token, "< Still waiting for params.\n");
-	#endif
-	//TODO: check parenthesisStack:
-	newParenthesisBegin(Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES, "(");
-
-	//finalize func
-	//expectingToken = Token::FUNCTION_BODY;
-	}
-	else if( set_token[0] == ')' )
-	{
-	#ifdef DEBUG_RAE
-	//rae::log("Got final ): >", set_token, "< Going for the func BODY.\n");
-	#endif
-	//finalize func
-	//if( currentFunc )
-	//{
-	//currentFunc->newElement(lineNumber, Token::PARENTHESIS_END_FUNC_DEFINITION, ")");
-	//}
-	//TODO: check parenthesisStack:
-	newParenthesisEnd(Token::PARENTHESIS_END_FUNC_PARAM_TYPES, ")");
-
-	//expectingToken = Token::FUNCTION_BODY;
-	//expectingToken = Token::UNDEFINED;
-	doReturnToExpectToken();
-
-	#ifdef DEBUG_RAE_HUMAN
-	if( currentFunc )
-	{
-	cout<<"\nnewFunction: "<<currentFunc->name()<<"\n";
-	//rae::log("newFunction: ", currentFunc->name(), "\n");
-	}
-	#endif
-	}
-	else if( set_token[0] == ',' )//a comma separates the list of param types...
-	{
-	#ifdef DEBUG_RAE
-	//rae::log("Got comma between param types.>", set_token, "< Waiting rest FUNC_ARGUMENT_TYPE.\n");
-	#endif
-	//if( currentFunc )
-	//{
-	//currentFunc->newElement(lineNumber, Token::COMMA, ",");
-	//}
-	newElement(Token::COMMA, Kind::UNDEFINED, ",");
-	expectingToken(Token::FUNC_ARGUMENT_TYPE);
-	}
-	else if(set_token == "override")
-	{
-	//if(currentFunc)
-	//{
-	//currentFunc->newElement(lineNumber, Token::OVERRIDE);
-	//}
-	newElement(Token::OVERRIDE, Kind::UNDEFINED, set_token);
-	}
-	else if( set_token == "vector" )//Ooh, it's a vector
-	{
-	#ifdef DEBUG_RAE
-	//rae::log("Got comma between param types.>", set_token, "< Waiting rest FUNC_ARGUMENT_TYPE.\n");
-	#endif
-	//if(currentReference)
-	//{
-	//currentReference->kind(Kind::C_ARRAY);
-	//}
-	cout<<"TODO enable vector FUNC_ARGUMENTs.\n";
-	//returnToExpect( Token::FUNC_ARGUMENT_NAME );
-	//expectingToken( Token::VECTOR_STUFF );
-	}
-	else if( set_token == "!" )//Ooh, it's a vector
-	{
-	//ignore
-	//Hmm, !() is going to get totally wrong. It's going to end func_def and all that.
-	cout<<"Ok. Got !. !() is going to go so bad.\n";
-	}
-	else
-	{
-	#ifdef DEBUG_RAE
-	//rae::log("Got func param type: >", set_token, "<.\n");
-	#endif
-	if(currentFunc)
-	{
-	//replace these with a new func:
-	newDefineFuncArgument(set_token);
-
-	//currentFunc->newElement(lineNumber, Token::DEFINE_FUNC_ARGUMENT);
-	//currentFunc->addTypeToCurrentElement(set_token);
-
-	//					if( BuiltInType::isBuiltInType(set_token) )
-	//				{
-	//				//ok.
-	//		}
-	//	else
-	//{
-	//Element* found_elem = searchToken(set_token);
-	//if( found_elem )
-	//{
-	//
-	//}
-	//else
-	//{
-	//	currentFunc->currentElement()->isUnknownType(true);
-	//	addToUnknownDefinitions( currentFunc->currentElement() );
-	//}
-	//}
-
-	}
-	expectingToken(Token::FUNC_ARGUMENT_NAME);
-	//record return type1, 2 , 3 etc.
-	}
-	}
-	else if( expectingToken() == Token::FUNC_ARGUMENT_NAME )
-	{
-	cout<<"Remove this FUNC_ARGUMENT thing, and just use parent() which is scope, to know if it's inside a func def. Use DEFINE_REFERENCE for them instead.\n";
-	assert(0);
-
-	if( set_token[0] == '(' )
-	{
-	//rae::log("RAE_ERROR: ");
-	lineNumber.printOut();
-	//rae::log(" Got param start, while expecting FUNC_ARGUMENT_NAME (: >", set_token, "< Still waiting for params.\n");
-
-	//TODO: check parenthesisStack:
-	newParenthesisBegin(Token::PARENTHESIS_BEGIN, "(");
-
-	//finalize func
-	//expectingToken = Token::FUNCTION_BODY;
-	}
-	else if( set_token[0] == ')' )
-	{
-	#ifdef DEBUG_RAE
-	//rae::log("Got final ), func_param not named: >", set_token, "< Going for the func BODY.\n");
-	#endif
-	//finalize func
-	//if( currentFunc )
-	//{
-	//	currentFunc->newElement(lineNumber, Token::PARENTHESIS_END_FUNC_DEFINITION, ")");
-	//}
-
-	//TODO: check parenthesisStack:
-	newParenthesisEnd(Token::PARENTHESIS_END_FUNC_PARAM_TYPES, ")");
-
-	//expectingToken = Token::FUNCTION_BODY;
-	//expectingToken = Token::UNDEFINED;
-	doReturnToExpectToken();
-	}
-	else if( set_token[0] == ',' )//a comma separates the list of param types...
-	{
-	#ifdef DEBUG_RAE
-	//rae::log("Got comma between param types.>", set_token, "< Waiting rest FUNC_ARGUMENT_TYPE.\n");
-	#endif
-	newElement(Token::COMMA, Kind::UNDEFINED, ",");
-	expectingToken(Token::FUNC_ARGUMENT_TYPE);
-	}
-	else if( set_token[0] == '[' )//Ooh, it's an array...
-	{
-	#ifdef DEBUG_RAE
-	//rae::log("Got comma between param types.>", set_token, "< Waiting rest FUNC_ARGUMENT_TYPE.\n");
-	#endif
-	if(currentReference)
-	{
-	expectingToken(Token::ARRAY_VECTOR_STUFF);
-	//cout<<"Got a bracket. TODO something with it. VECTOR\n";
-	//assert(0);
-	//currentReference->kind(Kind::C_ARRAY);
-	}
-	}
-	else if( set_token[0] == ']' )//just ignore...
-	{
-	#ifdef DEBUG_RAE
-	//rae::log("Got comma between param types.>", set_token, "< Waiting rest FUNC_ARGUMENT_TYPE.\n");
-	#endif
-	//ignore
-	ReportError::reportError("An ending array bracket ] in a strange place. Element before: " + previousElement()->toString() );
-	}
-	else if( set_token[0] == '=' )//ooh, we are getting init_data...
-	{
-	#ifdef DEBUG_RAE
-	//rae::log("init data.>", set_token, ".\n");
-	cout<<"GETTING INIT_DATA!!!";
-	#endif
-	if(currentReference)
-	{
-	//currentReference->kind(Kind::C_ARRAY);
-	}
-
-
-	addReturnToExpectToken( Token::FUNC_ARGUMENT_NAME );
-	expectingToken( Token::INIT_DATA );
-	}
-	else
-	{
-	#ifdef DEBUG_RAE
-	//rae::log("Got func param name: >", set_token, "<.\n");
-	#endif
-	if(currentReference)
-	{
-	//We'll have to check these after the class is done.
-	//to check for need for override keyword.
-
-	/////////checkForPreviousDefinitions(set_token);
-	//currentFunc->addNameToCurrentElement(set_token);
-	currentReference->name(set_token);
-	currentReference->isUnknownType(true);//rename to isUnknown? because the name is unknown here.
-	addToCheckForPreviousDefinitionsList(currentReference);
-	}
-	//expectingToken = Token::FUNC_ARGUMENT_TYPE;
-	//record return type1, 2 , 3 etc.
-	}
-
-	}
-	else
-	{
-	//rae::log("RAE_ERROR: ");
-	lineNumber.printOut();
-	//rae::log(" token: ", set_token, " expecting: ", Token::toString(expectingToken), " lineText: ", currentLine, "\n");
-	//expectingToken = Token::UNDEFINED;
-	doReturnToExpectToken();
-	}
-	*/
 
 	return false;
 }

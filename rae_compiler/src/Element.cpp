@@ -26,10 +26,6 @@ string toString(Kind::e set)
 			return "Kind::PTR";
 		case Kind::BUILT_IN_TYPE:
 			return "Kind::BUILT_IN_TYPE";
-		//case Kind::ARRAY:
-			//return "Kind::ARRAY";
-		case Kind::VECTOR:
-			return "Kind::VECTOR";
 		case Kind::TEMPLATE:
 			return "Kind::TEMPLATE";
 	}
@@ -126,13 +122,6 @@ string toString(Token::e set)
 			return "Token::USE_REFERENCE";
 			case Token::USE_MEMBER:
 			return "Token::USE_MEMBER";
-			
-			case Token::ARRAY_VECTOR_STUFF:
-			return "Token::ARRAY_VECTOR_STUFF";
-			case Token::VECTOR_STUFF:
-			return "Token::VECTOR_STUFF";
-			case Token::VECTOR_NAME:
-			return "Token::VECTOR_NAME";
 			
 			case Token::TEMPLATE_STUFF:
 			return "Token::TEMPLATE_STUFF";
@@ -806,7 +795,6 @@ void LineNumber::copyFrom(LineNumber& set)
 void LineNumber::printOut()
 {
 	cout<<"line: "<<line<<" charpos: "<<column;
-	////rae::log("line: ", line, " charpos: ", column);
 }
 
 
@@ -1073,13 +1061,6 @@ bool Element::isEndsExpression()
 bool Element::isDefinition()
 {
 	if( token() == Token::DEFINE_REFERENCE
-		//|| token() == Token::DEFINE_REFERENCE_IN_CLASS
-		//|| token() == Token::DEFINE_ARRAY
-		//|| token() == Token::DEFINE_ARRAY_IN_CLASS
-		//|| token() == Token::DEFINE_VECTOR
-		//|| token() == Token::DEFINE_VECTOR_IN_CLASS
-		//|| token() == Token::DEFINE_BUILT_IN_TYPE
-		//|| token() == Token::DEFINE_BUILT_IN_TYPE_IN_CLASS
 		|| token() == Token::BRACKET_DEFINE_ARRAY_BEGIN
 		|| token() == Token::BRACKET_DEFINE_STATIC_ARRAY_BEGIN
 		|| token() == Token::CLASS
@@ -1162,9 +1143,6 @@ bool Element::isFunc()
 bool Element::isUseReference()
 {
 	if( token() == Token::USE_REFERENCE
-		//|| token() == Token::USE_ARRAY
-		//|| token() == Token::USE_VECTOR
-		//|| token() == Token::USE_BUILT_IN_TYPE
 		|| token() == Token::USE_MEMBER
 		|| token() == Token::FUNC_CALL
 	)
@@ -1883,11 +1861,11 @@ Element* Element::parentFunc()
 	return res;
 }
 
-Element* Element::searchClosestPreviousUseReferenceOrUseVector()
+Element* Element::searchClosestPreviousUseReference()
 {
 	//for stuff like:
 	//someOb.callSomeFunc //when called from callSomeFunc it will return someOb.
-	//someVector[doSomething.extremely(difficult, and_strange)].callSomeFunc //when called from callSomeFunc it will return someVector.
+	//someArray[doSomething.extremely(difficult, and_strange)].callSomeFunc //when called from callSomeFunc it will return someArray.
 
 	//return null if not found.
 
@@ -1909,16 +1887,14 @@ Element* Element::searchClosestPreviousUseReferenceOrUseVector()
 	{
 		if( res->token() == Token::SCOPE_BEGIN )
 		{
-			//if at any case we would find a scope begin, then we'll just return 0.
+			// if at any case we would find a scope begin, then we'll just return 0.
 			return 0;
 		}
 
-		if(found_a_bracket <= 0)//Well if this gets negative it's an error... too many brackets... but it could theoretically happen if we're inside two brackets.
-		//so let's just leave it like this, and hope it's correct.
+		if(found_a_bracket <= 0) // Well if this gets negative it's an error... too many brackets... but it could theoretically happen if we're inside two brackets.
+		// so let's just leave it like this, and hope it's correct.
 		{
 			if( res->token() == Token::USE_REFERENCE
-				//|| res->token() == Token::USE_VECTOR
-				//|| res->token() == Token::USE_ARRAY
 			)
 			{
 				return res;
@@ -2192,7 +2168,6 @@ void Element::addAutoInitElementToFunc(Element* set)
 	{
 		#ifdef DEBUG_RAE2
 			cout<<"addAutoInitElementToFunc elem: "<<(*my_it)->toString();
-			//rae::log("elem: ",(*my_it)->toString());
 		#endif
 
 		if( (*my_it) && (*my_it)->token() == Token::NEWLINE_BEFORE_SCOPE_BEGIN )
@@ -2201,8 +2176,7 @@ void Element::addAutoInitElementToFunc(Element* set)
 				cout<<"CLASS found newline on class.\n";
 			
 			#ifdef DEBUG_RAE2
-			cout<<"found newline.\n";
-			//rae::log("found SCOPE_BEGIN.\n");
+				cout<<"found newline.\n";
 			#endif
 
 			(*my_it)->token(Token::NEWLINE); // it is not before a scope anymore.
@@ -2211,8 +2185,7 @@ void Element::addAutoInitElementToFunc(Element* set)
 			//if( my_it < elements.end() )
 			{
 				#ifdef DEBUG_RAE2
-				cout<<"We found it! iterator and stuff worked. ITERATOR!!!\n";
-				//rae::log("We found it! iterator and stuff worked. ITERATOR!!!\n");
+					cout<<"We found it! iterator and stuff worked. ITERATOR!!!\n";
 				#endif
 				elements.insert(my_it, set);
 				//elements.insert(my_it, elem_newline );
@@ -2227,8 +2200,7 @@ void Element::addAutoInitElementToFunc(Element* set)
 			for( my_it2 = elements.begin(); my_it < elements.end(); my_it2++ )
 			{
 				#ifdef DEBUG_RAE2
-				cout<<"elem2: "<<(*my_it2)->toString();
-				//rae::log("elem2: ",(*my_it)->toString());
+					cout<<"elem2: "<<(*my_it2)->toString();
 				#endif
 
 				if( (*my_it2) && (*my_it2) == set )
@@ -2267,14 +2239,13 @@ void Element::addElementToTopOfFunc(Element* set)
 	{
 		cout<<"CLASS addElementToTopOfFunc: "<<toString()<<"\n";
 		to_debug = true;
-		cout<<"we are adding: "<<set->toString();
+		cout << "we are adding: " << set->toString();
 	}
 
 	for( my_it = elements.begin(); my_it < elements.end(); my_it++ )
 	{
 		#ifdef DEBUG_RAE2
-			cout<<"addElementToTopOfFunc elem: "<<(*my_it)->toString();
-			//rae::log("elem: ",(*my_it)->toString());
+			cout << "addElementToTopOfFunc elem: " << (*my_it)->toString();
 		#endif
 
 		if( (*my_it) && (*my_it)->token() == Token::SCOPE_BEGIN )
@@ -2283,20 +2254,19 @@ void Element::addElementToTopOfFunc(Element* set)
 				cout<<"CLASS found Scope begin on class.\n";
 			
 			#ifdef DEBUG_RAE2
-			cout<<"found SCOPE_BEGIN.\n";
-			//rae::log("found SCOPE_BEGIN.\n");
+				cout<<"found SCOPE_BEGIN.\n";
 			#endif
 
 			(*my_it)->addElementToTopAfterNewlineWithNewline(set);
 
-			if(to_debug) cout<<"should've called addElementToTopAfterNewlineWithNewline.\n";
+			if(to_debug) cout << "should've called addElementToTopAfterNewlineWithNewline.\n";
 			
 			break;//We break here.
 		}
 		else
 		{
 			if(to_debug)
-				cout<<"CLASS not a scope_begin: "<<(*my_it)->toString()<<".\n";
+				cout << "CLASS not a scope_begin: " << (*my_it)->toString() << ".\n";
 		}
 	}
 }

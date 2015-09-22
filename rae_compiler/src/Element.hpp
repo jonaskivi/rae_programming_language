@@ -48,7 +48,6 @@ enum e
 	PTR,
 	BUILT_IN_TYPE,
 	//ARRAY,
-	VECTOR, //REMOVE
 	TEMPLATE //REMOVE
 };
 
@@ -118,11 +117,7 @@ enum e
 	//UNKNOWN_USE_MEMBER, // tester.useMember
 	// an unknown use of member, which will be either a FUNC_CALL or USE_REFERENCE (NOT USED ATM:or USE_BUILT_IN_TYPE)
 
-	ARRAY_VECTOR_STUFF, //SomeClass[] someVector is a vector, same as:
-	VECTOR_STUFF, //vector!(SomeClass)
-	VECTOR_NAME, //the name of the vector. vector!(type) name
-	///////USE_VECTOR,
-
+	// Templates are TODO and don't work at all currently.
 	TEMPLATE_STUFF, // the definition of using a template e.g. someTemplate!(typeName) objectName
 	TEMPLATE_NAME,
 	TEMPLATE_SECOND_TYPE, // firstType!(secondType) name
@@ -145,17 +140,8 @@ enum e
 	NEW,
 	FREE,
 	FREE_NAME,
-	//OBJECT_
 	AUTO_INIT,
-	//OBJECT_
 	AUTO_FREE,
-	//ARRAY_AUTO_INIT,
-	//ARRAY_AUTO_FREE,
-	//VECTOR_AUTO_INIT,
-	//VECTOR_AUTO_FREE,
-	//TEMPLATE_AUTO_INIT,
-	//TEMPLATE_AUTO_FREE,
-	//BUILT_IN_TYPE_AUTO_INIT,
 	INIT_DATA, // maybe rename to INIT_DATA_BEGIN or something...
 	ACTUAL_INIT_DATA, // maybe rename to just INIT_DATA...
 
@@ -176,16 +162,6 @@ enum e
 	DEFINE_FUNC_RETURN,
 	FUNC_RETURN_TYPE,
 	FUNC_RETURN_NAME,
-	//REMOVED: DEFINE_FUNC_ARGUMENT,//refactor... this is for built-in-types and class references...
-	//so why do we need them separate when using DEFINE_REFERENCE and DEFINE_BUILT_IN_TYPE.
-	//and then we also got DEFINE_ARRAY and DEFINE_VECTOR
-	//sounds like we could use an enum like
-	//TypeOfTheType
-	//reference, built-in, vector, array, etc. new types...
-	//that could replace the isBuiltInType thing in Element.
-	//DEFINE_FUNC_ARGUMENT_ARRAY,//Uh, we should refactor... 
-	//REMOVED: FUNC_ARGUMENT_TYPE,
-	//REMOVED: FUNC_ARGUMENT_NAME,
 	FUNC_CALL, // or should it be USE_FUNC for consistency?
 
 	INFO_FUNC_PARAM,
@@ -735,7 +711,7 @@ public:
 	protected: Element* m_useNamespace;
 
 	// An important addition: a link to the element where this element is defined:
-	// For DEFINE_REFERENCE (and DEFINE_VECTOR and DEFINE_ARRAY) this is the class.
+	// For DEFINE_REFERENCE this is the class.
 	// For USE_REFERENCE this is the DEFINE_REFERENCE
 	// And do we also do: For FUNC_CALL this is the func that is being called?
 	public: Element* definitionElement() { return m_definitionElement; }
@@ -828,7 +804,7 @@ public:
 	Element* parentClass() { return searchClosestParentToken(Token::CLASS); }
 	Element* parentFunc();
 
-	Element* searchClosestPreviousUseReferenceOrUseVector();
+	Element* searchClosestPreviousUseReference();
 
 public:
 	static string getVisibilityNameInCpp(string set);

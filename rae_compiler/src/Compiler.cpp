@@ -75,10 +75,6 @@ void Compiler::createRaeStdLibModule(string which_stdlib_module)
 {
 	SourceParser* a_parser = new SourceParser();
 	a_parser->createRaeStdLib(which_stdlib_module);
-	//REMOVE remember to connect all signals:
-	//REMOVE a_parser->newImportSignal.connect( bind(&Compiler::addSourceFileAsImport, this, _1) );
-	//REMOVE a_parser->searchElementInOtherModulesSignal.connect( bind(&Compiler::searchElementInOtherModules, this, _1, _2) );
-	//REMOVE cout << "Not connecting signals in Compiler::createRaeStdLibModule.\n";
 	stdLibModules.push_back(a_parser);
 	a_parser->parseString();
 }
@@ -87,13 +83,7 @@ void Compiler::createRaeStdLibCppSupport(string which_stdlib_module)
 {
 	SourceParser* a_parser = new SourceParser();
 	a_parser->createRaeStdLib(which_stdlib_module);
-	//REMOVE remember to connect all signals:
-	//////REMOVE a_parser->newImportSignal.connect( bind(&Compiler::addSourceFileAsImport, this, _1) );
-	//////REMOVE a_parser->searchElementInOtherModulesSignal.connect( bind(&Compiler::searchElementInOtherModules, this, _1, _2) );
-	//////REMOVE stdLibModules.push_back(a_parser);
-
 	sourceParsers.push_back(a_parser);
-	
 	a_parser->parseString();
 }
 
@@ -106,31 +96,22 @@ void Compiler::addModuleSearchPath(string set_path)
 
 void Compiler::addSourceFile(string set_filename)
 {
-	//REMOVE BOOST: boost::filesystem::path currentFilenamePath = set_filename;
 	sourceFiles.push_back(set_filename);
 }
 
-//REMOVE BOOST: boost::filesystem::path findModuleFileInSearchPaths(boost::filesystem::path set)//param: e.g. "rae/examples/Tester"
-string Compiler::findModuleFileInSearchPaths(string set)//param: e.g. "rae/examples/Tester.rae"
+// param: e.g. "rae/examples/Tester.rae"
+string Compiler::findModuleFileInSearchPaths(string set)
 {
 	for(string a_path : moduleSearchPaths)
 	{
-		//boost::filesystem::path another_copy_path = a_path;
-		//boost 1.55 or later required:
-		//another_copy_path += set;
-		//another_copy_path += ".rae";
-
-		//for older boost:
-		//string a_string_path = a_path.string() + set.string() + ".rae";
-		//boost::filesystem::path another_copy_path = a_string_path;
-
 		string another_copy_path = a_path;
 		another_copy_path += set;
+		
 		// Extension needs to be added already: another_copy_path += ".rae";
 		
 		if( checkPathType(another_copy_path) == PathType::FILE )
 		{
-			return another_copy_path;//this is our path, and it exists. Atleast it was the first one...
+			return another_copy_path; // this is our path, and it exists. At least it was the first one...
 		}
 
 	}
@@ -138,19 +119,19 @@ string Compiler::findModuleFileInSearchPaths(string set)//param: e.g. "rae/examp
 	return "";	
 }
 
-//This must return a copy. Otherwise our pointer owning system will crash on destructors.
-//Every SourceParser must own their Elements.
+// This must return a copy. Otherwise our pointer owning system will crash on destructors.
+// Every SourceParser must own their Elements.
 Element* Compiler::searchElementInOtherModules(SourceParser* set_parser, Element* set_elem)
 {
 	if(set_parser == 0 || set_elem == 0)
 	{
-		cout<<"RAE_ERROR in Compiler::searchElementInOtherModules. set_parser or set_elem is null.\n";
+		cout << "RAE_ERROR in Compiler::searchElementInOtherModules. set_parser or set_elem is null.\n";
 		return 0;
 	}
 
 	#ifdef DEBUG_RAE_PARSER
-	cout<<"searchElementInOtherModules START.\n";
-	cout<<set_parser->moduleName()<<" is looking for "<<set_elem->toString()<<"\n";
+	cout << "searchElementInOtherModules START.\n";
+	cout << set_parser->moduleName() << " is looking for " << set_elem->toString() << "\n";
 	#endif
 
 	Element* result;
@@ -164,7 +145,7 @@ Element* Compiler::searchElementInOtherModules(SourceParser* set_parser, Element
 			if(result)
 			{
 				#ifdef DEBUG_RAE_PARSER
-				cout<<"searchElementInOtherModules FOUND from stdlib: "<<result->toString()<<" from module: "<<stdLibModules[i]->moduleName()<<"\n";;
+				cout << "searchElementInOtherModules FOUND from stdlib: " << result->toString() << " from module: " << stdLibModules[i]->moduleName() << "\n";;
 				#endif
 				return result->copy();
 			}
@@ -197,7 +178,6 @@ void Compiler::addSourceFileAsImport(string set_import_name)
 		cout<<"Adding import name: "<<set_import_name<<"\n";
 	#endif
 
-	//REMOVE BOOST: boost::filesystem::path set_import_path = findModuleFileInSearchPaths(set_import_name);
 	string set_import_path = findModuleFileInSearchPaths(set_import_name + ".rae");
 
 	if(set_import_path != "")
@@ -212,9 +192,6 @@ void Compiler::addSourceFileAsImport(string set_import_name)
 		assert(0);
 	}
 	
-	// JONDE CHECK Do we need this line:
-	//addSourceFile( set_import_path );
-
 	if(force_one_thread == false)
 	{
 
@@ -228,12 +205,9 @@ void Compiler::addSourceFileAsImport(string set_import_name)
 	else
 	{
 		SourceParser* a_parser = new SourceParser( set_import_path, /*do_parse:*/false);
-		//REMOVE remember to connect all signals:
-		//REMOVE a_parser->newImportSignal.connect( bind(&Compiler::addSourceFileAsImport, this, _1) );
-		//REMOVE a_parser->searchElementInOtherModulesSignal.connect( bind(&Compiler::searchElementInOtherModules, this, _1, _2) );
-		//REMOVE cout << "Not connecting signals. addSourceFileAsImport.\n";
 		sourceParsers.push_back(a_parser);
 
+		// TODO threads
 		//thread* t1 = new thread( &SourceParser::parse, a_parser);
 		//parserThreads.push_back(t1);
 		
@@ -318,8 +292,6 @@ bool Compiler::parse()
 		for(uint i = 0; i < sourceFiles.size(); i++)
 		{
 			//thread* t1 = new thread(task, "Hello " + numberToString(i));
-
-			//rae::log("sourcefile: ", sourceFiles[i], "\n");
             
 			SourceParser* a_parser = new SourceParser(sourceFiles[i], false);//false is do_parse:
 			//a_parser->newImportSignal.connect( bind(&Compiler::addSourceFileAsImport, this, _1) );
@@ -342,7 +314,6 @@ bool Compiler::parse()
         /*
 		foreach(thread* th, parserThreads)
 		{
-			//rae::log("Going to join() a thread.\n");
 			if(th->joinable() )
 				th->join();
 		}
@@ -354,8 +325,6 @@ bool Compiler::parse()
 	}
 	else //if force_one_thread
 	{
-		//rae::log("We have sourceFiles: ", sourceFiles.size(), "\n");;
-
 		if(sourceFiles.size() == 0)
 		{
 			cout<<"No source files added.\n";
@@ -367,14 +336,10 @@ bool Compiler::parse()
 			//thread* t1 = new thread(task, "Hello " + numberToString(i));
 
 			#ifdef DEBUG_RAE_HUMAN
-			cout<<"sourcefile: "<<sourceFiles[i]<<"\n";
-			//rae::log("sourcefile: ", sourceFiles[i], "\n");
+				cout<<"sourcefile: "<<sourceFiles[i]<<"\n";
 			#endif
 
 			SourceParser* a_parser = new SourceParser(sourceFiles[i], /*do_parse:*/false);
-			//REMOVE a_parser->newImportSignal.connect( bind(&Compiler::addSourceFileAsImport, this, _1) );
-			//REMOVE a_parser->searchElementInOtherModulesSignal.connect( bind(&Compiler::searchElementInOtherModules, this, _1, _2) );
-			//REMOVE cout << "Not connecting signals. parse()\n";
 			sourceParsers.push_back(a_parser);
 
 			//thread* t1 = new thread( &SourceParser::parse, a_parser);
@@ -409,7 +374,7 @@ bool Compiler::validate()
 	return ret;
 }
 
-//Write to default path. Which is workingPath + "/cpp/"
+// Write to default path. Which is workingPath + "/cpp/"
 bool Compiler::write()
 {
 	#if defined(DEBUG_RAE_PARSER)

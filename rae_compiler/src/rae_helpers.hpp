@@ -18,18 +18,6 @@
 
 	using namespace std;
 
-/* REMOVE BOOST
-#include <boost/foreach.hpp>
-#define foreach BOOST_FOREACH
-
-#include <boost/filesystem.hpp>
-
-#include <boost/signals2.hpp>
-#include <boost/bind.hpp>
-#include <boost/range/algorithm/remove_if.hpp>
-	using namespace boost;
-*/
-
 #include <stdio.h>//for FILE
 
 typedef unsigned int uint;
