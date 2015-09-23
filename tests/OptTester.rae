@@ -1,8 +1,8 @@
-module rae.examples.OptTester
+module tests.OptTester
 
 class Inner
 {
-public:
+pub:
 	func ()logMe()
 	{
 		log_s("Hello ")
@@ -14,7 +14,7 @@ public:
 
 class Tester
 {
-public:
+pub:
 	func ()logMe()
 	{
 		log_s("Hello ")
@@ -27,15 +27,15 @@ public:
 	{
 		return(m_inner)
 	}
-	protected ref Inner m_inner
+	priv ref Inner m_inner
 }
 
 
 class OptTester
 {
-public:
+pub:
 
-	func ()new()
+	func ()init()
 	{
 	}
 	
@@ -43,7 +43,7 @@ public:
 	{
 	}
 	
-	public func
+	pub func
 	()sayHello()
 	{
 		tester.logMe
@@ -52,14 +52,14 @@ public:
 		tester_ref.logMe()		
 	}
 	
-	func (int result) count (int param1, int param2) public
+	func (int result) count (int param1, int param2) pub
 	{
 		return(param1 + param2)//or you could just do: result = param1 + param2
 	}
 	
 	int num = 5
 	uint num25 = 4
-	protected long anotherNumber = 42
+	priv long anotherNumber = 42
 	float afloat = 248.52
 	double initMeToo
 	int azero 
@@ -73,16 +73,17 @@ public:
 }
 
 func
-(int) main (string[] args)
+(int) main ([string] args)
 {
-	val OptTester hello; //semicolons are allowed, but not required.
+	val OptTester hello; # semicolons are allowed, but not required.
 	int val = 5
 	int another_zero
 	float i_want_to_be_zero
 
 	hello.sayHello()
 	log_s("5 + 2 = ")	
-	log(hello.count(int param1: hello.num, int param2:2))
+	#TODO named arguments: log(hello.count(int param1: hello.num, int param2:2))
+	log(hello.count( hello.num, 2 ))
 	
 	log("Test val: ")
 	hello.tester.logMe
@@ -91,13 +92,13 @@ func
 	log("\n")
 
 	hello.tester_opt.data = 3
-	//hello.tester_opt.inner.data = 6 //This is an error. Use opt with: tester_opt?.inner.data = 6
+	# hello.tester_opt.inner.data = 6 # This is an error. Use opt with: tester_opt?.inner.data = 6 # TODO ?. operator
 	
-	//hello.tester_opt.inner.inner.inner.data = 7
+	# hello.tester_opt.inner.inner.inner.data = 7
 
-	//log("opt test:")
-	//opt Tester a_tester = hello.tester
-	//a_tester.logMe
+	# log("opt test:")
+	# opt Tester a_tester = hello.tester
+	# a_tester.logMe
 
 	return(0)
 }

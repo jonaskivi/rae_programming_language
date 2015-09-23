@@ -1,8 +1,8 @@
-module rae.examples.Simple
+module tests.Simple
 
 class Simple
 {
-	func ()new()
+	func ()init()
 	{
 		
 	}
@@ -33,7 +33,6 @@ func
 	Simple simple
 	simple.forest(3)
 	log("from main: ", simple.notrees)
-	free simple
 
 	return(0)
 }

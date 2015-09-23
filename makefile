@@ -1,3 +1,5 @@
+# This makefile is not properly maintained. It will work, but the dependencies of builds are not up to date, so you'll
+# have to run make clean between changes. You can use premake4 instead to create makefiles or projects that work better.
 EXECUTABLE := ./bin/raec
 EXECUTABLE_NAME := raec
 EXECUTABLE_DIR := ./bin/
@@ -40,7 +42,7 @@ endif
 SRC_DIR := ./rae_compiler/src/
 OBJECTS  := rae_compiler.o Compiler.o Element.o ReportError.o rae_helpers.o SourceParser.o
 
-all: compile raehello
+all: compile hello
 
 # you need to use: sudo make install, windows install is untested
 install:
@@ -71,49 +73,28 @@ rae_helpers.o: $(SRC_DIR)rae_helpers.hpp $(SRC_DIR)rae_helpers.cpp
 clean:
 	rm *.o $(EXECUTABLE)
 
-# to compile and run hello.rae: make raehello
-raehello:
+.PHONY: hello test1 small opttester
+
+test: hello test1 small opttester
+
+# to compile and run hello.rae: make hello
+hello: ./examples/hello.rae
 	./$(EXECUTABLE) ./examples/hello.rae
 	$(CXX) $(CXXFLAGS) -I./cpp/ ./cpp/examples/hello.cpp -o rae_hello
 	./rae_hello
 
-raetest:
+test1: ./tests/test.rae
 	./$(EXECUTABLE) ./tests/test.rae
 	$(CXX) $(CXXFLAGS) -I./cpp/ ./cpp/tests/test.cpp -o rae_test
 	./rae_test
 
-raetestcpp:
-	$(CXX) $(CXXFLAGS) -I./cpp/ ./cpp/tests/test.cpp -o rae_test
-	./rae_test
-
-debugraetest:
-	gdb --args ./$(EXECUTABLE) ./tests/test.rae
-	$(CXX) $(CXXFLAGS) -I./cpp/ ./cpp/tests/test.cpp -o rae_test
-	./rae_test
-
-small: ./tests/small.rae ./cpp/rae/tests/small.hpp ./cpp/rae/tests/small.cpp
+small: ./tests/small.rae
 	./$(EXECUTABLE) ./tests/small.rae
 	$(CXX) $(CXXFLAGS) -I./cpp/ ./cpp/tests/small.cpp -o small
 	./small
 
-opttester:
+opttester: ./tests/OptTester.rae
 	./$(EXECUTABLE) ./tests/OptTester.rae
 	$(CXX) $(CXXFLAGS) -I./cpp/ ./cpp/tests/OptTester.cpp -o opttester
 	./opttester
-
-#all:
-#	g++ -I./rae_compiler/rae_compiler/ 
-#	#g++ -I./cpp/ ./cpp/rae/examples/HelloWorld.cpp -o rae_hello
-#	#g++ -I./cpp/ ./cpp/rae/examples/Simple.cpp -o rae_simple
-#	#g++ -I./cpp/ ./cpp/rae/examples/RaeTester.cpp ./cpp/rae/examples/Tester.cpp -o rae_tester
-#
-
-#run:
-#	./$(EXECUTABLE) ./rae/examples/HelloWorld.rae
-
-#	#./rae_hello
-#	#./rae_simple
-#	./rae_tester
-#
-
 

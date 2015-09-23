@@ -251,7 +251,7 @@ enum e
 	BITWISE_COMPLEMENT, //compl, ~ operator
 
 	POINT_TO,// -> used instead of = to point references to objects etc.
-	POINT_TO_END_PARENTHESIS, //we use the link<Object> a_link(arguments); to create links, so we need the closing parenthesis in C++.
+	POINT_TO_END_PARENTHESIS, // Now sourceWriter handles inserting this. So the following is DEPRECATED: //we use the link<Object> a_link(arguments); to create links, so we need the closing parenthesis in C++.
 	//these are injected in SourceParser::newPointToElement() and SourceParser::newLine().
 	IS, // is pointing to
 	

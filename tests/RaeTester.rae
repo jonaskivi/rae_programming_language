@@ -1,28 +1,24 @@
-module rae.examples.RaeTester //how about a (comme{nt here!!!! NEW VERSION9
+# NOT WORKING AT THE MOMENT.
+module tests.RaeTester # how about a (comme{nt here!!!!
 
-import rae.examples.Tester
-
-/+2
-
-twoplusses
-
-/+1
-oneplus
+import tests.Tester
 
 /+
-
-zeroplus
-
-/*
-	Starcommenthere
-*/
-
-zeroplus2
+	nested multiline comments
+	two
+	/+
+		one
+		/+
+			zero
+			/*
+				multilinecommenthere
+			*/
+			zero
+		+/
+		one
+	+/
+	two
 +/
-oneplus2
-1+/
-twoplusses2
-2+/
 
 
 class SameName
@@ -55,21 +51,23 @@ public:
 	public func
 	()sayHello()
 	{
-		//we need some keyword that tells that we actually want a temp object to be a class member:
-		//member int someThingWeUseOften = 0 //Keeps it's state like a static value, but you can zero it out on this function like this.
-		//Would this make the memory allocations faster for these temporary objects?
-		//member val Calculator calc
-		//this could be a usefull keyword in constructors too. I think python has something like this.
-		//members would be protected by default. but you could define them public:
-		//member public maybe Calculator calculator
-		//but if it's a maybe this will only be allocated and initialized when this func is run the first time! before that it will be null!
-		//But val and ref members will be inited in constructors.
-		//another option for the keyword would be keep:
-		//keep maybe Calculator calculator
-		//or from existing keywords, changing the way "static" works with classes (it would be per object.)
-		//or "this":
-		//this maybe Calculator calculator
-		//static maybe Calculator calculator
+		/*
+		we need some keyword that tells that we actually want a temp object to be a class member:
+		member int someThingWeUseOften = 0 # Keeps it's state like a static value, but you can zero it out on this function like this.
+		Would this make the memory allocations faster for these temporary objects?
+		member val Calculator calc
+		this could be a usefull keyword in constructors too. I think python has something like this.
+		members would be protected by default. but you could define them public:
+		member public maybe Calculator calculator
+		but if it's a maybe this will only be allocated and initialized when this func is run the first time! before that it will be null!
+		But val and ref members will be inited in constructors.
+		another option for the keyword would be keep:
+		keep maybe Calculator calculator
+		or from existing keywords, changing the way "static" works with classes (it would be per object.)
+		or "this":
+		this maybe Calculator calculator
+		static maybe Calculator calculator
+		*/
 
 		tester.logMe
 		log("Tester 0.1!")

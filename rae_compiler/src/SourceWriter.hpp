@@ -716,6 +716,7 @@
 					else if( set_elem.previousToken() == Token::USE_REFERENCE || set_elem.previousToken() == Token::BRACKET_END )
 					{
 						writer.writeString(".linkTo(");
+						writer.lineNeedsEnding(")"); // This is a method to end the "linkTo(" func call with a ")".
 					}
 					else
 					{
@@ -836,30 +837,38 @@
 					Element* array_ob = writer.previousElement()->previousElement();
 					if(array_ob)
 					{
-						cout << "array_ob: " << array_ob->toSingleLineString() << "\n";
+						#if defined(DEBUG_RAE_WRITER) || defined(DEBUG_RAE_BRACKET)
+							cout << "array_ob: " << array_ob->toSingleLineString() << "\n";
+						#endif
 						Element* type_element = array_ob->arrayContainedTypeElement();
 						if(type_element)
 						{
 							if(type_element->kind() == Kind::VAL)
 							{
-								cout << "It's a VAL in an array. Writing dot.\n";
+								#if defined(DEBUG_RAE_WRITER) || defined(DEBUG_RAE_BRACKET)
+									cout << "It's a VAL in an array. Writing dot.\n";
+								#endif
 								writer.writeChar( '.' );
 							}
 							else
 							{
-								cout << "It's something else. Writing -> for pointer stuff.\n";
+								#if defined(DEBUG_RAE_WRITER) || defined(DEBUG_RAE_BRACKET)
+									cout << "It's something else. Writing -> for pointer stuff.\n";
+								#endif
 								writer.writeChar( '-' );
 								writer.writeChar( '>' );
 							}
 						}
 						else
 						{
-							cout << "Couldn't get type_element from an array.\n"; //TODO reportError
+							cout << "Couldn't get type_element from an array.\n"; // TODO reportError
 						}
 					}
 					else
 					{
-						cout << "OH NO. There's no array_ob. We'll just write a dot.\n";
+						#if defined(DEBUG_RAE_WRITER) || defined(DEBUG_RAE_BRACKET)
+							cout << "OH NO. There's no array_ob. We'll just write a dot.\n";
+						#endif
 						writer.writeChar( '.' );
 					}
 				}

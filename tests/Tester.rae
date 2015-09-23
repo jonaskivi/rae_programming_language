@@ -1,4 +1,4 @@
-module rae.examples.Tester
+module tests.Tester
 
 class Tester
 {

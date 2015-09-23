@@ -67,13 +67,14 @@ Go to some folder on the command line and then:
 	sudo make install
 
 You could also build it with the premake4 script found in rae_compiler by doing:
+
 	cd rae_compiler
 	# for OS X:
 	premake4 xcode4
 	# or for Windows
 	premake4 vs2012
 
-Open the project file and build it. (On Xcode 5 I needed to change the SDK to 10.9 and the C++ compiler and stdlib versions to C++11.)
+Open the project file and build it. (On Xcode 5 I needed to change the SDK to 10.9 and the C++ dialect and stdlib versions to C++11.)
 You should then copy the raec to somewhere in your path to use it in other directories.
 Then you could test it with the rae_render project found in https://github.com/jonaskivi/rae_render
 or write your own.
