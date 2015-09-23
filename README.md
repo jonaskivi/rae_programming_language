@@ -7,15 +7,95 @@ A native statically typed toy programming language
 - the compiler will break on about any code you throw at it, and it is written in the most horrible style, as it was just intented to be a temporary proof of concept. :)
 - influenced by C++, D, Python, Nim, Swift, Rust and Jai
 
-# Helloworld
+# A sort of like Helloworld
 
-	module hello
+```python
+module examples.hello
 
-	func (int) main ([string] args)
+class HelloWorld
+{
+pub:
+	# constructor:
+	func init
 	{
-		log("Hello World")
-		return 0
 	}
+	
+	# destructor:
+	func free
+	{
+	}
+	
+	func log_int_array (ref[int] someints) let
+	{
+		# foreach loop
+		loop( int a_num in someints )
+		{
+			log("foreach: ", a_num)
+		}
+
+		# for loop
+		loop( uint i = 0; i < someints.size; ++i )
+		{
+			log("for: ", someints[i])
+		}
+
+		# TODO while loop. Currently you can use loop(;;)
+		# loop(1)
+	}
+
+	func create_an_array
+	{
+		[int] my_numbers
+		my_numbers.create(1)
+		my_numbers.create(2)
+		my_numbers.create(3)
+		
+		log_int_array(my_numbers)
+	}
+
+	# multiple return values are TODO
+	func (int result) int_count (let int param1, let int param2) pub
+	{
+		return param1 + param2
+	}
+
+	# properties with the prop keyword are TODO
+	pub func (int) number     { return m_number }
+	pub func number (int set) { m_number = set  }
+	priv int m_number = 5 # default initializers are copied to constructors.
+
+	func (string) world { return m_world }
+	priv string m_world = "World"
+
+	func (bool) is_it_true
+	{
+		return number < 10
+	}
+}
+
+func (int) main ([string] args)
+{
+	string hello_rae = "Hello "
+	log_s(hello_rae)
+
+	# every Rae object has a kind, which can be one of:
+	# val, ref, opt, link or ptr
+	#val is default so this is the same as: val HelloWorld hello
+	HelloWorld hello
+
+	# TODO you can later call funcs like this:
+	# hello.number = 9
+	hello.number(9)
+
+	if hello.is_it_true
+	{
+		log(hello.world)
+	}
+
+	return 0
+}
+```
+
 
 # Some features
 
@@ -78,4 +158,8 @@ Open the project file and build it. (On Xcode 5 I needed to change the SDK to 10
 You should then copy the raec to somewhere in your path to use it in other directories.
 Then you could test it with the rae_render project found in https://github.com/jonaskivi/rae_render
 or write your own.
+
+Python syntax highlighting works reasonably well for Rae.
+
+
 

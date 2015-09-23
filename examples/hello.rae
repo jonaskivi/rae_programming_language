@@ -3,12 +3,12 @@ module examples.hello
 class HelloWorld
 {
 pub:
-	#constructor:
+	# constructor:
 	func init
 	{
 	}
 	
-	#destructor:
+	# destructor:
 	func free
 	{
 	}
@@ -31,21 +31,37 @@ pub:
 		# loop(1)
 	}
 
+	func create_an_array
+	{
+		[int] my_numbers
+		my_numbers.create(1)
+		my_numbers.create(2)
+		my_numbers.create(3)
+		
+		log_int_array(my_numbers)
+	}
+
+	# multiple return values are TODO
 	func (int result) int_count (let int param1, let int param2) pub
 	{
 		return param1 + param2
 	}
 
 	# properties with the prop keyword are TODO
-	pub func (int) number { return m_number }
-	pub func number (int set) { m_number = set }
+	pub func (int) number     { return m_number }
+	pub func number (int set) { m_number = set  }
 	priv int m_number = 5 # default initializers are copied to constructors.
 
 	func (string) world { return m_world }
 	priv string m_world = "World"
+
+	func (bool) is_it_true
+	{
+		return number < 10
+	}
 }
 
-# args won't actually work yet:
+# args to main won't actually work yet:
 func (int) main ([string] args)
 {
 	string hello_rae = "Hello "
@@ -56,7 +72,14 @@ func (int) main ([string] args)
 	#val is default so this is the same as: val HelloWorld hello
 	HelloWorld hello
 
-	log(hello.world)
+	# TODO you can later call funcs like this:
+	# hello.number = 9
+	hello.number(9)
+
+	if hello.is_it_true
+	{
+		log(hello.world)
+	}
 
 	return 0
 }
