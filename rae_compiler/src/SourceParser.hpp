@@ -316,7 +316,7 @@ public:
 	
 	bool fileParsedOk;
 
-	Element* newElement(Token::e set_lang_token_type, Kind::e set_type_type, string set_name = "", string set_type = "")
+	Element* createElement(Token::e set_lang_token_type, Kind::e set_type_type, string set_name = "", string set_type = "")
 	{
 		Element* lang_elem = nullptr;
 		
@@ -355,7 +355,7 @@ public:
 		}
 		else
 		{
-			ReportError::compilerError("newElement() No current parent element found. Have you defined a module using the module keyword?");
+			ReportError::compilerError("createElement() No current parent element found. Have you defined a module using the module keyword?");
 			cout<<"tried to create:"<<Token::toString(set_lang_token_type)<<" name: "<<set_name<<" type: "<<set_type<<"\n";
 			//exit(0);
 		}
@@ -393,7 +393,7 @@ public:
 		*/
 	}
 
-	void newScopeBegin()
+	void createScopeBegin()
 	{
 		/*
 
@@ -412,10 +412,10 @@ public:
 		*/
 
 
-		Element* our_scope_elem = newElement(Token::SCOPE_BEGIN, Kind::UNDEFINED, "{");
+		Element* our_scope_elem = createElement(Token::SCOPE_BEGIN, Kind::UNDEFINED, "{");
 		
 		
-		//MOVED to newElement. Remove from here if it starts working.
+		//MOVED to createElement. Remove from here if it starts working.
 
 		// a scope element will only become a parent if it's an empty scope. Otherwise the parent will be
 		// the class, func, enum, etc. statement, which is our current parent, and we put that to the stack.
@@ -440,13 +440,13 @@ public:
 		}
 	}
 
-	void newScopeEnd()
+	void createScopeEnd()
 	{
 		Element* scope_elem = 0;
 
 		if( scopeElementStack.empty() == true )
 		{
-			//lang_elem = newElement(set_lang_token_type, Kind::UNDEFINED, set_token);
+			//lang_elem = createElement(set_lang_token_type, Kind::UNDEFINED, set_token);
 			ReportError::reportError("unmatched scope end \"}\".", previousElement() );
 		}
 		else
@@ -457,7 +457,7 @@ public:
 		if( scope_elem )
 		{
 			scope_elem->freeOwned();
-			//newLine();
+			//createNewLine();
 		}
 
 		if( currentParentElement() && currentParentElement()->currentElement() && currentParentElement()->currentElement()->token() == Token::NEWLINE )
@@ -470,12 +470,12 @@ public:
 		
 		if( scope_elem )
 		{
-			Element* new_lang_elem = scope_elem->newElement(lineNumber, Token::SCOPE_END, Kind::UNDEFINED, "}" );
+			Element* lang_elem = scope_elem->newElement(lineNumber, Token::SCOPE_END, Kind::UNDEFINED, "}" );
 
-			if(new_lang_elem)
+			if(lang_elem)
 			{
-				new_lang_elem->previousElement(previousElement());
-				previousElement()->nextElement(new_lang_elem);
+				lang_elem->previousElement(previousElement());
+				previousElement()->nextElement(lang_elem);
 			}
 
 			if( scope_elem->token() == Token::NAMESPACE )
@@ -677,7 +677,7 @@ public:
 		}
 		else
 		{
-			newElement(Token::SCOPE_END, Kind::UNDEFINED, "}");
+			createElement(Token::SCOPE_END, Kind::UNDEFINED, "}");
  		}
 	 	
 	 	scopeElementStackPop();
@@ -804,9 +804,9 @@ public:
 		doReturnToExpectToken(); // Note that we set expectingtoken already here.
 	}
 
-	Element* newParenthesisBegin(Token::e set_lang_token_type, string set_token)
+	Element* createParenthesisBegin(Token::e set_lang_token_type, string set_token)
 	{
-		Element* lang_elem = newElement(set_lang_token_type, Kind::UNDEFINED, set_token);
+		Element* lang_elem = createElement(set_lang_token_type, Kind::UNDEFINED, set_token);
 		//parenthesisStack.push_back(currentParentElement());
 		parenthesisStack.push_back(lang_elem);
 
@@ -837,14 +837,14 @@ public:
 		return Token::UNDEFINED;
 	}
 
-	Element* newParenthesisEnd(Token::e set_lang_token_type, string set_token)
+	Element* createParenthesisEnd(Token::e set_lang_token_type, string set_token)
 	{
 		Element* stack_elem;
 		Element* lang_elem;
 
 		if( parenthesisStack.empty() == true )
 		{
-			lang_elem = newElement(set_lang_token_type, Kind::UNDEFINED, set_token);
+			lang_elem = createElement(set_lang_token_type, Kind::UNDEFINED, set_token);
 			ReportError::reportError("unmatched parenthesis end \")\".", lang_elem);
 		}
 		else
@@ -855,7 +855,7 @@ public:
 			{
 				//We just do matching: is it good enough:
 
-				lang_elem = newElement(Token::matchParenthesisEnd(stack_elem->token()), Kind::UNDEFINED, set_token);
+				lang_elem = createElement(Token::matchParenthesisEnd(stack_elem->token()), Kind::UNDEFINED, set_token);
 				lang_elem->pairElement(stack_elem);
 				stack_elem->pairElement(lang_elem);
 
@@ -880,7 +880,7 @@ public:
 			}
 			else
 			{
-				lang_elem = newElement(set_lang_token_type, Kind::UNDEFINED, set_token);
+				lang_elem = createElement(set_lang_token_type, Kind::UNDEFINED, set_token);
 				ReportError::reportError("unmatched parenthesis end 2 \")\".", lang_elem);
 	 		}
 		 	
@@ -893,13 +893,13 @@ public:
  		return lang_elem;
 	}
 
-	Element* newDefineArray(Kind::e set_type_type = Kind::VAL)
+	Element* createDefineArray(Kind::e set_type_type = Kind::VAL)
 	{
-		Element* lang_elem = newElement(Token::BRACKET_DEFINE_ARRAY_BEGIN, set_type_type, "", "array" );
+		Element* lang_elem = createElement(Token::BRACKET_DEFINE_ARRAY_BEGIN, set_type_type, "", "array" );
 		
 		lang_elem->containerType( ContainerType::ARRAY );
 
-		//Brackets don't create a new scope, but they are still currentParent. That's why we don't push to scopeElementStack here.
+		// Brackets don't create a new scope, but they are still currentParent. That's why we don't push to scopeElementStack here.
 		currentParentElement(lang_elem, true);
 		//currentArray = lang_elem;
 
@@ -915,11 +915,11 @@ public:
 		return lang_elem;
 	}
 
-	Element* newBracketBegin(Token::e set_lang_token_type, string set_token)
+	Element* createBracketBegin(Token::e set_lang_token_type, string set_token)
 	{
-		Element* lang_elem = newElement(set_lang_token_type, Kind::UNDEFINED, set_token);
+		Element* lang_elem = createElement(set_lang_token_type, Kind::UNDEFINED, set_token);
 		
-		//Brackets don't create a new scope, but they are still currentParent. That's why we don't push to scopeElementStack here.
+		// Brackets don't create a new scope, but they are still currentParent. That's why we don't push to scopeElementStack here.
 		currentParentElement(lang_elem, true);
 
 		bracketStack.push_back(lang_elem);
@@ -931,14 +931,14 @@ public:
 		return lang_elem;
 	}
 
-	Element* newBracketEnd(Token::e set_lang_token_type, string set_token)
+	Element* createBracketEnd(Token::e set_lang_token_type, string set_token)
 	{
 		Element* stack_elem;
 		Element* lang_elem;
 
 		if( bracketStack.empty() == true )
 		{
-			lang_elem = newElement(set_lang_token_type, Kind::UNDEFINED, set_token);
+			lang_elem = createElement(set_lang_token_type, Kind::UNDEFINED, set_token);
 			ReportError::reportError("unmatched bracket end \"]\".", lang_elem);
 		}
 		else
@@ -947,10 +947,10 @@ public:
 
 			if( stack_elem )
 			{
-				//cout<<"we has stack_elem in newBracketEnd.\n");
+				//cout<<"we has stack_elem in createBracketEnd.\n");
 				//We just do matching: is it good enough:
 
-				lang_elem = newElement(Token::matchBracketEnd(stack_elem->token()), Kind::UNDEFINED, set_token);
+				lang_elem = createElement(Token::matchBracketEnd(stack_elem->token()), Kind::UNDEFINED, set_token);
 
 				//cout<<"I bet we've crashed.\n");
 
@@ -979,7 +979,7 @@ public:
 			}
 			else
 			{
-				lang_elem = newElement(set_lang_token_type, Kind::UNDEFINED, set_token);
+				lang_elem = createElement(set_lang_token_type, Kind::UNDEFINED, set_token);
 	 		}
 		 	
 	 		bracketStack.pop_back();
@@ -993,7 +993,7 @@ public:
  		return lang_elem;
 	}
 /*
-	Element* newImport(string set_name)
+	Element* createImport(string set_name)
 	{
 		Element* lang_elem;
 		
@@ -1004,7 +1004,7 @@ public:
 			
 			elements.push_back( lang_elem );
 			#ifdef DEBUG_RAE
-				cout<<"newImport: "<<Token::toString(Token::IMPORT)<<" name:>"<<set_name<<"\n";
+				cout<<"createImport: "<<Token::toString(Token::IMPORT)<<" name:>"<<set_name<<"\n";
 			#endif
 
 			//previous2ndElement = previousElement;
@@ -1019,21 +1019,21 @@ public:
 		}
 		else 
 		{
-			ReportError::reportError("newImport() No current module found. Compilers fault. Something went wrong.");
+			ReportError::reportError("createImport() No current module found. Compilers fault. Something went wrong.");
 		}
 
 		return lang_elem;
 	}
 */
 
-	Element* newImport(string set_name)
+	Element* createImport(string set_name)
 	{
 		Element* lang_elem;
 		
-		lang_elem = newElement(Token::IMPORT, Kind::UNDEFINED, set_name);
+		lang_elem = createElement(Token::IMPORT, Kind::UNDEFINED, set_name);
 			
 			#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_IMPORT)
-				cout<<"newImport: "<<Token::toString(Token::IMPORT)<<" name:>"<<set_name<<"\n";
+				cout<<"createImport: "<<Token::toString(Token::IMPORT)<<" name:>"<<set_name<<"\n";
 				cout << "currentParentElement: " << currentParentElement()->toSingleLineString() << "\n";
 			#endif
 
@@ -1044,9 +1044,9 @@ public:
 		return lang_elem;
 	}
 
-	Element* newModule(string set_name)
+	Element* createModule(string set_name)
 	{
-		//Element* lang_elem = newElement(Token::MODULE, set_name);
+		//Element* lang_elem = createElement(Token::MODULE, set_name);
 
 		Element* lang_elem;
 		
@@ -1074,7 +1074,7 @@ public:
 	//old version put the closemodule to top level in hierarchy.
 	Element* closeModule()
 	{
-		Element* lang_elem = newElement(Token::CLOSE_MODULE);
+		Element* lang_elem = createElement(Token::CLOSE_MODULE);
 		if( currentModule && lang_elem )
 		{
 			#ifdef DEBUG_RAE
@@ -1091,7 +1091,7 @@ public:
 	Element* closeModule()
 	{
         Element* lang_elem;
-		//Element* lang_elem = newElement(Token::CLOSE_MODULE);
+		//Element* lang_elem = createElement(Token::CLOSE_MODULE);
 		//if( currentModule && lang_elem )
 		if( currentModule )
 		{
@@ -1109,19 +1109,19 @@ public:
 		return lang_elem;
 	}
 /*
-//Old newClass which puts the classes to the same level as modules in the
+//Old createClass which puts the classes to the same level as modules in the
 //hierarchy...
-	Element* newClass(string set_name)
+	Element* createClass(string set_name)
 	{
-		Element* lang_elem = newElement(Token::CLASS, set_name);
+		Element* lang_elem = createElement(Token::CLASS, set_name);
 		currentClass = lang_elem;
 		addToUserDefinedTokens(lang_elem);
-		//currentParentElement() = lang_elem; //already did this inside newElement...
+		//currentParentElement() = lang_elem; //already did this inside createElement...
 		return lang_elem;
 	}
 */	
 /*
-	Element* newClass(string set_name)
+	Element* createClass(string set_name)
 	{
 		Element* lang_elem;
 		if( currentModule )
@@ -1135,26 +1135,26 @@ public:
 			addToUserDefinedTokens(lang_elem);
 			
 			#ifdef DEBUG_RAE_HUMAN
-				cout<<"\n\nnewClass: "<<set_name<<"\n";
+				cout<<"\n\ncreateClass: "<<set_name<<"\n";
 			#endif
 		}
 		else //no class, so we just make a global class... Um... this shouldn't happen. We have to have a module.
 			//This is an error.
 		{
-			//lang_elem = newElement(Token::CLASS, set_name);
+			//lang_elem = createElement(Token::CLASS, set_name);
 			//currentFunc = lang_elem;
-			ReportError::reportError("newClass() No current module found. Compilers fault. Something went wrong.");
+			ReportError::reportError("createClass() No current module found. Compilers fault. Something went wrong.");
 		}
 
 		return lang_elem;
 	}
 */
-	Element* newClass(string set_name)
+	Element* createClass(string set_name)
 	{
 		Element* lang_elem;
 		//Hmm, we put the name of the class into the name AND type params!!!
-		//lang_elem = newElement(Token::CLASS, Kind::REF, set_name, set_name);
-		lang_elem = newElement(Token::CLASS, Kind::UNDEFINED, set_name, set_name); //Why did we have kind set to REF?
+		//lang_elem = createElement(Token::CLASS, Kind::REF, set_name, set_name);
+		lang_elem = createElement(Token::CLASS, Kind::UNDEFINED, set_name, set_name); //Why did we have kind set to REF?
 		
 		if(lang_elem->isExtern() == false)
 			currentClass = lang_elem;
@@ -1163,22 +1163,22 @@ public:
 		addToUserDefinedTokens(lang_elem);
 		
 		#ifdef DEBUG_RAE_HUMAN
-			cout<<"\n\nnewClass: "<<set_name<<"\n";
+			cout<<"\n\ncreateClass: "<<set_name<<"\n";
 		#endif
 		
 		return lang_elem;
 	}
 
-	Element* newNamespace(string set_name)
+	Element* createNamespace(string set_name)
 	{
 		Element* lang_elem;
-		lang_elem = newElement(Token::NAMESPACE, Kind::UNDEFINED, set_name);
+		lang_elem = createElement(Token::NAMESPACE, Kind::UNDEFINED, set_name);
 		currentNamespace = lang_elem;
 		addToUserDefinedTokens(lang_elem);
 		return lang_elem;
 	}
 /*
-	Element* newFunc(string set_name = "")
+	Element* createFunc(string set_name = "")
 	{
 		Element* lang_elem;
 		if( currentClass )
@@ -1190,7 +1190,7 @@ public:
 		}
 		else //no class, so we just make a global func...
 		{
-			lang_elem = newElement(Token::FUNC, Kind::UNDEFINED, set_name);
+			lang_elem = createElement(Token::FUNC, Kind::UNDEFINED, set_name);
 			currentFunc = lang_elem;
 		}
 		addToUserDefinedTokens(lang_elem);
@@ -1199,10 +1199,10 @@ public:
 	}
 */
 
-	Element* newFunc(string set_name = "")
+	Element* createFunc(string set_name = "")
 	{
 		Element* lang_elem;
-		lang_elem = newElement(Token::FUNC, Kind::UNDEFINED, set_name);
+		lang_elem = createElement(Token::FUNC, Kind::UNDEFINED, set_name);
 		currentFunc = lang_elem;
 		
 		addToUserDefinedTokens(lang_elem);
@@ -1210,7 +1210,7 @@ public:
 		return lang_elem;
 	}
 
-	Element* newQuote(string set_name = "")
+	Element* createQuote(string set_name = "")
 	{
 		/*Element* lang_elem;
 		if( currentParentElement() )
@@ -1222,36 +1222,36 @@ public:
 		}
 		else //no current element, so we just make a comment...
 		{
-			lang_elem = newElement(Token::QUOTE, set_name);
+			lang_elem = createElement(Token::QUOTE, set_name);
 		}
 		return lang_elem;*/
 
 		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_QUOTES)
-			cout<<"newQuote: "<<set_name<<"\n";
+			cout<<"createQuote: "<<set_name<<"\n";
 		#endif
 		
-		return newElement(Token::QUOTE, Kind::UNDEFINED, set_name);		
+		return createElement(Token::QUOTE, Kind::UNDEFINED, set_name);		
 	}
 	
-	Element* newPlusComment(string set_name = "")
+	Element* createPlusComment(string set_name = "")
 	{
 		#ifdef DEBUG_COMMENTS
-			cout<<"newPlusComment: "<<set_name<<"\n";
+			cout<<"createPlusComment: "<<set_name<<"\n";
 		#endif
 
-		return newElement(Token::PLUS_COMMENT, Kind::UNDEFINED, set_name);		
+		return createElement(Token::PLUS_COMMENT, Kind::UNDEFINED, set_name);		
 	}
 
-	Element* newStarComment(string set_name = "")
+	Element* createStarComment(string set_name = "")
 	{
 		#ifdef DEBUG_COMMENTS
-			cout<<"newStarComment: "<<set_name<<"\n";
+			cout<<"createStarComment: "<<set_name<<"\n";
 		#endif
 
-		return newElement(Token::STAR_COMMENT, Kind::UNDEFINED, set_name);		
+		return createElement(Token::STAR_COMMENT, Kind::UNDEFINED, set_name);		
 	}	
 
-	Element* newComment(string set_name)
+	Element* createComment(string set_name)
 	{
 		/*Element* lang_elem;
 		if( currentParentElement() )
@@ -1263,13 +1263,13 @@ public:
 		}
 		else //no current element, so we just make a comment...
 		{
-			lang_elem = newElement(Token::COMMENT, set_name);
+			lang_elem = createElement(Token::COMMENT, set_name);
 		}
 		return lang_elem;
 		*/
 	
 		#ifdef DEBUG_COMMENTS
-			cout<<"newComment: "<<set_name<<"\n";
+			cout<<"createComment: "<<set_name<<"\n";
 		#endif
 
 		if( isReceivingInitData == true )
@@ -1278,31 +1278,31 @@ public:
 			endInitData();
 		}
 
-		return newElement(Token::COMMENT, Kind::UNDEFINED, set_name);
+		return createElement(Token::COMMENT, Kind::UNDEFINED, set_name);
 	}
 
-	Element* newPointToElement()
+	Element* createPointToElement()
 	{
-		return newElement(Token::POINT_TO, Kind::UNDEFINED, "->");
+		return createElement(Token::POINT_TO, Kind::UNDEFINED, "->");
 	}
 
-	void newLine()
+	void createNewLine()
 	{
 		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_NEWLINE)
-			cout << "newline at parent: " << currentParentElement()->toSingleLineString() << "\n";
+			cout << "createNewline at parent: " << currentParentElement()->toSingleLineString() << "\n";
 		#endif
 
 		unfinishedElement(nullptr);
 		currentReference = nullptr;
 
-		newElement(Token::NEWLINE, Kind::UNDEFINED, "\n");
+		createElement(Token::NEWLINE, Kind::UNDEFINED, "\n");
 
 	}
 
 
-	Element* newDefineBuiltInType(BuiltInType::e set_built_in_type, Role::e set_role, string set_type, string set_name = "")
+	Element* createDefineBuiltInType(BuiltInType::e set_built_in_type, Role::e set_role, string set_type, string set_name = "")
 	{
-		Element* lang_elem = newElement(Token::DEFINE_REFERENCE, Kind::BUILT_IN_TYPE, set_name, set_type);
+		Element* lang_elem = createElement(Token::DEFINE_REFERENCE, Kind::BUILT_IN_TYPE, set_name, set_type);
 		lang_elem->builtInType(set_built_in_type);
 		lang_elem->role(set_role);
 		
@@ -1318,24 +1318,24 @@ public:
 		return lang_elem;
 	}
 
-	// using newUseReference for the time being.
-	Element* newUseBuiltInType(Element* set_elem)
+	// using createUseReference for the time being.
+	Element* createUseBuiltInType(Element* set_elem)
 	{
 		if( set_elem == 0 )
 			return 0;
 
-		Element* lang_elem = newElement(Token::USE_REFERENCE, Kind::BUILT_IN_TYPE, set_elem->name(), set_elem->type() );
+		Element* lang_elem = createElement(Token::USE_REFERENCE, Kind::BUILT_IN_TYPE, set_elem->name(), set_elem->type() );
 		
 		#ifdef DEBUG_RAE_HUMAN
-			cout<<"newUseBuiltInType: "<<set_elem->toString()<<"\n";
+			cout<<"createUseBuiltInType: "<<set_elem->toString()<<"\n";
 		#endif
 
 		return lang_elem;
 	}
 
-	Element* newDefineFuncReturn(string set_type, string set_name = "")
+	Element* createDefineFuncReturn(string set_type, string set_name = "")
 	{
-		Element* lang_elem = newElement(Token::DEFINE_FUNC_RETURN, Kind::UNDEFINED, set_name, set_type);
+		Element* lang_elem = createElement(Token::DEFINE_FUNC_RETURN, Kind::UNDEFINED, set_name, set_type);
 		currentReference = lang_elem;
 
 		if( BuiltInType::isBuiltInType(set_type) )
@@ -1361,20 +1361,20 @@ public:
 		}
 
 		#ifdef DEBUG_RAE_HUMAN
-			cout<<"newDefineFuncReturn: type: "<<set_type<<" name: "<<lang_elem->namespaceString()<<"<\n";
+			cout<<"createDefineFuncReturn: type: "<<set_type<<" name: "<<lang_elem->namespaceString()<<"<\n";
 		#endif
 
 		return lang_elem;
 	}
 /*
 REMOVED:
-	Element* newDefineFuncArgument(string set_type, string set_name = "")
+	Element* createDefineFuncArgument(string set_type, string set_name = "")
 	{
 
 		cout<<"Remove this FUNC_ARGUMENT thing, and just use parent() which is scope, to know if it's inside a func def. Use DEFINE_REFERENCE for them instead.\n";
 		assert(0);
 
-		Element* lang_elem = newElement(Token::DEFINE_FUNC_ARGUMENT, Kind::UNDEFINED, set_name, set_type);
+		Element* lang_elem = createElement(Token::DEFINE_FUNC_ARGUMENT, Kind::UNDEFINED, set_name, set_type);
 		currentReference = lang_elem;
 
 		if( BuiltInType::isBuiltInType(set_type) )
@@ -1400,7 +1400,7 @@ REMOVED:
 		}
 
 		#ifdef DEBUG_RAE_HUMAN
-			cout<<"newDefineFuncArgument: type: "<<set_type<<" name: "<<lang_elem->namespaceString()<<"<\n";
+			cout<<"createDefineFuncArgument: type: "<<set_type<<" name: "<<lang_elem->namespaceString()<<"<\n";
 		#endif
 
 		return lang_elem;
@@ -1411,7 +1411,7 @@ REMOVED:
 	//REMOVE typically I just re-created a function that already existed:
 	Element* createKind(Kind::e set_typetype, Role::e set_role)
 	{
-		Element* our_ref = newDefineReference(set_typetype, set_role );
+		Element* our_ref = createDefineReference(set_typetype, set_role );
 		return our_ref;
 		
 		//if( !bracketStack.empty() ) //REMOVE
@@ -1428,14 +1428,14 @@ REMOVED:
 	}
 	*/
 
-	Element* newDefineReference(const string& set_typetype, Role::e set_role, Element* maybe_found_class = nullptr, string set_type = "", string set_name = "")
+	Element* createDefineReference(const string& set_typetype, Role::e set_role, Element* maybe_found_class = nullptr, string set_type = "", string set_name = "")
 	{
-		return newDefineReference( Kind::fromString(set_typetype), set_role, maybe_found_class, set_type, set_name );
+		return createDefineReference( Kind::fromString(set_typetype), set_role, maybe_found_class, set_type, set_name );
 	}
 	
-	Element* newDefineReference(Kind::e set_type_type, Role::e set_role, Element* maybe_found_class = nullptr, string set_type = "", string set_name = "")
+	Element* createDefineReference(Kind::e set_type_type, Role::e set_role, Element* maybe_found_class = nullptr, string set_type = "", string set_name = "")
 	{
-		Element* lang_elem = newElement(Token::DEFINE_REFERENCE, set_type_type, set_name, set_type);
+		Element* lang_elem = createElement(Token::DEFINE_REFERENCE, set_type_type, set_name, set_type);
 		//lang_elem->kind(Kind::REF);
 		lang_elem->role(set_role);
 		currentReference = lang_elem;
@@ -1467,109 +1467,106 @@ REMOVED:
 		addToUserDefinedTokens(lang_elem);
 
 		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_REFERENCES)
-			cout<<"newDefineReference: type: "<<set_type<<" name: "<<lang_elem->namespaceString()<<"<\n";
+			cout<<"createDefineReference: type: "<<set_type<<" name: "<<lang_elem->namespaceString()<<"<\n";
 		#endif
 
 		return lang_elem;
 	}
 
-	Element* newUseReference(Element* set_definition_elem)
+	Element* createUseReference(Element* set_definition_elem)
 	{
 		if( set_definition_elem == 0 )
 			return 0;
 
-		Element* lang_elem = newElement(Token::USE_REFERENCE, set_definition_elem->kind(), set_definition_elem->name(), set_definition_elem->type() );
+		Element* lang_elem = createElement(Token::USE_REFERENCE, set_definition_elem->kind(), set_definition_elem->name(), set_definition_elem->type() );
 		
 		lang_elem->containerType( set_definition_elem->containerType() );
 		lang_elem->definitionElement(set_definition_elem);
 
 		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_REFERENCES)
-			cout<<"newUseReference of definition: "<<set_definition_elem->toString()<<"\n";
+			cout<<"createUseReference of definition: "<<set_definition_elem->toString()<<"\n";
 		#endif
-
-		if (set_definition_elem->type() == "vec3")
-			ReportError::reportError("vec3 USE_REFERENCE at: ", lang_elem);
 
 		return lang_elem;
 	}
 
-	Element* newFuncCall(Element* set_definition_elem)
+	Element* createFuncCall(Element* set_definition_elem)
 	{
 		if( set_definition_elem == 0 )
 			return 0;
 
-		Element* lang_elem = newElement(Token::FUNC_CALL, set_definition_elem->kind(), set_definition_elem->name(), set_definition_elem->type() );
+		Element* lang_elem = createElement(Token::FUNC_CALL, set_definition_elem->kind(), set_definition_elem->name(), set_definition_elem->type() );
 		
 		lang_elem->definitionElement(set_definition_elem);
 
 		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_FUNCS)
-			cout<<"newFuncCall of definition: "<<set_definition_elem->toString()<<"\n";
+			cout<<"createFuncCall of definition: "<<set_definition_elem->toString()<<"\n";
 		#endif
 
 		return lang_elem;	
 	}
 
 /*
-	Element* newUnknown(string set_token)
+	Element* createUnknown(string set_token)
 	{
-		Element* lang_elem = newElement(Token::UNKNOWN, set_token );
+		Element* lang_elem = createElement(Token::UNKNOWN, set_token );
 		addToUnknowns(lang_elem);
 
 		#ifdef DEBUG_RAE_HUMAN
-			cout<<"newUnknown: "<<set_token<<"\n";
+			cout<<"createUnknown: "<<set_token<<"\n";
 		#endif
 
 		return lang_elem;
 	}
 */
-	Element* newUnknownDefinition(string set_token)
+	Element* createUnknownDefinition(string set_token)
 	{
-		//Element* lang_elem = newElement(Token::UNKNOWN_DEFINITION, set_token );
-		Element* lang_elem = newElement(Token::DEFINE_REFERENCE, Kind::UNDEFINED, set_token );
+		//Element* lang_elem = createElement(Token::UNKNOWN_DEFINITION, set_token );
+		Element* lang_elem = createElement(Token::DEFINE_REFERENCE, Kind::UNDEFINED, set_token );
 		lang_elem->isUnknownType(true);
 		addToUnknownDefinitions(lang_elem);
 
 		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_UNKNOWN)
-			cout<<"newUnknownDefinition: "<<set_token<<"\n";
+			cout<<"createUnknownDefinition: "<<set_token<<"\n";
 		#endif
 
 		return lang_elem;
 	}
 
-	Element* newUnknownUseReference2(string set_token)
+	Element* createUnknownUseReference2(string set_token)
 	{
-		//Element* lang_elem = newElement(Token::UNKNOWN_USE_REFERENCE, set_token );
-		Element* lang_elem = newElement(Token::USE_REFERENCE, Kind::UNDEFINED, set_token );
+		//Element* lang_elem = createElement(Token::UNKNOWN_USE_REFERENCE, set_token );
+		Element* lang_elem = createElement(Token::USE_REFERENCE, Kind::UNDEFINED, set_token );
 		lang_elem->isUnknownType(true);
 		addToUnknownUseReferences(lang_elem);
 
 		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_REFERENCES) || defined(DEBUG_RAE_UNKNOWN)
-			cout<<"newUnknownUseReference: "<<set_token<<"\n";
+			cout<<"createUnknownUseReference: "<<set_token<<"\n";
 		#endif
 
 		return lang_elem;
 	}
 
-	Element* newUnknownUseMember(string set_token)
+	Element* createUnknownUseMember(string set_token)
 	{
-		//Element* lang_elem = newElement(Token::UNKNOWN_USE_MEMBER, set_token );
-		Element* lang_elem = newElement(Token::USE_MEMBER, Kind::UNDEFINED, set_token );
+		//Element* lang_elem = createElement(Token::UNKNOWN_USE_MEMBER, set_token );
+		Element* lang_elem = createElement(Token::USE_MEMBER, Kind::UNDEFINED, set_token );
 		lang_elem->isUnknownType(true);
 		addToUnknownUseMembers(lang_elem);
 
 		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_REFERENCES) || defined(DEBUG_RAE_UNKNOWN)
-			cout<<"newUnknownUseMember: "<<set_token<<"\n";
+			cout<<"createUnknownUseMember: "<<set_token<<"\n";
 		#endif
 
 		return lang_elem;
 	}
 
-	Element* newNumber(string set_name)
+	Element* createNumber(string set_name)
 	{
 		#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_NUMBERS)
-			cout<<"newNumber: "<<set_name<<"\n";
+			cout<<"createNumber: "<<set_name<<"\n";
 		#endif
-		return newElement(Token::NUMBER, Kind::UNDEFINED, set_name);	
+		return createElement(Token::NUMBER, Kind::UNDEFINED, set_name);	
 	}
 
 	vector<Element*> listOfImports;//a list of imports used in this module.
@@ -2465,13 +2462,13 @@ public:
 					}
 					else cout<<"We don't have isEndOfLine...:>"<<endOfLine<<"<\n";
 					*/
-					//newComment(endOfLine);
-					newComment(currentComment);
+					//createComment(endOfLine);
+					createComment(currentComment);
 					currentComment = "";
 					
 					wholeToken = "\n";
 					isWholeToken = true;
-					///////////////////////////////////////newLine();
+					///////////////////////////////////////createNewLine();
 					//expectingToken = Token::UNDEFINED;
 					isSingleLineComment = false;
 					isEndOfLine = false;
@@ -3073,7 +3070,7 @@ public:
 				//exceptionally handled already here:
 				string num = "";
 				num += currentChar;
-				newNumber(num);
+				createNumber(num);
 			}*/
 			else
 			{
@@ -3251,7 +3248,7 @@ public:
 			if( readChar() && isWholeToken )
 			{
 				isWholeToken = false;
-				newClass(wholeToken);
+				createClass(wholeToken);
 				//wholeToken = "";
 				expectingToken = Token::UNDEFINED;
 			}
@@ -3261,7 +3258,7 @@ public:
 			if( readChar() && isEndOfLine )
 			{
 				isEndOfLine = false;
-				newComment(endOfLine);
+				createComment(endOfLine);
 				expectingToken = Token::UNDEFINED;
 			}
 		}
@@ -3274,7 +3271,7 @@ public:
 				if( endOfLine != "" )
 				{
 					cout<<"nu09817240918274091782 func: "<<endOfLine<<"\n";
-					//newClass(wholeToken);
+					//createClass(wholeToken);
 					//wholeToken = "";
 					expectingToken = Token::UNDEFINED;
 				}
@@ -3283,7 +3280,7 @@ public:
 				/*if( wholeToken[0] != '(' )
 				{
 					cout<<"nu12938719238719273 func: "<<wholeToken<<"\n";
-					//newClass(wholeToken);
+					//createClass(wholeToken);
 					//wholeToken = "";
 					expectingToken = Token::UNDEFINED;
 				}*/
@@ -3395,10 +3392,10 @@ public:
 
 		if( isNumericChar(set_token[0]) )
 		{
-			newElement(Token::NUMBER, Kind::UNDEFINED, set_token);
+			createElement(Token::NUMBER, Kind::UNDEFINED, set_token);
 
 			#ifdef DEBUG_RAE_HUMAN
-				cout<<"newNumber: "<<set_token<<"\n";
+				cout<<"createNumber: "<<set_token<<"\n";
 			#endif
 
 			return true;
@@ -4511,7 +4508,7 @@ public:
 				#ifdef DEBUG_RAE_HUMAN
 					cout<<"because previousElement was unknown and there was a REFERENCE_DOT we set this to UNKNOWN_USE_MEMBER: "<<set_token<<"\n";
 				#endif
-				newUnknownUseMember(set_token);
+				createUnknownUseMember(set_token);
 				return;
 			}
 			//definitions: Tester tester <-- both are definitions... NO! We'll fix the first one and set the second token to be empty.
@@ -4529,7 +4526,7 @@ public:
 				#ifdef DEBUG_RAE_HUMAN
 					cout<<"because previousElement was unknown we set this to UNKNOWN_DEFINITION: "<<set_token<<"\n";
 				#endif
-				//newUnknownUseMember(set_token);
+				//createUnknownUseMember(set_token);
 				//Hahaaa, we don't even have to create it!
 				//previousElement()->token(Token::UNKNOWN_DEFINITION);
 				previousElement()->token(Token::DEFINE_REFERENCE);
@@ -4583,7 +4580,7 @@ public:
 						if(currentReference == nullptr)
 						{
 							#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_REFERENCES)
-								cout << "Default val case. Creating a newDefineReference for a class or typedef definition: " << set_token <<"\n";
+								cout << "Default val case. Creating a createDefineReference for a class or typedef definition: " << set_token <<"\n";
 							#endif
 							//ReportError::reportError("handleUserDefinedToken. currentReference was null, when we found a class. Compiler error. set_token: " + set_token, previousElement() );
 						
@@ -4591,12 +4588,12 @@ public:
 							// We'll create a new reference that defaults to VAL.
 							if( !bracketStack.empty() )
 							{
-								newDefineReference( "val", Role::TEMPLATE_PARAMETER, found_elem, set_token );
+								createDefineReference( "val", Role::TEMPLATE_PARAMETER, found_elem, set_token );
 								// Not waiting for the name as it's a template parameter.
 							}
 							else
 							{
-								Element* our_ref = newDefineReference( "val", expectingRole(), found_elem, set_token );
+								Element* our_ref = createDefineReference( "val", expectingRole(), found_elem, set_token );
 								unfinishedElement(our_ref); // Still waiting for the name.
 							}
 						}
@@ -4609,7 +4606,7 @@ public:
 							// just FUNC_RETURN or FUNC_ARGUMENT. But this remark is early days, so
 							// it might change in the future.
 
-							//our_new_element = newDefineReference(expectingKind(), expectingRole(), found_elem, set_token);
+							//our_new_element = createDefineReference(expectingKind(), expectingRole(), found_elem, set_token);
 							currentReference->definitionElement(found_elem);
 							currentReference->type(set_token);
 
@@ -4627,21 +4624,12 @@ public:
 						}
 					break;
 					case Token::FUNC:
-						our_new_element = newFuncCall(found_elem);
+						our_new_element = createFuncCall(found_elem);
 					break;
 					case Token::FUNC_CALL:
 						cout<<"We should not find FUNC_CALLs...\n";
 						assert(0);
 					break;
-					/*case Token::DEFINE_VECTOR:
-					case Token::DEFINE_VECTOR_IN_CLASS:
-						our_new_element = newUseVector(found_elem);
-					break;
-					case Token::DEFINE_ARRAY:
-					case Token::DEFINE_ARRAY_IN_CLASS:
-						our_new_element = newUseArray(found_elem);
-					break;
-					*/
 					case Token::BRACKET_DEFINE_ARRAY_BEGIN:
 					case Token::BRACKET_DEFINE_STATIC_ARRAY_BEGIN:
 					case Token::DEFINE_FUNC_RETURN:
@@ -4650,39 +4638,8 @@ public:
 					case Token::DEFINE_REFERENCE:
 					//case Token::DEFINE_BUILT_IN_TYPE_IN_CLASS:
 					//case Token::DEFINE_BUILT_IN_TYPE:
-
-						//REFACTOR: OK. now all these newUseVectors could be replaced
-						//with newUseReference() which would set also the kind e.g. to ::VECTOR.
-						
-						our_new_element = newUseReference(found_elem);
-						
-						/*
-						if(found_elem->kind() == Kind::REF)
-						{
-							our_new_element = newUseReference(found_elem);
-						}
-						else if(found_elem->kind() == Kind::VECTOR)
-						{
-							our_new_element = newUseVector(found_elem);
-						}
-						else if(found_elem->kind() == Kind::C_ARRAY)
-						{
-							our_new_element = newUseArray(found_elem);
-						}
-						else if(found_elem->kind() == Kind::BUILT_IN_TYPE)
-						{
-							our_new_element = newUseBuiltInType(found_elem);
-						}*/
-
+						our_new_element = createUseReference(found_elem);
 					break;
-					/*
-					case Token::USE_VECTOR:
-						ReportError::reportError("handleUserDefinedToken. Found USE_VECTOR. And we're not supposed to find those.");
-					break;
-					case Token::USE_ARRAY:
-						ReportError::reportError("handleUserDefinedToken. Found USE_ARRAY. And we're not supposed to find those.");
-					break;
-					*/
 					case Token::USE_REFERENCE:
 						ReportError::reportError("handleUserDefinedToken. Found USE_REFERENCE. And we're not supposed to find those.", previousElement() );
 					break;
@@ -4692,7 +4649,7 @@ public:
 							cout << "Found #define1111 usage!!!" << set_token << "\n";
 						#endif
 
-						Element* our_ref = newElement( Token::USE_REFERENCE, Kind::VAL, set_token, set_token);
+						Element* our_ref = createElement( Token::USE_REFERENCE, Kind::VAL, set_token, set_token);
 						our_ref->definitionElement(found_elem);
 					}
 					break;
@@ -4734,13 +4691,13 @@ public:
 							// array definition: [Rae::SomeType]
 							if( !bracketStack.empty() )
 							{
-								Element* our_ref = newDefineReference( "val", Role::TEMPLATE_PARAMETER );
+								Element* our_ref = createDefineReference( "val", Role::TEMPLATE_PARAMETER );
 								our_ref->useNamespace(found_elem);
 								cout << "Namespace stuff created1: " << our_ref->toSingleLineString() << "\n";
 							}
 							else
 							{
-								Element* our_ref = newElement( Token::USE_NAMESPACE, Kind::UNDEFINED, set_token, set_token);
+								Element* our_ref = createElement( Token::USE_NAMESPACE, Kind::UNDEFINED, set_token, set_token);
 								our_ref->useNamespace(found_elem);
 								unfinishedElement(our_ref); // Still waiting for the name etc.
 								cout << "Namespace stuff created2: " << our_ref->toSingleLineString() << "\n";
@@ -4767,7 +4724,7 @@ public:
 						//	cout << "And we have an unfinishedElement dangling." << unfinishedElement()->toSingleLineString() << "\n";
 						
 						rlutil::setColor(rlutil::WHITE);
-						//Element* lang_elem = newElement(Token::USE_NAMESPACE, Kind::UNDEFINED, set_token);
+						//Element* lang_elem = createElement(Token::USE_NAMESPACE, Kind::UNDEFINED, set_token);
 						//lang_elem->definitionElement(found_elem);
 						*/
                     break;
@@ -4779,7 +4736,7 @@ public:
 				//TODO this is not really an error yet. We just need some debugging cout here...
 				//The error will come if it's still not found after unknownrefs are checked.
 				ReportError::reportError("Maybe not an error... Token is not valid in this context: " + Token::toString(set_token) );
-				newUnknownUseReference(set_token);
+				createUnknownUseReference(set_token);
 			}*/
 		}
 		else
@@ -4800,9 +4757,9 @@ public:
 			if(currentReference == nullptr)
 			{
 				#ifdef DEBUG_RAE_HUMAN
-					cout<<"newUnknownUseReference2: "<<set_token<<" creating unknown ref.\n";
+					cout<<"createUnknownUseReference2: "<<set_token<<" creating unknown ref.\n";
 				#endif
-				newUnknownUseReference2(set_token);
+				createUnknownUseReference2(set_token);
 			}
 			// We have already created a DEFINE_REFERENCE with a keyword like val opt ref. But the class is still undefined.
 			else if( currentReference->isDefinition() && currentReference->type() == "" && currentReference->name() == "" )
@@ -4822,7 +4779,7 @@ public:
 				#ifdef DEBUG_RAE_HUMAN
 					cout<<"Umm: "<<set_token<<" oh no. This is some strange thing that happens on oneliners. Let's still create an unknown ref.\n";
 				#endif
-				newUnknownUseReference2(set_token);
+				createUnknownUseReference2(set_token);
 			}
 		}
 
@@ -5137,7 +5094,7 @@ public:
 					break;
 					case Token::FUNC:
 					case Token::FUNC_CALL:
-						//newElement(Token::FUNC_CALL, set_token);
+						//createElement(Token::FUNC_CALL, set_token);
 
 						// This can certainly be found!
 
@@ -5150,49 +5107,19 @@ public:
 						lang_elem->token(Token::FUNC_CALL);
 						lang_elem->isUnknownType(false);
 					break;
-					/*	
-					case Token::DEFINE_VECTOR:
-					case Token::DEFINE_VECTOR_IN_CLASS:
-						#ifdef DEBUG_RAE_HUMAN
-						cout<<"\n\n\n\n\n\nDEFINITION DEFINE_VECTOR Found. I bet this can be removed, because it shouldn't happen!!!!!!!!!!!!!!!!!!\n\n\n\n\n\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n\n\n\n\n";
-						#endif
-
-						//newUseVector(found_elem);
-						lang_elem->token(Token::USE_VECTOR);
-						lang_elem->isUnknownType(false);
-					break;
-					case Token::DEFINE_ARRAY:
-					case Token::DEFINE_ARRAY_IN_CLASS:
-						#ifdef DEBUG_RAE_HUMAN
-						cout<<"\n\n\n\n\n\nDEFINITION DEFINE_ARRAY Found. I bet this can be removed, because it shouldn't happen!!!!!!!!!!!!!!!!!!\n\n\n\n\n\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n\n\n\n\n";
-						#endif
-
-						//newUseArray(found_elem);
-						lang_elem->token(Token::USE_ARRAY);
-						lang_elem->isUnknownType(false);
-					break;
-					*/
 					case Token::BRACKET_DEFINE_ARRAY_BEGIN:
 					case Token::BRACKET_DEFINE_STATIC_ARRAY_BEGIN:
 					case Token::DEFINE_FUNC_RETURN:
 					//REMOVED: case Token::DEFINE_FUNC_ARGUMENT:
-					//case Token::DEFINE_REFERENCE_IN_CLASS:
 					case Token::DEFINE_REFERENCE:
-					//case Token::DEFINE_BUILT_IN_TYPE_IN_CLASS:
-					//case Token::DEFINE_BUILT_IN_TYPE:
-						//#ifdef DEBUG_RAE_HUMAN
-						//cout<<"\n\n\n\n\n\nDEFINITION OTHER STUFF THAT IS NOT NEEDED Found. I bet this can be removed, because it shouldn't happen!!!!!!!!!!!!!!!!!!\n\n\n\n\n\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n\n\n\n\n";
-						//#endif
-
-						//newUseReference(found_elem);
-					//We don't create a nu element, instead we modify the existing unknown element.
+						// We don't create a new element, instead we modify the existing unknown element.
 						lang_elem->token(Token::USE_REFERENCE);
 						lang_elem->type( found_elem->type() );//copy the class type etc.
 						lang_elem->kind( found_elem->kind() );//copy the typetype. ref, built_in, array, vector etc.
 						lang_elem->containerType( found_elem->containerType() );
 						lang_elem->isUnknownType(false);
 
-						//mark that we found the definition for future use:
+						// mark that we found the definition for future use:
 						if( lang_elem->definitionElement() )
 						{
 							ReportError::reportError("Found a definition for the second time. Compiler bug. earlier definition: " + lang_elem->definitionElement()->toString() + " later definition: " + found_elem->toString(), lang_elem );
@@ -5378,7 +5305,7 @@ public:
 				#ifdef DEBUG_RAE_HUMAN
 					cout<<"Didn't find: "<<lang_elem->toString()<<" it remains unknown DEFINITION.\n";
 				#endif
-				//newUnknownUseReference(set_token);
+				//createUnknownUseReference(set_token);
 			}	
 		}
 

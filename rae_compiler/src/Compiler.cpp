@@ -267,7 +267,7 @@ void Compiler::addCppHeaderAsImport(string set_import_name)
 	#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_IMPORT)
 		cout << "Adding C++ module name: " << module_name << "\n";
 	#endif
-	a_parser->newModule(module_name);
+	a_parser->createModule(module_name);
 
 	sourceParsers.push_back(a_parser);
 	a_parser->parse();

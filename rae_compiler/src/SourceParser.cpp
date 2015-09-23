@@ -39,7 +39,7 @@ bool SourceParser::handleTokenRaeCppCommon(string set_token)
 	{
 		if (isStarCommentReady == true)
 		{
-			newStarComment(currentStarComment);
+			createStarComment(currentStarComment);
 			isStarCommentReady = false;
 			return true;
 		}
@@ -125,7 +125,7 @@ bool SourceParser::handleTokenRaeCppCommon(string set_token)
 		else
 		{*/
 		checkForPreviousDefinitions(set_token);
-		newClass(set_token);
+		createClass(set_token);
 		//expectingToken = Token::UNDEFINED;
 		doReturnToExpectToken();
 		//}
@@ -138,12 +138,12 @@ bool SourceParser::handleTokenRaeCppCommon(string set_token)
 		if (set_token == "\n")
 		{
 			//cout << "GOT newline\n";
-			newLine();
+			createNewLine();
 			return true;
 		}
 		else if (set_token == ";")
 		{
-			Element* lang_elem = newElement(Token::SEMICOLON, Kind::UNDEFINED, set_token);
+			Element* lang_elem = createElement(Token::SEMICOLON, Kind::UNDEFINED, set_token);
 			if( lang_elem->previousToken() == Token::PARENTHESIS_END_FUNC_PARAM_TYPES
 				||  lang_elem->isFunc() )
 			{
@@ -163,12 +163,12 @@ bool SourceParser::handleTokenRaeCppCommon(string set_token)
 			// This Role might be still on, if there we're no parameters to the func.
 			if(expectingRole() == Role::FUNC_PARAMETER)
 				expectingRole(Role::UNDEFINED);
-			newScopeBegin();
+			createScopeBegin();
 			return true;
 		}
 		else if (set_token == "}")
 		{
-			newScopeEnd();
+			createScopeEnd();
 			return true;
 		}
 		else if (set_token == ".")
@@ -178,7 +178,7 @@ bool SourceParser::handleTokenRaeCppCommon(string set_token)
 				// Ignore.
 				//cout << "Got namespace dot.\n";
 				//isWaitingForNamespaceDot = false;
-				//newElement(Token::REFERENCE_DOT, Kind::UNDEFINED, "temp_got_namespace_dot");	
+				//createElement(Token::REFERENCE_DOT, Kind::UNDEFINED, "temp_got_namespace_dot");	
 				if(set_token == ".")
 				{
 					#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_NAMESPACE)
@@ -200,14 +200,14 @@ bool SourceParser::handleTokenRaeCppCommon(string set_token)
 			}
 			else if (previousElement() && previousToken() == Token::NUMBER)
 			{
-				//newElement(Token::DOT, set_token);
+				//createElement(Token::DOT, set_token);
 				previousElement()->token(Token::FLOAT_NUMBER);
 				previousElement()->name(previousElement()->name() + set_token);
 				expectingToken(Token::DECIMAL_NUMBER_AFTER_DOT);
 			}
 			else
 			{
-				newElement(Token::REFERENCE_DOT, Kind::UNDEFINED, set_token);
+				createElement(Token::REFERENCE_DOT, Kind::UNDEFINED, set_token);
 			}
 			return true;
 		}
@@ -263,24 +263,24 @@ bool SourceParser::handleTokenRaeCppCommon(string set_token)
 			}
 			else
 			{
-				newElement(Token::ASSIGNMENT, Kind::UNDEFINED, set_token);
+				createElement(Token::ASSIGNMENT, Kind::UNDEFINED, set_token);
 			}
 
 			return true;
 		}
 		else if (set_token == "not" || set_token == "!")
 		{
-			newElement(Token::NOT, Kind::UNDEFINED, set_token);
+			createElement(Token::NOT, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "and" || set_token == "&&")
 		{
-			newElement(Token::AND, Kind::UNDEFINED, set_token);
+			createElement(Token::AND, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "or" || set_token == "||")
 		{
-			newElement(Token::OR, Kind::UNDEFINED, set_token);
+			createElement(Token::OR, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "+")
@@ -288,7 +288,7 @@ bool SourceParser::handleTokenRaeCppCommon(string set_token)
 			if (previousElement() && previousElement()->name() == "+")
 				previousElement()->token(Token::OPERATOR_INCREMENT);
 			else
-				newElement(Token::PLUS, Kind::UNDEFINED, set_token);
+				createElement(Token::PLUS, Kind::UNDEFINED, set_token);
 
 			return true;
 		}
@@ -296,72 +296,72 @@ bool SourceParser::handleTokenRaeCppCommon(string set_token)
 		{
 			#if defined(DEBUG_DEBUGMODULENAME)
 				if (moduleName() == g_debugModuleName)
-					cout << "Yey. Creating new MINUS element.\n";
+					cout << "Yey. Creating MINUS element.\n";
 			#endif
 
 			if (previousElement() && previousElement()->name() == "-")
 				previousElement()->token(Token::OPERATOR_DECREMENT);
 			else
-				newElement(Token::MINUS, Kind::UNDEFINED, set_token);
+				createElement(Token::MINUS, Kind::UNDEFINED, set_token);
 
 			return true;
 		}
 		else if (set_token == "*")
 		{
-			newElement(Token::MULTIPLY, Kind::UNDEFINED, set_token);
+			createElement(Token::MULTIPLY, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "/")
 		{
-			newElement(Token::DIVIDE, Kind::UNDEFINED, set_token);
+			createElement(Token::DIVIDE, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "%")
 		{
-			newElement(Token::MODULO, Kind::UNDEFINED, set_token);
+			createElement(Token::MODULO, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "<")
 		{
-			newElement(Token::LESS_THAN, Kind::UNDEFINED, set_token);
+			createElement(Token::LESS_THAN, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == ">")
 		{
-			newElement(Token::GREATER_THAN, Kind::UNDEFINED, set_token);
+			createElement(Token::GREATER_THAN, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "\"")
 		{
 			//shouldn't happen.
-			//newElement(Token::MULTIPLY, set_token);
+			//createElement(Token::MULTIPLY, set_token);
 		}
 		else if (set_token == "*/")
 		{
-			//newElement(Token::DIVIDE, set_token);
+			//createElement(Token::DIVIDE, set_token);
 		}
 		else if (set_token == "/*")
 		{
-			//newElement(Token::DIVIDE, set_token);
+			//createElement(Token::DIVIDE, set_token);
 		}
 		else if (set_token == "if")
 		{
-			newElement(Token::IF, Kind::UNDEFINED, set_token);
+			createElement(Token::IF, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "else")
 		{
-			newElement(Token::ELSE, Kind::UNDEFINED, set_token);
+			createElement(Token::ELSE, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "true")
 		{
-			newElement(Token::TRUE_TRUE, Kind::UNDEFINED, set_token);
+			createElement(Token::TRUE_TRUE, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "false")
 		{
-			newElement(Token::FALSE_FALSE, Kind::UNDEFINED, set_token);
+			createElement(Token::FALSE_FALSE, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "return")
@@ -370,19 +370,20 @@ bool SourceParser::handleTokenRaeCppCommon(string set_token)
 				cout << "Got return.\n";
 			#endif
 			//expectingToken = Token::PARENTHESIS_BEGIN_RETURN;
-			newElement(Token::RETURN, Kind::UNDEFINED, set_token);
+			createElement(Token::RETURN, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "new")
 		{
-			cout << "TODO Got new. Waiting new_class.\n";
+			cout << "TODO new is not used in Rae.\n";
+			assert(0);
 			//expectingToken = Token::FUNC_DEFINITION;
-			//newFunc();
+			//createFunc();
 			return true;
 		}
 		else if (set_token == "override")
 		{
-			newElement(Token::OVERRIDE, Kind::UNDEFINED, set_token);
+			createElement(Token::OVERRIDE, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "class" || set_token == "struct") // Do we really want to support struct too? Probably not!
@@ -393,38 +394,38 @@ bool SourceParser::handleTokenRaeCppCommon(string set_token)
 		else if (set_token == "namespace")
 		{
 			//cout << "Got namespace. Waiting for name.\n";
-			Element* lang_elem = newNamespace(set_token);
+			Element* lang_elem = createNamespace(set_token);
 			expectingNameFor(lang_elem);
 			return true;
 		}
 		else if (set_token == "sizeof")
 		{
-			newElement(Token::SIZEOF, Kind::UNDEFINED, set_token);
+			createElement(Token::SIZEOF, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "bitor" || set_token == "|") // bit_or etc. are not really common with C++...
 		{
-			newElement(Token::BITWISE_OR, Kind::UNDEFINED, set_token);
+			createElement(Token::BITWISE_OR, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "bitand" || set_token == "&")
 		{
-			newElement(Token::BITWISE_AND, Kind::UNDEFINED, set_token);
+			createElement(Token::BITWISE_AND, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "xor" || set_token == "^")
 		{
-			newElement(Token::BITWISE_XOR, Kind::UNDEFINED, set_token);
+			createElement(Token::BITWISE_XOR, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "compl" || set_token == "~" )
 		{
-			newElement(Token::BITWISE_AND, Kind::UNDEFINED, set_token);
+			createElement(Token::BITWISE_AND, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "extern")
 		{
-			newElement(Token::EXTERN, Kind::UNDEFINED, set_token);
+			createElement(Token::EXTERN, Kind::UNDEFINED, set_token);
 			return true;
 		}
 	}
@@ -459,7 +460,7 @@ bool SourceParser::handleTokenCpp(string set_token)
 		{
 			isQuoteReady = false;
 
-			newQuote(currentQuote);
+			createQuote(currentQuote);
 			return true;
 		}
 	}
@@ -531,7 +532,7 @@ bool SourceParser::handleTokenCpp(string set_token)
 			#endif
 			pushExpectingToken(Token::EXPECTING_CPP_PRE_DEFINE_VALUE); // A funny hack to put this in line first, and then
 			// wait for the name in between. expectingName will then doReturnToExpectToken() which will then expect this one.
-			Element* lang_elem = newElement(Token::CPP_PRE_DEFINE, Kind::UNDEFINED, set_token);
+			Element* lang_elem = createElement(Token::CPP_PRE_DEFINE, Kind::UNDEFINED, set_token);
 			expectingNameFor(lang_elem);
 			addToUserDefinedTokens(lang_elem);
 		}
@@ -548,7 +549,7 @@ bool SourceParser::handleTokenCpp(string set_token)
 			#if defined(DEBUG_CPP_PARSER) || defined(DEBUG_CPP_PREPROCESSOR) || defined(DEBUG_CPP_NEWLINE)
 				cout << "It's a newline. Returning.\n";
 			#endif
-			newLine();
+			createNewLine();
 			doReturnToExpectToken();
 		}
 		return true;
@@ -588,7 +589,7 @@ bool SourceParser::handleTokenCpp(string set_token)
 		}
 		else if (set_token[0] == '(')
 		{
-			newParenthesisBegin(Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES, "(");
+			createParenthesisBegin(Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES, "(");
 			expectingRole(Role::FUNC_PARAMETER);
 			expectingToken(Token::UNDEFINED);
 		}
@@ -660,7 +661,7 @@ bool SourceParser::handleTokenCpp(string set_token)
 		{
 			//TODO pointer type...
 			//ReportError::reportError("TODO C++ pointer type.", previousElement());
-			//newElement(Token::MULTIPLY, Kind::UNDEFINED, set_token);
+			//createElement(Token::MULTIPLY, Kind::UNDEFINED, set_token);
             if (currentReference)
             {
                 currentReference->kind(Kind::PTR);
@@ -718,7 +719,7 @@ bool SourceParser::handleTokenCpp(string set_token)
 			#if defined(DEBUG_CPP_PARSER)
 				cout << "Got the CLASS_NAME as set_token. This is probably a C++ CONSTRUCTOR.\n";
 			#endif
-			Element* our_ref = newFunc();
+			Element* our_ref = createFunc();
 			our_ref->token(Token::CONSTRUCTOR);
 			expectingRole(Role::FUNC_PARAMETER);
 			return true;
@@ -726,7 +727,7 @@ bool SourceParser::handleTokenCpp(string set_token)
 		// C++ reserved words:
 		else if (set_token == ",")
 		{
-			newElement(Token::COMMA, Kind::UNDEFINED, set_token);
+			createElement(Token::COMMA, Kind::UNDEFINED, set_token);
 			currentReference = nullptr;
 			return true;
 		}
@@ -752,7 +753,7 @@ bool SourceParser::handleTokenCpp(string set_token)
 			}
 			//else
 
-			Element* our_ref = newFunc();
+			Element* our_ref = createFunc();
 			//pushExpectingToken(Token::FUNC_DEFINITION);
 			expectingRole(Role::FUNC_PARAMETER);
 			expectingNameFor(our_ref);
@@ -826,7 +827,7 @@ bool SourceParser::handleTokenCpp(string set_token)
 			}
 			else if (previousToken() == Token::SIZEOF || (previousToken() == Token::PARENTHESIS_BEGIN && previous2ndToken() == Token::SIZEOF))
 			{
-				newDefineBuiltInType(BuiltInType::cppStringToBuiltInType(set_token), expectingRole(), set_token);
+				createDefineBuiltInType(BuiltInType::cppStringToBuiltInType(set_token), expectingRole(), set_token);
 				return true;
 			}
 
@@ -834,12 +835,12 @@ bool SourceParser::handleTokenCpp(string set_token)
 			/*Rae specific, so commented out:
 			if (not bracketStack.empty())
 			{
-				our_ref = newDefineBuiltInType(BuiltInType::cppStringToBuiltInType(set_token), Role::TEMPLATE_PARAMETER, set_token);
+				our_ref = createDefineBuiltInType(BuiltInType::cppStringToBuiltInType(set_token), Role::TEMPLATE_PARAMETER, set_token);
 			}
 			else
 			{*/
 				expectingToken(Token::DEFINE_BUILT_IN_TYPE_NAME);
-				our_ref = newDefineBuiltInType(BuiltInType::cppStringToBuiltInType(set_token), expectingRole(), set_token);
+				our_ref = createDefineBuiltInType(BuiltInType::cppStringToBuiltInType(set_token), expectingRole(), set_token);
 				unfinishedElement(our_ref);
 			//}
 
@@ -878,14 +879,14 @@ bool SourceParser::handleTokenCpp(string set_token)
 					cout << "The ret_type for the func is: " << ret_type << "\n";;
 				#endif
 				previousElement()->type("");
-				newParenthesisBegin(Token::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES, "(");
-				//newDefineReference(ret_type, expectingRole());
+				createParenthesisBegin(Token::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES, "(");
+				//createDefineReference(ret_type, expectingRole());
 				//currentReference = nullptr;
-				Element* lang_elem = newElement(Token::DEFINE_REFERENCE, ret_typetype, "", ret_type);
+				Element* lang_elem = createElement(Token::DEFINE_REFERENCE, ret_typetype, "", ret_type);
 				lang_elem->role(Role::FUNC_RETURN);
 				//TODO addTouserDefinedTokens???
 
-				newParenthesisEnd(Token::PARENTHESIS_END_FUNC_RETURN_TYPES, ")");
+				createParenthesisEnd(Token::PARENTHESIS_END_FUNC_RETURN_TYPES, ")");
 				
 				expectingRole(Role::FUNC_PARAMETER);
 			}
@@ -897,14 +898,14 @@ bool SourceParser::handleTokenCpp(string set_token)
 				#if defined(DEBUG_CPP_PARSER) || defined(DEBUG_CPP_PARENTHESIS) || defined(DEBUG_CPP_FUNC)
                 	cout << "And made it FUNC_PARAMETER PARENTHESIS.\n";
                 #endif
-				newParenthesisBegin(Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES, set_token);
+				createParenthesisBegin(Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES, set_token);
 			}
 			else
 			{
 				#if defined(DEBUG_CPP_PARSER) || defined(DEBUG_CPP_PARENTHESIS)
                 	cout << "Made it just regular PARENTHESIS_BEGIN.\n";
                 #endif
-				newParenthesisBegin(Token::PARENTHESIS_BEGIN, set_token);
+				createParenthesisBegin(Token::PARENTHESIS_BEGIN, set_token);
 			}
 
 			return true;
@@ -918,61 +919,61 @@ bool SourceParser::handleTokenCpp(string set_token)
 				#endif
 
 				expectingRole(Role::UNDEFINED);
-				newParenthesisEnd(Token::PARENTHESIS_END_FUNC_PARAM_TYPES, ")");
+				createParenthesisEnd(Token::PARENTHESIS_END_FUNC_PARAM_TYPES, ")");
 				expectingToken(Token::UNDEFINED);
 			}
 			else
 			{
-				newParenthesisEnd(Token::PARENTHESIS_END, set_token);
+				createParenthesisEnd(Token::PARENTHESIS_END, set_token);
 			}
             return true;
 		}
 		else if (set_token == "->")
 		{
 			// We don't separate . and -> while parsing... even with C++.
-			newElement(Token::REFERENCE_DOT, Kind::UNDEFINED, set_token);
+			createElement(Token::REFERENCE_DOT, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "for")
 		{
-			newElement(Token::FOR, Kind::UNDEFINED, set_token);
+			createElement(Token::FOR, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "NULL" || set_token == "nullptr")
 		{
-			newElement(Token::RAE_NULL, Kind::UNDEFINED, set_token);
+			createElement(Token::RAE_NULL, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "const")
 		{
-			newElement(Token::LET, Kind::UNDEFINED, set_token);
+			createElement(Token::LET, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "mutable")
 		{
-			newElement(Token::MUT, Kind::UNDEFINED, set_token);
+			createElement(Token::MUT, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "typedef")
 		{
-			Element* lang_elem = newElement(Token::CPP_TYPEDEF, Kind::UNDEFINED, set_token);
+			Element* lang_elem = createElement(Token::CPP_TYPEDEF, Kind::UNDEFINED, set_token);
 			currentReference = lang_elem; // TODO this currentReference mechanism is stupid. We should remove it, and maybe just use previousElement() and rename it to currentElement, or something.
 			addToUserDefinedTokens(lang_elem);
 			return true;
 		}
 		else if (set_token == "public")
 		{
-			newElement(Token::VISIBILITY, Kind::UNDEFINED, set_token);
+			createElement(Token::VISIBILITY, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "protected")
 		{
-			newElement(Token::VISIBILITY, Kind::UNDEFINED, set_token);
+			createElement(Token::VISIBILITY, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "private")
 		{
-			newElement(Token::VISIBILITY, Kind::UNDEFINED, set_token);
+			createElement(Token::VISIBILITY, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == ":")
@@ -1006,9 +1007,9 @@ bool SourceParser::handleTokenCpp(string set_token)
 		}
 		else
 		{
-			// TODO Generic handle new names here...
+			// TODO Generic handle user defined names here...
 			handleUserDefinedToken(set_token);
-			//newUnknownUseReference2(set_token);
+			//createUnknownUseReference2(set_token);
 			return true;
 		}
 	}
@@ -1040,7 +1041,7 @@ bool SourceParser::handleToken(string set_token)
 		if (set_token == "@end")
 		{
 			isPassthroughMode = false;
-			newElement(Token::PRAGMA_CPP_END, Kind::UNDEFINED, set_token);
+			createElement(Token::PRAGMA_CPP_END, Kind::UNDEFINED, set_token);
 			doReturnToExpectToken();
 		}
 		else
@@ -1048,11 +1049,11 @@ bool SourceParser::handleToken(string set_token)
 			// If we're inside a func, then it goes to cpp. Otherwise to header.
 			if( currentParentElement() != nullptr && currentParentElement()->isFunc() )
 			{
-				newElement(Token::PASSTHROUGH_SRC, Kind::UNDEFINED, set_token);
+				createElement(Token::PASSTHROUGH_SRC, Kind::UNDEFINED, set_token);
 			}
 			else
 			{
-				newElement(Token::PASSTHROUGH_HDR, Kind::UNDEFINED, set_token);
+				createElement(Token::PASSTHROUGH_HDR, Kind::UNDEFINED, set_token);
 			}
 		}
 
@@ -1063,12 +1064,12 @@ bool SourceParser::handleToken(string set_token)
 		if (set_token == "@end")
 		{
 			isPassthroughSourceMode = false;
-			newElement(Token::PRAGMA_CPP_END, Kind::UNDEFINED, set_token);
+			createElement(Token::PRAGMA_CPP_END, Kind::UNDEFINED, set_token);
 			doReturnToExpectToken();
 		}
 		else
 		{
-			newElement(Token::PASSTHROUGH_SRC, Kind::UNDEFINED, set_token);
+			createElement(Token::PASSTHROUGH_SRC, Kind::UNDEFINED, set_token);
 		}
 
 		return true;
@@ -1081,7 +1082,7 @@ bool SourceParser::handleToken(string set_token)
 	{
 		if (isPlusCommentReady == true)
 		{
-			newPlusComment(currentPlusComment);
+			createPlusComment(currentPlusComment);
 			isPlusCommentReady = false;
 
 			return true; // CHECK if it makes any difference for this return to be in the parent scope...?
@@ -1096,7 +1097,7 @@ bool SourceParser::handleToken(string set_token)
 	{
 		if (isStarCommentReady == true)
 		{
-			newStarComment(currentStarComment);
+			createStarComment(currentStarComment);
 			isStarCommentReady = false;
 			return true;
 		}
@@ -1124,10 +1125,10 @@ bool SourceParser::handleToken(string set_token)
 				if (currentReference)
 				{
 //#ifdef DEBUG_RAE_HUMAN
-					cout << "string init_data: " << currentQuote << " Special handling for newQuote. INIT_DATA.\n";
+					cout << "string init_data: " << currentQuote << " Special handling for createQuote. INIT_DATA.\n";
 //#endif
 					//special handling for quote i.e. string initData.
-					Element* in_dat = newElement(Token::INIT_DATA, Kind::UNDEFINED, currentQuote);
+					Element* in_dat = createElement(Token::INIT_DATA, Kind::UNDEFINED, currentQuote);
 					currentReference->initData(in_dat);
 					doReturnToExpectToken();
 					return true;
@@ -1142,7 +1143,7 @@ bool SourceParser::handleToken(string set_token)
 			}
 			else
 			{
-				newQuote(currentQuote);
+				createQuote(currentQuote);
 				return true;
 			}
 
@@ -1165,7 +1166,7 @@ bool SourceParser::handleToken(string set_token)
 			Element* prev_elem = previousElement();
 
 			//create a init_data element and continue waiting for the actual data!
-			Element* in_dat = newElement(Token::INIT_DATA, Kind::UNDEFINED, set_token);
+			Element* in_dat = createElement(Token::INIT_DATA, Kind::UNDEFINED, set_token);
 			//currentReference->initData(in_dat);
 			if (prev_elem)
 			{
@@ -1203,7 +1204,7 @@ bool SourceParser::handleToken(string set_token)
 			}
 			doReturnToExpectToken();
 			if (set_token == "\n")
-				newLine();
+				createNewLine();
 		}
 		else if (set_token == ")")
 		{
@@ -1216,7 +1217,7 @@ bool SourceParser::handleToken(string set_token)
 
 				expectingRole(Role::UNDEFINED);//could also be Role::FUNC_DEFINITION, but we don't need that, so.
 				//TODO: check parenthesisStack:
-				newParenthesisEnd(Token::PARENTHESIS_END_FUNC_RETURN_TYPES, ")");
+				createParenthesisEnd(Token::PARENTHESIS_END_FUNC_RETURN_TYPES, ")");
 				expectingToken(Token::FUNC_DEFINITION);
 			}
 			else if (expectingRole() == Role::FUNC_PARAMETER)
@@ -1227,7 +1228,7 @@ bool SourceParser::handleToken(string set_token)
 
 				expectingRole(Role::UNDEFINED);//could also be Role::FUNC_DEFINITION, but we don't need that, so.
 				//TODO: check parenthesisStack:
-				newParenthesisEnd(Token::PARENTHESIS_END_FUNC_PARAM_TYPES, ")");
+				createParenthesisEnd(Token::PARENTHESIS_END_FUNC_PARAM_TYPES, ")");
 				expectingToken(Token::UNDEFINED);
 			}
 			else
@@ -1245,7 +1246,7 @@ bool SourceParser::handleToken(string set_token)
 					endInitData();//This is important. This ends our init_data being the currentParentElement (which receives the init_data.)
 				}
 
-				newElement(Token::COMMA, Kind::UNDEFINED, ",");
+				createElement(Token::COMMA, Kind::UNDEFINED, ",");
 				//expectingToken(Token::UNDEFINED);
 				doReturnToExpectToken();
 			}
@@ -1306,7 +1307,7 @@ bool SourceParser::handleToken(string set_token)
 
 				expectingRole(Role::UNDEFINED);//could also be Role::FUNC_DEFINITION, but we don't need that, so.
 				//TODO: check parenthesisStack:
-				newParenthesisEnd(Token::PARENTHESIS_END_FUNC_RETURN_TYPES, ")");
+				createParenthesisEnd(Token::PARENTHESIS_END_FUNC_RETURN_TYPES, ")");
 				expectingToken(Token::FUNC_DEFINITION);
 			}
 			else if (expectingRole() == Role::FUNC_PARAMETER)
@@ -1317,7 +1318,7 @@ bool SourceParser::handleToken(string set_token)
 
 				expectingRole(Role::UNDEFINED);//could also be Role::FUNC_DEFINITION, but we don't need that, so.
 				//TODO: check parenthesisStack:
-				newParenthesisEnd(Token::PARENTHESIS_END_FUNC_PARAM_TYPES, ")");
+				createParenthesisEnd(Token::PARENTHESIS_END_FUNC_PARAM_TYPES, ")");
 				expectingToken(Token::UNDEFINED);
 			}
 			else
@@ -1330,7 +1331,7 @@ bool SourceParser::handleToken(string set_token)
 
 			if (previousElement() && previousToken() == Token::NUMBER)
 			{
-				//newElement(Token::DOT, set_token);
+				//createElement(Token::DOT, set_token);
 				previousElement()->token(Token::FLOAT_NUMBER);
 				previousElement()->name(previousElement()->name() + set_token);
 				expectingToken(Token::DECIMAL_NUMBER_AFTER_DOT);
@@ -1340,7 +1341,7 @@ bool SourceParser::handleToken(string set_token)
 			else
 			{
 				ReportError::reportError("A strange dot while waiting for INIT_DATA. Floating point numbers are written: 0.0", previousElement());
-				newElement(Token::REFERENCE_DOT, Kind::UNDEFINED, set_token);
+				createElement(Token::REFERENCE_DOT, Kind::UNDEFINED, set_token);
 			}
 		}
 		else if (set_token == ";")
@@ -1366,7 +1367,7 @@ bool SourceParser::handleToken(string set_token)
 				doReturnToExpectToken();
 			}
 
-			newElement(Token::SEMICOLON, Kind::UNDEFINED, set_token);
+			createElement(Token::SEMICOLON, Kind::UNDEFINED, set_token);
 		}
 		else if (set_token == "\n")
 		{
@@ -1378,7 +1379,7 @@ bool SourceParser::handleToken(string set_token)
 			//and error if we're returnToExpectToken FUNC_ARGUMENT_NAME
 
 			#ifdef DEBUG_RAE_HUMAN
-				cout<<"newDefineBuiltInType: "<<currentReference->type()<<" "<<currentReference->namespaceString()<<"\n";
+				cout<<"createDefineBuiltInType: "<<currentReference->type()<<" "<<currentReference->namespaceString()<<"\n";
 			#endif
 			}*/
 			//expectingToken = Token::UNDEFINED;
@@ -1405,7 +1406,7 @@ bool SourceParser::handleToken(string set_token)
 				doReturnToExpectToken();
 			}
 
-			newLine();
+			createNewLine();
 		}
 		else if (set_token == ",")
 		{
@@ -1417,7 +1418,7 @@ bool SourceParser::handleToken(string set_token)
 					endInitData();//This is important. This ends our init_data being the currentParentElement (which receives the init_data.)
 				}
 
-				newElement(Token::COMMA, Kind::UNDEFINED, ",");
+				createElement(Token::COMMA, Kind::UNDEFINED, ",");
 				//expectingToken(Token::UNDEFINED);
 				doReturnToExpectToken();
 			}
@@ -1447,6 +1448,8 @@ bool SourceParser::handleToken(string set_token)
 			#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_INIT_DATA)
 				cout << "TODO new() INIT_DATA.\n";
 			#endif
+			cout << "ERROR: new is not used in Rae.\n";
+			assert(0);
 			//TODO error on returnToExpectToken FUNC_ARGUMENT_NAME, no new here.
 			//currentReference->initData(set_token);
 			//expectingToken = Token::UNDEFINED; //TEMP
@@ -1461,7 +1464,7 @@ bool SourceParser::handleToken(string set_token)
 			if (currentParentElement() && currentParentElement()->token() == Token::INIT_DATA)
 			{
 				//cout<<"And created null initdata for element: "<<dang->toString()<<"\n";
-				Element* in_dat = newElement(Token::RAE_NULL, Kind::UNDEFINED, set_token);
+				Element* in_dat = createElement(Token::RAE_NULL, Kind::UNDEFINED, set_token);
 			}
 			else
 			{
@@ -1486,7 +1489,7 @@ bool SourceParser::handleToken(string set_token)
 				else
 				{
 					//we should have a handleInitData() func!
-					//newElement(Token::STRING, Kind::UNDEFINED, set_token); //Hmm STRINGs like "a string" are Token::QUOTES.
+					//createElement(Token::STRING, Kind::UNDEFINED, set_token); //Hmm STRINGs like "a string" are Token::QUOTES.
 					cout << "TODO better handling of init_data in initialization. " << set_token << "\n";
 
 					//if (isReceivingInitData == true)
@@ -1513,16 +1516,16 @@ bool SourceParser::handleToken(string set_token)
 			/*
 			if( currentReference && previousElement()->token() != Token::QUOTE )
 			{
-			Element* in_dat = newElement(Token::INIT_DATA, Kind::UNDEFINED, set_token);
+			Element* in_dat = createElement(Token::INIT_DATA, Kind::UNDEFINED, set_token);
 			currentReference->initData(in_dat);
 
 			#ifdef DEBUG_RAE_HUMAN
-				cout<<"initData: "<<set_token<<" is new initData for: "<<currentReference->type()<<" "<<currentReference->namespaceString()<<"\n";
+				cout<<"initData: "<<set_token<<" is initData for: "<<currentReference->type()<<" "<<currentReference->namespaceString()<<"\n";
 			#endif
 			}
 			*/
 			/*
-			//This didn't work. see newQuote above for the new version.
+			//This didn't work. see createQuote above for the new version.
 			else if( currentReference && previousElement()->token() == Token::QUOTE )
 			{
 			//special handling for quote i.e. string initData.
@@ -1647,12 +1650,12 @@ bool SourceParser::handleToken(string set_token)
 				{
 					listOfImports.push_back(currentTempElement);
 
-					//newImportSignal(a_import_whole_name);
+					//createImportSignal(a_import_whole_name);
 					g_compiler->addSourceFileAsImport(a_import_whole_name);
 				}
 			}
 
-			newLine();
+			createNewLine();
 			//expectingToken = Token::UNDEFINED;
 			doReturnToExpectToken();
 			currentTempElement = 0;
@@ -1693,7 +1696,7 @@ bool SourceParser::handleToken(string set_token)
 				#ifdef DEBUG_RAE_PARSER
 					cout << "last module name was: " << currentModuleHeaderFileName;
 				
-					cout << "\n\nnewModule: ";
+					cout << "\n\ncreateModule: ";
 				
 					for (Element* elem : currentModule->elements)
 					{
@@ -1707,7 +1710,7 @@ bool SourceParser::handleToken(string set_token)
 
 			}
 
-			newLine();
+			createNewLine();
 			//expectingToken(Token::UNDEFINED);
 			doReturnToExpectToken();
 		}
@@ -1737,7 +1740,7 @@ bool SourceParser::handleToken(string set_token)
 	{
 		if (set_token == "(")
 		{
-			newParenthesisBegin(Token::PARENTHESIS_BEGIN_LOG, set_token);
+			createParenthesisBegin(Token::PARENTHESIS_BEGIN_LOG, set_token);
 		}
 		else
 		{
@@ -1755,7 +1758,7 @@ bool SourceParser::handleToken(string set_token)
 	{
 		if (set_token == "(")
 		{
-			newParenthesisBegin(Token::PARENTHESIS_BEGIN_LOG_S, set_token);
+			createParenthesisBegin(Token::PARENTHESIS_BEGIN_LOG_S, set_token);
 		}
 		else
 		{
@@ -1978,7 +1981,7 @@ bool SourceParser::handleToken(string set_token)
 				cout << "Got func. Waiting func_definition.\n";
 			#endif
 			expectingToken(Token::FUNC_DEFINITION);
-			newFunc();
+			createFunc();
 		}
 		else if (set_token == "prop")
 		{
@@ -2010,16 +2013,16 @@ bool SourceParser::handleToken(string set_token)
 				{
 					our_array_definition->token(Token::BRACKET_DEFINE_STATIC_ARRAY_BEGIN);
 				}
-				newElement(Token::COMMA, Kind::UNDEFINED, set_token);
+				createElement(Token::COMMA, Kind::UNDEFINED, set_token);
 			}
 			else if (expectingRole() == Role::FUNC_RETURN)
 			{
 				//TODO: Hmm. These are the same as normal case. So we could just remove the expectingRoles here...
-				newElement(Token::COMMA, Kind::UNDEFINED, set_token);
+				createElement(Token::COMMA, Kind::UNDEFINED, set_token);
 			}
 			else if (expectingRole() == Role::FUNC_PARAMETER || expectingRole() == Role::TEMPLATE_PARAMETER)
 			{
-				newElement(Token::COMMA, Kind::UNDEFINED, set_token);
+				createElement(Token::COMMA, Kind::UNDEFINED, set_token);
 			}
 			else //Role::UNDEFINED or something. Normal function body etc.
 			{
@@ -2027,11 +2030,11 @@ bool SourceParser::handleToken(string set_token)
 
 				if (parenthesis_type == Token::PARENTHESIS_BEGIN_LOG || parenthesis_type == Token::PARENTHESIS_BEGIN_LOG_S)
 				{
-					newElement(Token::LOG_SEPARATOR, Kind::UNDEFINED, set_token);//it is still a comma "," but we write it out as << for C++
+					createElement(Token::LOG_SEPARATOR, Kind::UNDEFINED, set_token);//it is still a comma "," but we write it out as << for C++
 				}
 				else
 				{
-					newElement(Token::COMMA, Kind::UNDEFINED, set_token);
+					createElement(Token::COMMA, Kind::UNDEFINED, set_token);
 				}
 			}
 		}
@@ -2039,11 +2042,11 @@ bool SourceParser::handleToken(string set_token)
 		{
 			if (!bracketStack.empty())
 			{
-				newDefineReference(set_token, Role::TEMPLATE_PARAMETER);
+				createDefineReference(set_token, Role::TEMPLATE_PARAMETER);
 			}
 			else
 			{
-				Element* our_ref = newDefineReference(set_token, expectingRole());
+				Element* our_ref = createDefineReference(set_token, expectingRole());
 				unfinishedElement(our_ref);
 			}
 
@@ -2081,19 +2084,19 @@ bool SourceParser::handleToken(string set_token)
 			}
 			else if (previousToken() == Token::SIZEOF || (previousToken() == Token::PARENTHESIS_BEGIN && previous2ndToken() == Token::SIZEOF))
 			{
-				newDefineBuiltInType(BuiltInType::stringToBuiltInType(set_token), expectingRole(), set_token);
+				createDefineBuiltInType(BuiltInType::stringToBuiltInType(set_token), expectingRole(), set_token);
 				return true;
 			}
 
 			Element* our_ref;
 			if (not bracketStack.empty())
 			{
-				our_ref = newDefineBuiltInType(BuiltInType::stringToBuiltInType(set_token), Role::TEMPLATE_PARAMETER, set_token);
+				our_ref = createDefineBuiltInType(BuiltInType::stringToBuiltInType(set_token), Role::TEMPLATE_PARAMETER, set_token);
 			}
 			else
 			{
 				expectingToken(Token::DEFINE_BUILT_IN_TYPE_NAME);
-				our_ref = newDefineBuiltInType(BuiltInType::stringToBuiltInType(set_token), expectingRole(), set_token);
+				our_ref = createDefineBuiltInType(BuiltInType::stringToBuiltInType(set_token), expectingRole(), set_token);
 				unfinishedElement(our_ref);
 			}
 
@@ -2114,7 +2117,7 @@ bool SourceParser::handleToken(string set_token)
 			else if (expectingRole() == Role::FUNC_PARAMETER)
 			{
 				//TODO: check parenthesisStack:
-				newParenthesisBegin(Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES, "(");
+				createParenthesisBegin(Token::PARENTHESIS_BEGIN_FUNC_PARAM_TYPES, "(");
 				return true;
 			}
 			else //normal (
@@ -2131,7 +2134,7 @@ bool SourceParser::handleToken(string set_token)
 				//if(previousElement())
 				//	cout<<"previousToken: "<<previousElement()->toString();
 				//else cout<<"no previousElement!\n";
-				newParenthesisBegin(Token::PARENTHESIS_BEGIN, set_token);
+				createParenthesisBegin(Token::PARENTHESIS_BEGIN, set_token);
 				return true;
 			}
 		}
@@ -2145,7 +2148,7 @@ bool SourceParser::handleToken(string set_token)
 
 				expectingRole(Role::UNDEFINED);//could also be Role::FUNC_DEFINITION, but we don't need that, so.
 				//TODO: check parenthesisStack:
-				newParenthesisEnd(Token::PARENTHESIS_END_FUNC_RETURN_TYPES, ")");
+				createParenthesisEnd(Token::PARENTHESIS_END_FUNC_RETURN_TYPES, ")");
 				expectingToken(Token::FUNC_DEFINITION);
 				return true;
 			}
@@ -2157,20 +2160,20 @@ bool SourceParser::handleToken(string set_token)
 
 				expectingRole(Role::UNDEFINED);//could also be Role::FUNC_DEFINITION, but we don't need that, so.
 				//TODO: check parenthesisStack:
-				newParenthesisEnd(Token::PARENTHESIS_END_FUNC_PARAM_TYPES, ")");
+				createParenthesisEnd(Token::PARENTHESIS_END_FUNC_PARAM_TYPES, ")");
 				expectingToken(Token::UNDEFINED);
 				return true;
 			}
 			else
 			{
 				//cout<<"normal )\n";
-				newParenthesisEnd(Token::PARENTHESIS_END, set_token);
+				createParenthesisEnd(Token::PARENTHESIS_END, set_token);
 				return true;
 			}
 		}
 		else if (set_token == "cast")
 		{
-			newElement(Token::CAST, Kind::UNDEFINED, set_token);
+			createElement(Token::CAST, Kind::UNDEFINED, set_token);
 			return true;
 		}
 		else if (set_token == "[")
@@ -2185,7 +2188,7 @@ bool SourceParser::handleToken(string set_token)
 				#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_BRACKET)
 					cout << "Bracket begin simple.\n";
 				#endif
-				newBracketBegin(Token::BRACKET_BEGIN, set_token);
+				createBracketBegin(Token::BRACKET_BEGIN, set_token);
 			}
 			else if (previousElement() && previousElement()->token() == Token::DEFINE_REFERENCE)
 			{
@@ -2206,29 +2209,29 @@ bool SourceParser::handleToken(string set_token)
                 	cout << "Bracket initializer list begin!\n";
                 #endif
                 // Bracket initializer list
-                newBracketBegin(Token::BRACKET_INITIALIZER_LIST_BEGIN, set_token);
+                createBracketBegin(Token::BRACKET_INITIALIZER_LIST_BEGIN, set_token);
             }
             else if (previousElement() && previousElement()->token() == Token::CAST)
 			{
 				#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_BRACKET)
 					cout << "Bracket begin CAST.\n";
 				#endif
-				newBracketBegin(Token::BRACKET_CAST_BEGIN, set_token);
+				createBracketBegin(Token::BRACKET_CAST_BEGIN, set_token);
 			}
 			else
 			{
 				#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_BRACKET)
-                	cout << "Bracket newDefineArray.\n";
+                	cout << "Bracket createDefineArray.\n";
                 	if(previousElement())
                     	cout << "previousElement: " << previousElement()->toSingleLineString() << "\n";
                 #endif
-				newDefineArray();
+				createDefineArray();
 			}
 		}
 		else if (set_token == "]")
 		{
 			#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_BRACKET)
-				cout << "normal newBracketEnd.";
+				cout << "normal createBracketEnd.";
 			#endif
 
 			Element* our_array_definition;
@@ -2237,7 +2240,7 @@ bool SourceParser::handleToken(string set_token)
 				our_array_definition = bracketStack.back();
 			}
 
-			newBracketEnd(Token::BRACKET_END, set_token);
+			createBracketEnd(Token::BRACKET_END, set_token);
 			if (our_array_definition && (our_array_definition->token() == Token::BRACKET_DEFINE_ARRAY_BEGIN || our_array_definition->token() == Token::BRACKET_DEFINE_STATIC_ARRAY_BEGIN))
 			{
 				expectingNameFor(our_array_definition);
@@ -2245,12 +2248,12 @@ bool SourceParser::handleToken(string set_token)
 		}
 		else if (set_token == "->")
 		{
-			//newElement(Token::POINT_TO, Kind::UNDEFINED, set_token);
-			newPointToElement();
+			//createElement(Token::POINT_TO, Kind::UNDEFINED, set_token);
+			createPointToElement();
 		}
 		else if (set_token == "loop")
 		{
-			newElement(Token::FOR, Kind::UNDEFINED, set_token);
+			createElement(Token::FOR, Kind::UNDEFINED, set_token);
 		}
 		else if (set_token == "for")
 		{
@@ -2262,14 +2265,14 @@ bool SourceParser::handleToken(string set_token)
 		}
 		else if (set_token == "in")
 		{
-			newElement(Token::IN_TOKEN, Kind::UNDEFINED, set_token);
+			createElement(Token::IN_TOKEN, Kind::UNDEFINED, set_token);
 		}
 		else if (set_token == "alias")
 		{
 			#if defined(DEBUG_RAE_PARSER) || defined(DEBUG_RAE_ALIAS)
 				cout << "Got alias keyword. Going to alias mode.\n";
 			#endif
-			Element* lang_elem = newElement(Token::ALIAS, Kind::UNDEFINED, set_token);
+			Element* lang_elem = createElement(Token::ALIAS, Kind::UNDEFINED, set_token);
 			addToUserDefinedTokens(lang_elem);
 			pushExpectingToken(Token::ALIAS);
 			expectingNameFor(lang_elem);
@@ -2277,43 +2280,43 @@ bool SourceParser::handleToken(string set_token)
 		}
 		else if (set_token == "log_s")
 		{
-			newElement(Token::LOG_S, Kind::UNDEFINED, set_token);
+			createElement(Token::LOG_S, Kind::UNDEFINED, set_token);
 			expectingToken(Token::PARENTHESIS_BEGIN_LOG_S);
 
 		}
 		else if (set_token == "log")
 		{
-			newElement(Token::LOG, Kind::UNDEFINED, set_token);
+			createElement(Token::LOG, Kind::UNDEFINED, set_token);
 			expectingToken(Token::PARENTHESIS_BEGIN_LOG);
 		}
 		else if (set_token == "null")
 		{
-			newElement(Token::RAE_NULL, Kind::UNDEFINED, set_token);
+			createElement(Token::RAE_NULL, Kind::UNDEFINED, set_token);
 		}
 		else if (set_token == "is")
 		{
-			newElement(Token::IS, Kind::UNDEFINED, set_token);
+			createElement(Token::IS, Kind::UNDEFINED, set_token);
 		}
 		else if (set_token == "let")
 		{
-			newElement(Token::LET, Kind::UNDEFINED, set_token);
+			createElement(Token::LET, Kind::UNDEFINED, set_token);
 		}
 		else if (set_token == "mut")
 		{
-			newElement(Token::MUT, Kind::UNDEFINED, set_token);
+			createElement(Token::MUT, Kind::UNDEFINED, set_token);
 		}
 		else if (set_token == "pub")
 		{
-			newElement(Token::VISIBILITY, Kind::UNDEFINED, set_token);
+			createElement(Token::VISIBILITY, Kind::UNDEFINED, set_token);
 		}
 		else if (set_token == "lib")
 		{
 			//TODO
-			newElement(Token::VISIBILITY, Kind::UNDEFINED, set_token);
+			createElement(Token::VISIBILITY, Kind::UNDEFINED, set_token);
 		}
 		else if (set_token == "priv") // -> protected
 		{
-			newElement(Token::VISIBILITY, Kind::UNDEFINED, set_token);
+			createElement(Token::VISIBILITY, Kind::UNDEFINED, set_token);
 		}
 		else if (set_token == ":")
 		{
@@ -2341,7 +2344,7 @@ bool SourceParser::handleToken(string set_token)
 			assert(0);
 			//cout<<"TODO Got free. Waiting free_class.\n";
 			expectingToken(Token::FREE_NAME);
-			//newFunc();
+			//createFunc();
 			if (previousElement())
 			{
 				if (previousElement()->token() == Token::REFERENCE_DOT)
@@ -2366,21 +2369,21 @@ bool SourceParser::handleToken(string set_token)
 		{
 			cout << "TODO Got delete. there's no delete keyword in Rae. Use free instead.\n";
 			//expectingToken = Token::FUNC_DEFINITION;
-			//newFunc();
+			//createFunc();
 		}
 		else if (set_token == "import")
 		{
-			newImport(set_token);
+			createImport(set_token);
 		}
 		else if (set_token == "module")
 		{
-			newModule(set_token);
+			createModule(set_token);
 		}
 		else if (set_token == "project")
 		{
 			//cout << "TODO project keyword.\n";
 			// TODO save the project to m_projectName variable
-			Element* lang_elem = newElement(Token::PROJECT, Kind::UNDEFINED, set_token);
+			Element* lang_elem = createElement(Token::PROJECT, Kind::UNDEFINED, set_token);
 			expectingNameFor(lang_elem);
 		}
 		else if (set_token == "targetdir")
@@ -2419,7 +2422,7 @@ bool SourceParser::handleToken(string set_token)
 		{
 			isPassthroughMode = true;
 			//cout<<"To PASSTHROUGH_HDR mode.\n";
-			newElement(Token::PRAGMA_CPP, Kind::UNDEFINED, set_token);
+			createElement(Token::PRAGMA_CPP, Kind::UNDEFINED, set_token);
 			expectingToken(Token::PRAGMA_CPP);
 		}
 		//copy to c++ header .hpp:
@@ -2427,7 +2430,7 @@ bool SourceParser::handleToken(string set_token)
 		{
 			isPassthroughMode = true;
 			//cout<<"To PASSTHROUGH_HDR mode.\n";
-			newElement(Token::PRAGMA_CPP_HDR, Kind::UNDEFINED, set_token);
+			createElement(Token::PRAGMA_CPP_HDR, Kind::UNDEFINED, set_token);
 			expectingToken(Token::PRAGMA_CPP_HDR);
 		}
 		//copy to c++ source file .cpp:
@@ -2435,7 +2438,7 @@ bool SourceParser::handleToken(string set_token)
 		{
 			isPassthroughSourceMode = true;
 			//cout<<"To PASSTHROUGH_HDR mode.\n";
-			newElement(Token::PRAGMA_CPP_SRC, Kind::UNDEFINED, set_token);
+			createElement(Token::PRAGMA_CPP_SRC, Kind::UNDEFINED, set_token);
 			expectingToken(Token::PRAGMA_CPP_SRC);
 		}
 		else if (set_token == "@dont_generate_code")
@@ -2469,7 +2472,7 @@ bool SourceParser::handleToken(string set_token)
 	else if (expectingToken() == Token::FREE_NAME)
 	{
 		// TODO check if name is a valid name...
-		newElement(Token::FREE, Kind::UNDEFINED, set_token);
+		createElement(Token::FREE, Kind::UNDEFINED, set_token);
 		doReturnToExpectToken();
 	}
 	else if (expectingToken() == Token::DEFINE_BUILT_IN_TYPE_NAME)
@@ -2484,18 +2487,18 @@ bool SourceParser::handleToken(string set_token)
 
 				expectingRole(Role::UNDEFINED);//could also be Role::FUNC_DEFINITION, but we don't need that, so.
 				//TODO: check parenthesisStack:
-				newParenthesisEnd(Token::PARENTHESIS_END_FUNC_RETURN_TYPES, ")");
+				createParenthesisEnd(Token::PARENTHESIS_END_FUNC_RETURN_TYPES, ")");
 				expectingToken(Token::FUNC_DEFINITION);
 			}
 			else
 			{
-				newParenthesisEnd(Token::PARENTHESIS_END, ")");
+				createParenthesisEnd(Token::PARENTHESIS_END, ")");
 				ReportError::reportError(") parenthesis_end - can't be a name for built in type.\n", previousElement());
 			}
 		}
 		else if (set_token == "]")
 		{
-			newBracketEnd(Token::BRACKET_DEFINE_ARRAY_END, set_token);
+			createBracketEnd(Token::BRACKET_DEFINE_ARRAY_END, set_token);
 		}
 		else if (set_token == ",")
 		{
@@ -2600,13 +2603,13 @@ bool SourceParser::handleToken(string set_token)
 
 				expectingRole(Role::UNDEFINED);//could also be Role::FUNC_DEFINITION, but we don't need that, so.
 				//TODO: check parenthesisStack:
-				newParenthesisEnd(Token::PARENTHESIS_END_FUNC_RETURN_TYPES, ")");
+				createParenthesisEnd(Token::PARENTHESIS_END_FUNC_RETURN_TYPES, ")");
 				expectingToken(Token::FUNC_DEFINITION);
 			}
 			else
 			{
 				// A nameless define.
-				newParenthesisEnd(Token::PARENTHESIS_END, ")");
+				createParenthesisEnd(Token::PARENTHESIS_END, ")");
 				//ReportError::reportError(") parenthesis_end - can't be a name for a reference.\n", previousElement());
 				doReturnToExpectToken();
 				return true;
@@ -2633,13 +2636,13 @@ bool SourceParser::handleToken(string set_token)
 		}
 		else if (set_token == "]")
 		{
-			newBracketEnd(Token::BRACKET_DEFINE_ARRAY_END, set_token);
+			createBracketEnd(Token::BRACKET_DEFINE_ARRAY_END, set_token);
 		}
 		else if (set_token == "*")
 		{
 			//TODO pointer type...
 			ReportError::reportError("TODO pointer type.", previousElement());
-			newElement(Token::MULTIPLY, Kind::UNDEFINED, set_token);
+			createElement(Token::MULTIPLY, Kind::UNDEFINED, set_token);
 
 			assert(0);
 		}
@@ -2647,7 +2650,7 @@ bool SourceParser::handleToken(string set_token)
 		{
 			//A huge TODO.
 			ReportError::reportError("Huge todo on line 4535. handle null pointers: ????.", previousElement());
-			//newElement(Token::MULTIPLY, set_token);
+			//createElement(Token::MULTIPLY, set_token);
 		}
 		/*REMOVE
 		else if( set_token == "!" )
@@ -2709,7 +2712,7 @@ bool SourceParser::handleToken(string set_token)
 			#ifdef DEBUG_RAE_PARSER
 				cout << "Got func_def (. Waiting return_types.\n";
 			#endif
-			newParenthesisBegin(Token::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES, "(");
+			createParenthesisBegin(Token::PARENTHESIS_BEGIN_FUNC_RETURN_TYPES, "(");
 			expectingRole(Role::FUNC_RETURN);
 			expectingToken(Token::UNDEFINED);
 		}
