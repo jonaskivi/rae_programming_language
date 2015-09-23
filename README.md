@@ -137,7 +137,7 @@ Array syntax is like this:
 
 # Getting started
 
-Go to some folder on the command line and then:
+Go to some folder on the command line and then (on Linux and OS X):
 
 	git clone https://github.com/jonaskivi/rae_programming_language.git
 	cd rae_programming_language
@@ -149,8 +149,13 @@ Go to some folder on the command line and then:
 You could also build it with the premake4 script found in rae_compiler by doing:
 
 	cd rae_compiler
+	# for Linux (use premake4.4):
+	premake4 gmake
+	make
+
 	# for OS X:
 	premake4 xcode4
+
 	# or for Windows
 	premake4 vs2012
 
